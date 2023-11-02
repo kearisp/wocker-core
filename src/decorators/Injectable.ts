@@ -1,0 +1,19 @@
+import {DI} from "../makes/DI";
+
+
+export const Injectable = (ddi?: DI) => {
+    return <T extends {new (...rest: any[]): {}}>(Target: T) => {
+        // @ts-ignore
+        return class extends Target {
+            public constructor(di: DI) {
+                const types = Reflect.getMetadata("design:paramtypes", Target);
+
+                const params: any[] = types.map((type: any) => {
+                    return (di).resolveService(type);
+                });
+
+                super(...params);
+            }
+        }
+    };
+};

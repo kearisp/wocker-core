@@ -1,0 +1,24 @@
+# misc
+/.idea
+/.git
+
+# dependencies
+/node_modules
+/packages
+/bin/completion.sh
+/bin/ssl-generate
+/bin/test.sh
+/bin/compare-version
+/lib/tsconfig.tsbuildinfo
+/src
+/test
+/.babelrc.js
+/.eslintrc.js
+/.gitignore
+/.gitmodules
+/jest.config.ts
+/package-lock.json
+/tsconfig.json
+/tsconfig.build.json
+/webpack.config.js
+*.spec.js

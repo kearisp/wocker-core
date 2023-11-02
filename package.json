@@ -1,0 +1,25 @@
+{
+    "name": "@wocker/core",
+    "version": "1.0.1",
+    "description": "Wocker Core",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "author": "Kris Papercut <krispcut@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "prepare": "npm run build",
+        "watch": "tsc -w",
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@kearisp/cli": "^1.0.2",
+        "fs": "^0.0.1-security",
+        "path": "^0.12.7",
+        "reflect-metadata": "^0.1.13"
+    },
+    "devDependencies": {
+        "@types/node": "^20.8.9",
+        "typescript": "^5.2.2"
+    }
+}
