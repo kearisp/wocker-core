@@ -4,14 +4,17 @@ import "reflect-metadata";
 class DI {
     private services: Map<any, any> = new Map();
 
-    resolveService<T>(key: any): T {
+    public resolveService<T>(key: any): T {
         let res = this.services.get(key);
 
         if(!res) {
             const types = Reflect.getMetadata("design:paramtypes", key);
-            const params = types ? types.map((type: any) => {
-                return this.resolveService(type);
-            }) : [];
+
+            if(types && types.length > 0) {
+                types.forEach((type: any) => {
+                    this.resolveService(type);
+                });
+            }
 
             res = new key(this);
 
@@ -21,12 +24,8 @@ class DI {
         return res;
     }
 
-    registerService(key: any, service: any) {
+    public registerService(key: any, service: any) {
         this.services.set(key, service);
-    }
-
-    use() {
-
     }
 }
 

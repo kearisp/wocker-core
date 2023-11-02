@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import * as FS from "fs";
 
 import {DI} from "../makes/DI";
 import {AppConfigService} from "../services/AppConfigService";
@@ -22,11 +21,13 @@ class Project {
     public name: string
     public type: string;
     public path: string;
+    public preset?: string;
     public imageName?: string;
     public dockerfile?: string;
     public env: EnvConfig;
     public buildArgs?: EnvConfig;
     public volumes?: string[];
+    public ports?: string[];
 
     static di?: DI;
 
@@ -35,9 +36,21 @@ class Project {
         this.name = data.name;
         this.type = data.type;
         this.path = data.path;
+        this.preset = data.preset;
+        this.dockerfile = data.dockerfile;
         this.imageName = data.imageName;
-        this.env = data.env || {};
         this.buildArgs = data.buildArgs;
+        this.env = data.env || {};
+        this.ports = data.ports;
+        this.volumes = data.volumes;
+    }
+
+    public hasEnv(name: string): boolean {
+        if(!this.env) {
+            return false;
+        }
+
+        return this.env.hasOwnProperty(name);
     }
 
     public getEnv(name: string, defaultValue?: string): string|undefined {

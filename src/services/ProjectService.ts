@@ -1,35 +1,24 @@
 import {Project} from "../models/Project";
 
 
-type SearchParams = {
+type SearchParams = Partial<{
     id: string;
     name: string;
     path: string;
-};
+}>;
 
-class ProjectService {
-    public async cdProject(name: string): Promise<void> {
-        throw new Error("Project not found");
-    }
+abstract class ProjectService {
+    public abstract cdProject(name: string): Promise<void>;
+    public abstract get(): Promise<Project>;
+    public abstract start(project: Project): Promise<void>;
+    public abstract stop(project: Project): Promise<void>;
+    public abstract save(project: Project): Promise<void>;
+    public abstract search(params: SearchParams): Promise<Project[]>;
 
-    public async get(): Promise<Project> {
-        throw new Error("Project not found");
-    }
+    public async searchOne(params: SearchParams = {}): Promise<Project | null> {
+        const [project] = await this.search(params);
 
-    public async start(project: Project) {
-        throw new Error("Project not found");
-    }
-
-    public async stop(project: Project) {
-        throw new Error("Project not found");
-    }
-
-    public async save(project: Project) {
-        throw new Error("Dependency is missing");
-    }
-
-    public async search(params: Partial<SearchParams> = {}): Promise<Project[]> {
-        throw new Error("Dependency is missing");
+        return project || null;
     }
 }
 

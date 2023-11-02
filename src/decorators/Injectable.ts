@@ -1,7 +1,7 @@
 import {DI} from "../makes/DI";
 
 
-export const Injectable = (ddi?: DI) => {
+export const Injectable = () => {
     return <T extends {new (...rest: any[]): {}}>(Target: T) => {
         // @ts-ignore
         return class extends Target {
