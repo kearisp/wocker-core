@@ -8,6 +8,12 @@ namespace DockerServiceParams {
         restart?: "always";
         projectId?: string;
         tty?: boolean;
+        ulimits?: {
+            [key: string]: {
+                hard?: number;
+                soft?: number;
+            };
+        };
         links?: string[];
         env?: {
             [key: string]: string;

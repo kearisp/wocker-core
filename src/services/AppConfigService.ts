@@ -18,6 +18,7 @@ abstract class AppConfigService {
     public abstract getProjectTypes(): TypeMap;
     public abstract registerProjectType(name: string, title?: string): void;
     public abstract activatePlugin(name: string): Promise<void>;
+    public abstract deactivatePlugin(name: string): Promise<void>;
 }
 
 

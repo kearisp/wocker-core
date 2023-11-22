@@ -3,6 +3,7 @@ export * from "./decorators/Inject";
 export * from "./decorators/Injectable";
 export * from "./makes/Controller";
 export * from "./makes/DI";
+export * from "./makes/FSManager";
 export * from "./makes/Logger";
 export * from "./makes/Plugin";
 export * from "./models/Preset";

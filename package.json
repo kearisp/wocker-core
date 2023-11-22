@@ -1,11 +1,11 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.2",
+    "version": "1.0.3",
+    "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Wocker Core",
+    "license": "MIT",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
-    "author": "Kris Papercut <krispcut@gmail.com>",
-    "license": "MIT",
     "scripts": {
         "prepare": "npm run build",
         "watch": "tsc -w",
@@ -13,7 +13,7 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@kearisp/cli": "^1.0.2",
+        "@kearisp/cli": "^1.0.3",
         "fs": "^0.0.1-security",
         "path": "^0.12.7",
         "reflect-metadata": "^0.1.13"

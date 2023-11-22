@@ -24,8 +24,9 @@ class Project {
     public preset?: string;
     public imageName?: string;
     public dockerfile?: string;
-    public env: EnvConfig;
+    public scripts?: string[];
     public buildArgs?: EnvConfig;
+    public env: EnvConfig;
     public volumes?: string[];
     public ports?: string[];
 
@@ -39,6 +40,7 @@ class Project {
         this.preset = data.preset;
         this.dockerfile = data.dockerfile;
         this.imageName = data.imageName;
+        this.scripts = data.scripts;
         this.buildArgs = data.buildArgs;
         this.env = data.env || {};
         this.ports = data.ports;
