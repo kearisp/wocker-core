@@ -1,6 +1,6 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Wocker Core",
     "license": "MIT",
@@ -13,7 +13,7 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@kearisp/cli": "^1.0.3",
+        "@kearisp/cli": "^1.0.5",
         "fs": "^0.0.1-security",
         "path": "^0.12.7",
         "reflect-metadata": "^0.1.13"
