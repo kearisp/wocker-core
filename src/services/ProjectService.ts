@@ -1,3 +1,4 @@
+import {Container} from "dockerode";
 import {Project} from "../models/Project";
 
 
@@ -10,6 +11,7 @@ type SearchParams = Partial<{
 abstract class ProjectService {
     public abstract cdProject(name: string): Promise<void>;
     public abstract get(): Promise<Project>;
+    public abstract getContainer(): Promise<Container|null>;
     public abstract start(project: Project): Promise<void>;
     public abstract stop(project: Project): Promise<void>;
     public abstract save(project: Project): Promise<void>;
