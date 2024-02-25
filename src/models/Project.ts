@@ -27,8 +27,9 @@ class Project {
     public scripts?: string[];
     public buildArgs?: EnvConfig;
     public env: EnvConfig;
-    public volumes?: string[];
     public ports?: string[];
+    public volumes?: string[];
+    public metadata?: EnvConfig;
 
     static di?: DI;
 
@@ -45,6 +46,11 @@ class Project {
         this.env = data.env || {};
         this.ports = data.ports;
         this.volumes = data.volumes;
+        this.metadata = data.metadata;
+    }
+
+    public get containerName() {
+        return `${this.name}.workspace`;
     }
 
     public hasEnv(name: string): boolean {
@@ -75,6 +81,38 @@ class Project {
     public unsetEnv(name: string): void {
         if(name in this.env) {
             delete this.env[name];
+        }
+    }
+
+    public hasMeta(name: string): boolean {
+        return !!this.metadata && this.metadata.hasOwnProperty(name);
+    }
+
+    public getMeta<D = string|undefined>(name: string, defaultValue?: D): D {
+        const {
+            [name]: value = defaultValue
+        } = this.metadata || {};
+
+        return value as D;
+    }
+
+    public setMeta(name: string, value: string|boolean): void {
+        if(!this.metadata) {
+            this.metadata = {};
+        }
+
+        this.metadata[name] = typeof value === "boolean"
+            ? (value ? "true" : "false")
+            : value;
+    }
+
+    public unsetMeta(name: string): void {
+        if(this.metadata && name in this.metadata) {
+            delete this.metadata[name];
+        }
+
+        if(this.metadata && Object.keys(this.metadata).length === 0) {
+            delete this.metadata;
         }
     }
 

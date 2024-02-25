@@ -17,8 +17,8 @@ class Logger {
         _di.resolveService<LogService>(LogService).info(...data);
     }
 
-    public static warning(...data: any[]): void {
-        _di.resolveService<LogService>(LogService).warning(...data);
+    public static warn(...data: any[]): void {
+        _di.resolveService<LogService>(LogService).warn(...data);
     }
 
     public static error(...data: any[]): void {

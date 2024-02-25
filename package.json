@@ -1,11 +1,22 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "author": "Kris Papercut <krispcut@gmail.com>",
-    "description": "Wocker Core",
+    "description": "Core of wocker",
     "license": "MIT",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
+    "keywords": [
+        "wocker"
+    ],
+    "homepage": "https://kearisp.github.io/wocker",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kearisp/wocker-core.git"
+    },
+    "bugs": {
+        "url": "https://github.com/kearisp/wocker-core/issues"
+    },
     "scripts": {
         "prepare": "npm run build",
         "watch": "tsc -w",
@@ -13,14 +24,14 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@kearisp/cli": "^1.0.3",
+        "@kearisp/cli": "^1.0.5",
         "fs": "^0.0.1-security",
         "path": "^0.12.7",
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "^0.2.1"
     },
     "devDependencies": {
         "@types/dockerode": "^3.3.23",
-        "@types/node": "^20.8.9",
-        "typescript": "^5.2.2"
+        "@types/node": "^20.11.7",
+        "typescript": "^5.3.3"
     }
 }
