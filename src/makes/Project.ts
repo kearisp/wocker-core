@@ -1,14 +1,10 @@
-import "reflect-metadata";
-
-import {DI} from "../makes/DI";
-import {AppConfigService} from "../services/AppConfigService";
-import {ProjectService} from "../services/ProjectService";
+import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
-import {EnvConfig} from "../types/EnvConfig";
+import {ProjectService} from "../services";
+import {DI} from "./DI";
 
 
-let appConfig: AppConfigService|undefined;
-let projectService: ProjectService|undefined;
+let projectService: ProjectService | undefined;
 
 type SearchOptions = {
     id: string;
@@ -16,7 +12,7 @@ type SearchOptions = {
     path: string;
 };
 
-class Project {
+export class Project {
     public id: string;
     public name: string
     public type: string;
@@ -26,27 +22,27 @@ class Project {
     public dockerfile?: string;
     public scripts?: string[];
     public buildArgs?: EnvConfig;
-    public env: EnvConfig;
+    public env?: EnvConfig;
     public ports?: string[];
     public volumes?: string[];
     public metadata?: EnvConfig;
 
-    static di?: DI;
-
-    public constructor(data: any) {
-        this.id = data.id;
+    protected constructor(data: PickProperties<Project>) {
+        this.id = data.id
         this.name = data.name;
         this.type = data.type;
         this.path = data.path;
         this.preset = data.preset;
-        this.dockerfile = data.dockerfile;
         this.imageName = data.imageName;
+        this.dockerfile = data.dockerfile;
         this.scripts = data.scripts;
         this.buildArgs = data.buildArgs;
-        this.env = data.env || {};
+        this.env = data.env;
         this.ports = data.ports;
         this.volumes = data.volumes;
         this.metadata = data.metadata;
+
+        Object.assign(this, data);
     }
 
     public get containerName() {
@@ -64,23 +60,32 @@ class Project {
     public getEnv(name: string, defaultValue?: string): string|undefined {
         const {
             [name]: value = defaultValue
-        } = this.env;
+        } = this.env || {};
 
         return value;
     }
 
     public setEnv(name: string, value: string|boolean): void {
-        this.env = {
-            ...this.env,
-            [name]: typeof value === "boolean"
-                ? (value ? "true" : "false")
-                : value
-        };
+        if(!this.env) {
+            this.env = {};
+        }
+
+        this.env[name] = typeof value === "boolean"
+            ? (value ? "true" : "false")
+            : value;
     }
 
-    public unsetEnv(name: string): void {
+    public unsetEnv(name: string) {
+        if(!this.env) {
+            return;
+        }
+
         if(name in this.env) {
             delete this.env[name];
+        }
+
+        if(Object.keys(this.env).length === 0) {
+            delete this.env;
         }
     }
 
@@ -107,13 +112,29 @@ class Project {
     }
 
     public unsetMeta(name: string): void {
-        if(this.metadata && name in this.metadata) {
+        if(!this.metadata) {
+            return;
+        }
+
+        if(name in this.metadata) {
             delete this.metadata[name];
         }
 
-        if(this.metadata && Object.keys(this.metadata).length === 0) {
+        if(Object.keys(this.metadata).length === 0) {
             delete this.metadata;
         }
+    }
+
+    public getVolumeBySource(source: string): string|undefined {
+        return (this.volumes || []).find((volume: string) => {
+            return volumeParse(volume).source === source;
+        });
+    }
+
+    public getVolumeByDestination(destination: string): string|undefined {
+        return (this.volumes || []).find((volume: string) => {
+            return volumeParse(volume).destination === destination;
+        });
     }
 
     public volumeMount(...volumes: string[]) {
@@ -135,19 +156,7 @@ class Project {
         this.volumeMount(...restVolumes);
     }
 
-    public getVolumeBySource(source: string): string|undefined {
-        return (this.volumes || []).find((volume: string) => {
-            return volumeParse(volume).source === source;
-        });
-    }
-
-    public getVolumeByDestination(destination: string): string|undefined {
-        return (this.volumes || []).find((volume: string) => {
-            return volumeParse(volume).destination === destination;
-        });
-    }
-
-    public volumeUnmount(...volumes: string[]) {
+    public volumeUnmount(...volumes: string[]): void {
         this.volumes = (this.volumes || []).filter((mounted) => {
             return !volumes.includes(mounted);
         });
@@ -161,16 +170,15 @@ class Project {
         await projectService.save(this);
     }
 
-    static install(di: DI): void {
-        appConfig = di.resolveService<AppConfigService>(AppConfigService);
+    public static install(di: DI): void {
         projectService = di.resolveService<ProjectService>(ProjectService);
     }
 
-    static fromObject(data: any) {
+    public static fromObject(data: any) {
         return new Project(data);
     }
 
-    static async search(params: Partial<SearchOptions> = {}): Promise<Project[]> {
+    public static async search(params: Partial<SearchOptions> = {}): Promise<Project[]> {
         if(!projectService) {
             throw new Error("Dependency is missing");
         }
@@ -178,15 +186,12 @@ class Project {
         return projectService.search(params);
     }
 
-    static async searchOne(params: Partial<SearchOptions>): Promise<Project|null> {
+    public static async searchOne(params: Partial<SearchOptions>): Promise<Project|null> {
         const [project] = await Project.search(params);
 
         return project || null;
     }
 }
 
-
-export {Project};
 export const PROJECT_TYPE_DOCKERFILE = "dockerfile";
 export const PROJECT_TYPE_IMAGE = "image";
-

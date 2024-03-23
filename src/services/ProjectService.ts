@@ -1,5 +1,7 @@
 import {Container} from "dockerode";
-import {Project} from "../models/Project";
+
+import {Injectable} from "../decorators";
+import {Project} from "../makes/Project";
 
 
 type SearchParams = Partial<{
@@ -8,7 +10,8 @@ type SearchParams = Partial<{
     path: string;
 }>;
 
-abstract class ProjectService {
+@Injectable("PROJECT_SERVICE")
+export abstract class ProjectService {
     public abstract cdProject(name: string): Promise<void>;
     public abstract get(): Promise<Project>;
     public abstract getContainer(): Promise<Container|null>;
@@ -25,7 +28,4 @@ abstract class ProjectService {
 }
 
 
-export {
-    ProjectService,
-    SearchParams as ProjectServiceSearchParams
-};
+export {SearchParams as ProjectServiceSearchParams};

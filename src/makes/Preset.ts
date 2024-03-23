@@ -1,9 +1,9 @@
-import {DI} from "../makes/DI";
+import {DI} from "./DI";
 import {
     PresetService,
     PresetServiceSearchOptions as SearchOptions
 } from "../services/PresetService";
-import {EnvConfig} from "../types/EnvConfig";
+import {EnvConfig} from "../types";
 
 
 type TextOption = {

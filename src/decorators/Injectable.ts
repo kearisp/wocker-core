@@ -1,19 +1,15 @@
-import {DI} from "../makes/DI";
+import {
+    INJECTABLE_WATERMARK,
+    INJECT_TOKEN_METADATA
+} from "../env";
 
 
-export const Injectable = () => {
-    return <T extends {new (...rest: any[]): {}}>(Target: T) => {
-        // @ts-ignore
-        return class extends Target {
-            public constructor(di: DI) {
-                const types = Reflect.getMetadata("design:paramtypes", Target);
+export const Injectable = (token?: string): ClassDecorator => {
+    return (target: object): void => {
+        Reflect.defineMetadata(INJECTABLE_WATERMARK, true, target);
 
-                const params: any[] = types.map((type: any) => {
-                    return (di).resolveService(type);
-                });
-
-                super(...params);
-            }
+        if(token) {
+            Reflect.defineMetadata(INJECT_TOKEN_METADATA, token, target);
         }
     };
 };

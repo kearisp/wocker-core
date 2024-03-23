@@ -1,10 +1,12 @@
-import {AppConfig} from "../types/AppConfig";
+import {AppConfig} from "../types";
+import {Injectable} from "../decorators";
 
 
 type TypeMap = {
     [type: string]: string;
 };
 
+@Injectable("APP_CONFIG")
 abstract class AppConfigService {
     public abstract dataPath(...args: string[]): string;
     public abstract pluginsPath(...args: string[]): string;

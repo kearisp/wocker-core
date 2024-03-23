@@ -24,7 +24,7 @@ class DI {
         return res;
     }
 
-    public registerService(key: any, service: any) {
+    public registerService(key: any, service: any): void {
         this.services.set(key, service);
     }
 }
