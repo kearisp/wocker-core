@@ -1,4 +1,6 @@
-import {Container} from "dockerode";
+import {Container, ImageInfo} from "dockerode";
+import {Injectable} from "../decorators";
+import {Duplex} from "node:stream";
 
 
 namespace DockerServiceParams {
@@ -25,6 +27,14 @@ namespace DockerServiceParams {
         cmd?: string[];
     };
 
+    export type ImageList = {
+        tag?: string;
+        reference?: string;
+        labels?: {
+            [key: string]: string;
+        };
+    };
+
     export type BuildImage = {
         tag: string;
         buildArgs?: {
@@ -39,15 +49,19 @@ namespace DockerServiceParams {
 }
 
 
+@Injectable("DOCKER_SERVICE")
 abstract class DockerService {
     public abstract createContainer(params: DockerServiceParams.CreateContainer): Promise<Container>;
     public abstract getContainer(name: string): Promise<Container|null>;
     public abstract removeContainer(name: string): Promise<void>;
     public abstract buildImage(params: DockerServiceParams.BuildImage): Promise<any>;
     public abstract imageExists(tag: string): Promise<boolean>;
+    public abstract imageLs(options?: DockerServiceParams.ImageList): Promise<ImageInfo[]>;
     public abstract imageRm(tag: string): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
+    public abstract attach(name: string): Promise<void>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<void>;
+    public abstract exec(name: string, command?: string[], tty?: boolean): Promise<Duplex>;
 }
 
 export {

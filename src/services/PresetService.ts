@@ -1,5 +1,4 @@
-import {Preset} from "../models/Preset";
-import {EnvConfig} from "../types/EnvConfig";
+import {EnvConfig} from "../types";
 
 
 type SearchOptions = Partial<{
@@ -7,12 +6,12 @@ type SearchOptions = Partial<{
 }>;
 
 abstract class PresetService {
-    public abstract getImageName(preset: Preset, buildArgs?: EnvConfig): string;
-    public abstract save(preset: Preset): Promise<void>;
-    public abstract get(name: string): Promise<Preset|null>;
-    public abstract search(options?: SearchOptions): Promise<Preset[]>;
+    public abstract getImageName(preset: any, buildArgs?: EnvConfig): string;
+    public abstract save(preset: any): Promise<void>;
+    public abstract get(name: string): Promise<any|null>;
+    public abstract search(options?: SearchOptions): Promise<any[]>;
 
-    public async searchOne(options?: SearchOptions): Promise<Preset|null|undefined> {
+    public async searchOne(options?: SearchOptions): Promise<any|null|undefined> {
         const [preset] = await this.search(options);
 
         return preset || null;
@@ -24,3 +23,4 @@ export {
     PresetService,
     SearchOptions as PresetServiceSearchOptions
 };
+
