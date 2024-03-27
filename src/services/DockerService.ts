@@ -7,7 +7,9 @@ namespace DockerServiceParams {
     export type CreateContainer = {
         name: string;
         image: string;
+        user?: string;
         restart?: "always";
+        entrypoint?: string | string[];
         projectId?: string;
         tty?: boolean;
         ulimits?: {
