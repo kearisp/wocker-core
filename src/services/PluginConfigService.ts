@@ -2,8 +2,13 @@ import * as Path from "path";
 import {
     mkdirSync,
     existsSync,
+    createWriteStream,
+    createReadStream,
+    readdir,
+    rm,
     WriteFileOptions,
-    MakeDirectoryOptions
+    MakeDirectoryOptions,
+    RmOptions
 } from "fs";
 
 import {FS} from "../makes";
@@ -46,5 +51,47 @@ export class PluginConfigService {
 
     public async readJSON(path: string) {
         return FS.readJSON(this.dataPath(path));
+    }
+
+    public exists(path: string) {
+        return existsSync(this.dataPath(path));
+    }
+
+    public async rm(path: string, options: RmOptions = {}) {
+        const fullPath = this.dataPath(path);
+
+        return new Promise((resolve, reject) => {
+            rm(fullPath, options, (err) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(undefined);
+            });
+        });
+    }
+
+    public async readdir(path: string): Promise<string[]> {
+        const fullPath = this.dataPath(path);
+
+        return new Promise((resolve, reject) => {
+            readdir(fullPath, (err, files) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(files);
+            });
+        });
+    }
+
+    public createWriteSteam(path: string) {
+        return createWriteStream(this.dataPath(path));
+    }
+
+    public createReadStream(path: string) {
+        return createReadStream(this.dataPath(path));
     }
 }
