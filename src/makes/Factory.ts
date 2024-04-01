@@ -1,4 +1,5 @@
 import {Cli} from "@kearisp/cli";
+import {ApplicationContext} from "./ApplicationContext";
 
 import {Container} from "./Container";
 import {Module} from "./Module";
@@ -111,12 +112,13 @@ export class Factory {
                     }
 
                     const commandName = Reflect.getMetadata(COMMAND_METADATA, descriptor.value);
-                    const completions = (Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || []).map((completion: any) => {
-                        return {
-                            ...completion,
-                            method: name
-                        };
-                    });
+                    const completions = (Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [])
+                        .map((completion: any) => {
+                            return {
+                                ...completion,
+                                method: name
+                            };
+                        });
 
                     if(completions.length > 0) {
                         controllerCompletions.push(...completions);
@@ -229,11 +231,18 @@ export class Factory {
         return this.cli.run(args);
     }
 
+    public getContainer() {
+        return this.container;
+    }
+
     public static async create(module: any) {
         const factory = new this();
 
         await factory.scan(module);
 
-        return factory;
+        return new ApplicationContext(
+            module,
+            factory.getContainer()
+        );
     }
 }

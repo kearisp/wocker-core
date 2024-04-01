@@ -1,18 +1,8 @@
 import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
-import {ProjectService} from "../services";
-import {DI} from "./DI";
 
 
-let projectService: ProjectService | undefined;
-
-type SearchOptions = {
-    id: string;
-    name: string;
-    path: string;
-};
-
-export class Project {
+export abstract class Project {
     public id: string;
     public name: string
     public type: string;
@@ -162,35 +152,7 @@ export class Project {
         });
     }
 
-    public async save() {
-        if(!projectService) {
-            throw new Error("Dependency is missing");
-        }
-
-        await projectService.save(this);
-    }
-
-    public static install(di: DI): void {
-        projectService = di.resolveService<ProjectService>(ProjectService);
-    }
-
-    public static fromObject(data: any) {
-        return new Project(data);
-    }
-
-    public static async search(params: Partial<SearchOptions> = {}): Promise<Project[]> {
-        if(!projectService) {
-            throw new Error("Dependency is missing");
-        }
-
-        return projectService.search(params);
-    }
-
-    public static async searchOne(params: Partial<SearchOptions>): Promise<Project|null> {
-        const [project] = await Project.search(params);
-
-        return project || null;
-    }
+    public abstract save(): Promise<void>;
 }
 
 export const PROJECT_TYPE_DOCKERFILE = "dockerfile";
