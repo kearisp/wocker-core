@@ -3,7 +3,7 @@ import {PLUGIN_NAME_METADATA} from "../env";
 
 
 type PluginConfig = ModuleConfig & {
-    [PLUGIN_NAME_METADATA]: string
+    [PLUGIN_NAME_METADATA]: string;
 };
 
 export const Plugin = (config: PluginConfig): ClassDecorator => {
@@ -14,7 +14,7 @@ export const Plugin = (config: PluginConfig): ClassDecorator => {
 
     return (target): void => {
         Reflect.defineMetadata("isPlugin", true, target);
-        Reflect.defineMetadata(PLUGIN_NAME_METADATA, true, target);
+        Reflect.defineMetadata(PLUGIN_NAME_METADATA, name, target);
 
         Module(rest)(target);
     };
