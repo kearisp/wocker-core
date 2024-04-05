@@ -5,3 +5,4 @@ export * from "./Inject";
 export * from "./Injectable";
 export * from "./Module";
 export * from "./Option";
+export * from "./Plugin";

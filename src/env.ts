@@ -9,6 +9,7 @@ export const PARAMTYPES_METADATA = "design:paramtypes";
 export const SELF_DECLARED_DEPS_METADATA = "self:paramtypes";
 export const INJECT_TOKEN_METADATA = "INJECT_TOKEN";
 export const PLUGIN_DIR_KEY = "PLUGIN_DIR";
+export const PLUGIN_NAME_METADATA = "name";
 export enum MODULE_METADATA {
     NAME = "name",
     IMPORTS = "imports",

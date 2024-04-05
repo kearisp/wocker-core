@@ -1,6 +1,6 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of wocker",
     "license": "MIT",
@@ -32,6 +32,6 @@
     "devDependencies": {
         "@types/dockerode": "^3.3.23",
         "@types/node": "^20.11.7",
-        "typescript": "^5.4.3"
+        "typescript": "^5.4.4"
     }
 }
