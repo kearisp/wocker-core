@@ -4,7 +4,6 @@ export * from "./DI";
 export * from "./FS";
 export * from "./FSManager";
 export * from "./Logger";
-export * from "./Plugin";
 export * from "./Preset";
 export * from "./Project";
 export * from "./Factory";
