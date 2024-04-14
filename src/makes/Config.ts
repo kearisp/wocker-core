@@ -20,11 +20,19 @@ export abstract class Config {
     }
 
     public addPlugin(plugin: string): void {
+        if(!this.plugins) {
+            this.plugins = [];
+        }
+
+        if(this.plugins.includes(plugin)) {
+            return;
+        }
+
         this.plugins.push(plugin);
     }
 
-    public removePlugin(plugin: string): void {
-        this.plugins = this.plugins.filter((plugin) => plugin !== plugin);
+    public removePlugin(removePlugin: string): void {
+        this.plugins = this.plugins.filter((plugin) => plugin !== removePlugin);
     }
 
     public setProject(id: string, path: string): void {

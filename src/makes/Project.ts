@@ -2,6 +2,8 @@ import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 
 
+type ProjectProperties = Omit<PickProperties<Project>, "containerName">;
+
 export abstract class Project {
     public id: string;
     public name: string
@@ -17,7 +19,7 @@ export abstract class Project {
     public volumes?: string[];
     public metadata?: EnvConfig;
 
-    protected constructor(data: PickProperties<Project>) {
+    protected constructor(data: ProjectProperties) {
         this.id = data.id
         this.name = data.name;
         this.type = data.type;
@@ -153,6 +155,24 @@ export abstract class Project {
     }
 
     public abstract save(): Promise<void>;
+
+    public toJSON(): ProjectProperties {
+        return {
+            id: this.id,
+            name: this.name,
+            type: this.type,
+            path: this.path,
+            preset: this.preset,
+            imageName: this.imageName,
+            dockerfile: this.dockerfile,
+            scripts: this.scripts,
+            buildArgs: this.buildArgs,
+            env: this.env,
+            ports: this.ports,
+            volumes: this.volumes,
+            metadata: this.metadata
+        };
+    }
 }
 
 export const PROJECT_TYPE_DOCKERFILE = "dockerfile";

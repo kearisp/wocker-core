@@ -10,21 +10,25 @@ import fs, {
     MakeDirectoryOptions,
     RmOptions
 } from "fs";
-import * as Path from "path";
+
+import {FileSystem} from "./FileSystem";
 
 
-class FSManager {
-    public constructor(
-        protected source: string,
-        protected destination: string
-    ) {}
+export class FSManager {
+    public readonly source: FileSystem;
+    public readonly destination: FileSystem;
+
+    public constructor(source: string, destination: string) {
+        this.source = new FileSystem(source);
+        this.destination = new FileSystem(destination);
+    }
 
     public path(...parts: string[]): string {
-        return Path.join(this.destination, ...parts);
+        return this.destination.path(...parts);
     }
 
     public async mkdir(path: string, options: MakeDirectoryOptions = {}) {
-        const fullPath = Path.join(this.destination, path);
+        const fullPath = this.path(path);
 
         return new Promise((resolve, reject) => {
             mkdir(fullPath, options, (err) => {
@@ -39,7 +43,7 @@ class FSManager {
     }
 
     public async readdir(path: string): Promise<string[]> {
-        const filePath = Path.join(this.destination, path);
+        const filePath = this.path(path);
 
         return new Promise((resolve, reject) => {
             readdir(filePath, (err, files) => {
@@ -54,20 +58,20 @@ class FSManager {
     }
 
     public exists(path: string) {
-        const fullPath = Path.join(this.destination, path);
+        const fullPath = this.path(path);
 
         return existsSync(fullPath);
     }
 
     public copy(path: string): Promise<void> {
-        const destination = Path.join(this.destination, path);
+        const destination = this.path(path);
 
         if(existsSync(destination)) {
             return Promise.resolve();
         }
 
         return new Promise((resolve, reject) => {
-            copyFile(Path.join(this.source, path), destination, (err) => {
+            copyFile(this.source.path(path), destination, (err) => {
                 if(err) {
                     reject(err);
                     return;
@@ -79,7 +83,7 @@ class FSManager {
     }
 
     public async readJSON(path: string) {
-        const filePath = Path.join(this.destination, ...path);
+        const filePath = this.path(path);
 
         const res: Buffer = await new Promise((resolve, reject) => {
             readFile(filePath, (err, data) => {
@@ -97,7 +101,7 @@ class FSManager {
 
     public async writeJSON(path: string, data: any): Promise<void> {
         const json = JSON.stringify(data, null, 4);
-        const filePath = Path.join(this.destination, path);
+        const filePath = this.path(path);
 
         return new Promise((resolve, reject) => {
             writeFile(filePath, json, (err) => {
@@ -112,7 +116,7 @@ class FSManager {
     }
 
     public async rm(path: string, options: RmOptions = {}) {
-        const filePath = Path.join(this.destination, path);
+        const filePath = this.path(path);
 
         return new Promise((resolve, reject) => {
             fs.rm(filePath, options, (err) => {
@@ -127,17 +131,14 @@ class FSManager {
     }
 
     public createWriteStream(...parts: string[]) {
-        const filePath = Path.join(this.destination, ...parts);
+        const filePath = this.path(...parts);
 
         return createWriteStream(filePath);
     }
 
     public createReadStream(path: string, options?: Parameters<typeof createReadStream>[1]) {
-        const filePath = Path.join(this.destination, path);
+        const filePath = this.path(path);
 
         return createReadStream(filePath, options);
     }
 }
-
-
-export {FSManager};

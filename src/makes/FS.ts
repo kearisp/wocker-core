@@ -1,9 +1,5 @@
 import {Abortable} from "node:events";
-import {
-    mkdir,
-    readFile,
-    writeFile,
-    rm,
+import fs, {
     PathLike,
     PathOrFileDescriptor,
     WriteFileOptions,
@@ -18,10 +14,10 @@ type ReadFileOptions = Abortable & {
     flag?: string;
 };
 
-class FS {
-    static async mkdir(path: PathLike, options?: MakeDirectoryOptions) {
+export class FS {
+    public static async mkdir(path: PathLike, options?: MakeDirectoryOptions) {
         return new Promise((resolve, reject) => {
-            mkdir(path, options, (err) => {
+            fs.mkdir(path, options, (err) => {
                 if(err) {
                     reject(err);
                     return;
@@ -32,9 +28,9 @@ class FS {
         });
     }
 
-    static async readFile(filePath: PathOrFileDescriptor, options?: ReadFileOptions): Promise<string | Buffer> {
+    public static async readFile(filePath: PathOrFileDescriptor, options?: ReadFileOptions): Promise<string | Buffer> {
         return new Promise((resolve, reject) => {
-            readFile(filePath, options, (err, res) => {
+            fs.readFile(filePath, options, (err, res) => {
                 if(err) {
                     reject(err);
                     return;
@@ -45,7 +41,7 @@ class FS {
         });
     }
 
-    static async writeFile(filePath: PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions) {
+    public static async writeFile(filePath: PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions) {
         return new Promise((resolve, reject) => {
             const callback = (err: NodeJS.ErrnoException | null) => {
                 if(err) {
@@ -58,19 +54,19 @@ class FS {
             };
 
             if(options) {
-                writeFile(filePath, data, options, callback);
+                fs.writeFile(filePath, data, options, callback);
             }
             else {
-                writeFile(filePath, data, callback);
+                fs.writeFile(filePath, data, callback);
             }
         });
     }
 
-    static async readJSON(...paths: string[]): Promise<any> {
+    public static async readJSON(...paths: string[]): Promise<any> {
         const res: Buffer = await new Promise((resolve, reject) => {
             const filePath = Path.join(...paths);
 
-            readFile(filePath, (err, data) => {
+            fs.readFile(filePath, (err, data) => {
                 if(err) {
                     reject(err);
 
@@ -84,7 +80,7 @@ class FS {
         return JSON.parse(res.toString());
     }
 
-    static async writeJSON(filePath: PathOrFileDescriptor, data: any, options?: WriteFileOptions): Promise<void> {
+    public static async writeJSON(filePath: PathOrFileDescriptor, data: any, options?: WriteFileOptions): Promise<void> {
         const json = JSON.stringify(data, null, 4);
 
         return new Promise((resolve, reject) => {
@@ -99,15 +95,28 @@ class FS {
             };
 
             if(options) {
-                writeFile(filePath, json, options, callback);
+                fs.writeFile(filePath, json, options, callback);
             }
             else {
-                writeFile(filePath, json, callback);
+                fs.writeFile(filePath, json, callback);
             }
         });
     }
 
-    static async rm(path: PathLike, options?: RmOptions): Promise<void> {
+    public static async readdir(path: PathLike): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            fs.readdir(path, (err, files) => {
+                if(!err) {
+                    resolve(files);
+                }
+                else {
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    public static async rm(path: PathLike, options?: RmOptions): Promise<void> {
         return new Promise((resolve, reject) => {
             const callback = (err: NodeJS.ErrnoException | null) => {
                 if(err) {
@@ -119,14 +128,11 @@ class FS {
             };
 
             if(options) {
-                rm(path, options, callback);
+                fs.rm(path, options, callback);
             }
             else {
-                rm(path, callback);
+                fs.rm(path, callback);
             }
         });
     }
 }
-
-
-export {FS};

@@ -23,8 +23,11 @@ export const Module = (config: ModuleConfig): ClassDecorator => {
     } = config;
 
     return (target) => {
+        if(name) {
+            Reflect.defineMetadata(PLUGIN_NAME_METADATA, name, target);
+        }
+
         Reflect.defineMetadata("isModule", true, target);
-        Reflect.defineMetadata(PLUGIN_NAME_METADATA, name, target);
         Reflect.defineMetadata(MODULE_METADATA.IMPORTS, imports, target);
         Reflect.defineMetadata(MODULE_METADATA.CONTROLLERS, controllers, target);
         Reflect.defineMetadata(MODULE_METADATA.PROVIDERS, providers, target);
