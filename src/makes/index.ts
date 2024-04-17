@@ -1,6 +1,5 @@
 export * from "./Config";
 export * from "./Container";
-export * from "./DI";
 export * from "./FileSystem";
 export * from "./FS";
 export * from "./FSManager";

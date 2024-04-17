@@ -1,11 +1,3 @@
-import {DI} from "./DI";
-import {
-    PresetService,
-    PresetServiceSearchOptions as SearchOptions
-} from "../services/PresetService";
-import {EnvConfig} from "../types";
-
-
 type TextOption = {
     type: "string" | "number" | "int";
     message?: string;
@@ -27,9 +19,8 @@ type SelectOption = {
 
 type AnyOption = TextOption | ConfirmOption | SelectOption;
 
-let _di: DI;
 
-class Preset {
+export abstract class Preset {
     public id: string;
     public name: string;
     public version: string;
@@ -43,7 +34,7 @@ class Preset {
     public volumes?: string[];
     public volumeOptions?: string[];
 
-    public constructor(data: any) {
+    protected constructor(data: any) {
         this.id = data.id;
         this.name = data.name;
         this.version = data.version;
@@ -54,26 +45,5 @@ class Preset {
         this.volumeOptions = data.volumeOptions;
     }
 
-    public async save(): Promise<void> {
-        return _di.resolveService<PresetService>(PresetService).save(this);
-    }
-
-    public getImageName(buildArgs?: EnvConfig): string {
-        return _di.resolveService<PresetService>(PresetService).getImageName(this, buildArgs);
-    }
-
-    public static install(di: DI) {
-        _di = di;
-    }
-
-    public static search(options: SearchOptions) {
-        return _di.resolveService<PresetService>(PresetService).search(options);
-    }
-
-    public static searchOne(options: SearchOptions) {
-        return _di.resolveService<PresetService>(PresetService).searchOne(options);
-    }
+    public abstract save(): Promise<void>;
 }
-
-
-export {Preset};

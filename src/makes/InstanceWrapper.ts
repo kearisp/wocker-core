@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import {Module} from "./Module";
 import {
     PARAMTYPES_METADATA,
@@ -8,16 +10,11 @@ import {
 export class InstanceWrapper {
     public constructor(
         private readonly module: Module,
-        private readonly token: any,
         private readonly provider: any,
         private _instance?: any
     ) {}
 
     get instance() {
-        if(!this.provider) {
-            return null;
-        }
-
         if(!this._instance) {
             const types = [
                 ...Reflect.getMetadata(PARAMTYPES_METADATA, this.provider) || []

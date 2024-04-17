@@ -1,5 +1,4 @@
-import {DI} from "./DI";
-import {LogService} from "../services/LogService";
+import {LogService} from "../services";
 
 
 let loggerService: LogService;

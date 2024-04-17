@@ -12,17 +12,17 @@ export class Container {
         return this.modules.get(type);
     }
 
-    public addModule(type: any, module: Module) {
+    public addModule(type: any, module: Module): void {
         this.modules.set(type, module);
     }
 
-    public addController(moduleType: any, type: any) {
-        const module = this.getModule(moduleType);
-
-        if(!module) {
-            return;
-        }
-
-        module.addController(type);
-    }
+    // public addController(moduleType: any, type: any): void {
+    //     const module = this.getModule(moduleType);
+    //
+    //     if(!module) {
+    //         return;
+    //     }
+    //
+    //     module.addController(type);
+    // }
 }

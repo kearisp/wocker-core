@@ -1,7 +1,9 @@
 import {EnvConfig, PickProperties} from "../types";
 
 
-export type ConfigProperties = PickProperties<Config>;
+export type ConfigProperties = Omit<PickProperties<Config>, "logLevel"> & {
+    logLevel?: Config["logLevel"];
+};
 
 export abstract class Config {
     public debug?: boolean;
