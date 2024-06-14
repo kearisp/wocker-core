@@ -2,7 +2,7 @@ import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 
 
-type ProjectProperties = Omit<PickProperties<Project>, "containerName">;
+export type ProjectProperties = Omit<PickProperties<Project>, "containerName">;
 
 export abstract class Project {
     public id: string;

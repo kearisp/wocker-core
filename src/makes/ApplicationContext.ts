@@ -6,12 +6,18 @@ import {Container} from "./Container";
 
 export class ApplicationContext {
     public constructor(
-        protected module: any,
-        protected container: Container
+        protected readonly module: any,
+        protected readonly container: Container
     ) {}
 
     public get<TInput = any, TResult = TInput>(typeOrToken: Type<TInput> | Function | string | symbol): TResult {
-        const res = this.container.getModule(this.module)?.get(typeOrToken);
+        const module = this.container.getModule(this.module);
+
+        if(!module) {
+            throw new Error("Module not found");
+        }
+
+        const res = module.get(typeOrToken);
 
         if(!res) {
             throw new Error("Instance not found");

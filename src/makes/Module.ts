@@ -1,5 +1,4 @@
 import {Provider} from "../types/Provider";
-import {Factory} from "./Factory";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {INJECT_TOKEN_METADATA} from "../env";
 
@@ -44,14 +43,21 @@ export class Module {
 
     public addProvider(provider: Provider, instance?: any): void {
         if("provide" in provider && "useValue" in provider) {
-            const wrapper = new InstanceWrapper(this, provider.provide, provider.provide, provider.useValue);
+            const wrapper = new InstanceWrapper(this, provider.provide, provider.useValue);
+
+            this.providers.set(provider.provide, wrapper);
+            return;
+        }
+
+        if("provide" in provider && "useClass" in provider) {
+            const wrapper = new InstanceWrapper(this, provider.useClass);
 
             this.providers.set(provider.provide, wrapper);
             return;
         }
 
         const token = Reflect.getMetadata("INJECT_TOKEN", provider) || provider;
-        const wrapper = new InstanceWrapper(this, token, provider, instance);
+        const wrapper = new InstanceWrapper(this, provider, instance);
 
         this.providers.set(token, wrapper);
     }
@@ -61,7 +67,7 @@ export class Module {
     }
 
     public addController(type: any): void {
-        this.controllers.set(type, new InstanceWrapper(this, type, type));
+        this.controllers.set(type, new InstanceWrapper(this, type));
 
         for(const name of Object.getOwnPropertyNames(type.prototype)) {
             const descriptor = Object.getOwnPropertyDescriptor(type.prototype, name);

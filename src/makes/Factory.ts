@@ -1,4 +1,4 @@
-import {Cli} from "@kearisp/cli";
+import {Cli, CommandInput, Logger} from "@kearisp/cli";
 import {ApplicationContext} from "./ApplicationContext";
 
 import {Container} from "./Container";
@@ -22,7 +22,7 @@ export class Factory {
         this.cli = new Cli();
     }
 
-    public async scan(moduleType: any) {
+    public async scan(moduleType: any): Promise<void> {
         if(this.container.modules.has(moduleType)) {
             return;
         }
@@ -60,12 +60,16 @@ export class Factory {
         }
     }
 
-    public async scanModuleDependencies(module: Module) {
+    public async scanModuleDependencies(module: Module): Promise<void> {
         const providers: Provider[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
+
+        // Logger.info(module.type.name, providers);
 
         module.addProvider(Cli, this.cli);
 
-        providers.forEach((providerType) => {
+        providers.forEach((providerType: Provider): void => {
+            // Logger.info(" ->", (providerType as any).name);
+
             module.addProvider(providerType);
         });
 
@@ -136,6 +140,10 @@ export class Factory {
 
                         const command = this.cli.command(commandName);
 
+                        command.help({
+                            description: "Des"
+                        });
+
                         for(const argMeta of argsMeta) {
                             if(argMeta.type === "option") {
                                 command.option(argMeta.name, argMeta.params);
@@ -164,12 +172,16 @@ export class Factory {
                     } = controllerCommand;
 
                     this.cli.command(commandName)
-                        .action((options, ...params) => {
+                        .action((input: CommandInput) => {
                             const args: any[] = [];
+                            const params = Object.values(input.arguments());
 
                             argsMeta.forEach((argMeta: any) => {
-                                if(argMeta.type === "option") {
-                                    args[argMeta.index] = options[argMeta.name];
+                                if(argMeta.type === "param") {
+                                    args[argMeta.index] = input.argument(argMeta.name);
+                                }
+                                else if(argMeta.type === "option") {
+                                    args[argMeta.index] = input.option(argMeta.name);
                                 }
                             });
 
@@ -202,16 +214,6 @@ export class Factory {
                     }
                 }
             }
-        }
-    }
-
-    public log(...args: any[]) {
-        for(const [, module] of this.container.modules) {
-            module.providers.forEach((provider) => {
-                if(provider.instance.info) {
-                    provider.instance.info(...args);
-                }
-            });
         }
     }
 
