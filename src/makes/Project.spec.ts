@@ -43,6 +43,56 @@ describe("Project", () => {
         project.unsetEnv(VALUE_KEY);
     });
 
+    it("Domains", () => {
+        const project = new TestProject({
+            id: "1",
+            type: "test",
+            name: "Test",
+            path: "/test/path"
+        });
+
+        const domain1 = "test.com";
+        const domain2 = "test.net";
+
+        expect(project.domains).toEqual([]);
+
+        project.addDomain(domain1);
+
+        expect(project.domains).toEqual([domain1]);
+
+        project.addDomain(domain2);
+
+        expect(project.domains).toEqual([domain1, domain2]);
+
+        project.removeDomain(domain1);
+
+        expect(project.domains).toEqual([domain2]);
+
+        project.clearDomains();
+
+        expect(project.domains).toEqual([]);
+    });
+
+    it("Ports", () => {
+        const project = new TestProject({
+            id: "1",
+            name: "test",
+            type: "dockerfile",
+            path: "/path/to/test/project"
+        });
+
+        const hostPort = 8080;
+        const containerPort = 80;
+
+        project.linkPort(hostPort, containerPort);
+
+        expect(project.ports).toEqual([`${hostPort}:${containerPort}`]);
+
+        project.unlinkPort(hostPort, containerPort);
+
+        expect(project.ports).toBeUndefined();
+    });
+
     it("Meta", () => {
         const project = new TestProject({
             id: "123",

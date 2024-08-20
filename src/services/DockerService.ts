@@ -61,7 +61,7 @@ abstract class DockerService {
     public abstract imageLs(options?: DockerServiceParams.ImageList): Promise<ImageInfo[]>;
     public abstract imageRm(tag: string): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
-    public abstract attach(name: string): Promise<void>;
+    public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<void>;
     public abstract exec(name: string, command?: string[], tty?: boolean): Promise<Duplex>;
 }
