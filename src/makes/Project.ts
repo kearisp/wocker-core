@@ -2,7 +2,7 @@ import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 
 
-export type ProjectProperties = Omit<PickProperties<Project>, "containerName">;
+export type ProjectProperties = Omit<PickProperties<Project>, "containerName" | "domains">;
 
 export abstract class Project {
     public id: string;
@@ -37,8 +37,76 @@ export abstract class Project {
         Object.assign(this, data);
     }
 
-    public get containerName() {
+    public get containerName(): string {
         return `${this.name}.workspace`;
+    }
+
+    get domains(): string[] {
+        const host = this.getEnv("VIRTUAL_HOST");
+
+        if(!host) {
+            return [];
+        }
+
+        return host.split(",");
+    }
+
+    public hasDomain(domain: string): boolean {
+        return this.domains.includes(domain);
+    }
+
+    public addDomain(addDomain: string): void {
+        let domains = [
+            ...this.domains.filter((domain: string): boolean => {
+                return domain !== addDomain;
+            }),
+            addDomain
+        ];
+
+        this.setEnv("VIRTUAL_HOST", domains.join(","));
+    }
+
+    public removeDomain(removeDomain: string): void {
+        if(!this.hasDomain(removeDomain)) {
+            return;
+        }
+
+        let domains = this.domains.filter((domain) => {
+            return domain !== removeDomain;
+        });
+
+        this.setEnv("VIRTUAL_HOST", domains.join(","));
+    }
+
+    public clearDomains(): void {
+        this.unsetEnv("VIRTUAL_HOST");
+    }
+
+    public linkPort(hostPort: number, containerPort: number): void {
+        if(!this.ports) {
+            this.ports = [];
+        }
+
+        this.ports = [
+            ...this.ports.filter((link: string) => {
+                return link !== `${hostPort}:${containerPort}`;
+            }),
+            `${hostPort}:${containerPort}`
+        ];
+    }
+
+    public unlinkPort(hostPort: number, containerPort: number): void {
+        if(!this.ports) {
+            return;
+        }
+
+        this.ports = this.ports.filter((link: string) => {
+            return link !== `${hostPort}:${containerPort}`;
+        });
+
+        if(this.ports.length === 0) {
+            delete this.ports;
+        }
     }
 
     public hasEnv(name: string): boolean {
@@ -67,7 +135,7 @@ export abstract class Project {
             : value;
     }
 
-    public unsetEnv(name: string) {
+    public unsetEnv(name: string): void {
         if(!this.env) {
             return;
         }
@@ -129,7 +197,7 @@ export abstract class Project {
         });
     }
 
-    public volumeMount(...volumes: string[]) {
+    public volumeMount(...volumes: string[]): void {
         if(volumes.length === 0) {
             return;
         }
@@ -177,3 +245,4 @@ export abstract class Project {
 
 export const PROJECT_TYPE_DOCKERFILE = "dockerfile";
 export const PROJECT_TYPE_IMAGE = "image";
+export const PROJECT_TYPE_PRESET = "preset";
