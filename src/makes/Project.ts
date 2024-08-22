@@ -217,7 +217,7 @@ export abstract class Project {
     }
 
     public volumeUnmount(...volumes: string[]): void {
-        this.volumes = (this.volumes || []).filter((mounted) => {
+        this.volumes = (this.volumes || []).filter((mounted): boolean => {
             return !volumes.includes(mounted);
         });
     }

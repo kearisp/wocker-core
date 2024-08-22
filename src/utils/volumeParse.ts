@@ -1,4 +1,4 @@
-import {Volume} from "./volumeFormat";
+import {Volume} from "../types";
 
 
 export const volumeParse = (volume: string): Volume => {
