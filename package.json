@@ -1,6 +1,6 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of wocker",
     "license": "MIT",
@@ -21,8 +21,8 @@
         "prepare": "npm run build",
         "build": "tsc --project tsconfig.build.json",
         "watch": "tsc -w --project tsconfig.build.json",
-        "watch:test": "jest --colors --watchAll --coverage",
-        "test": "jest --colors"
+        "test": "jest --colors",
+        "test-watch": "jest --colors --watchAll --coverage"
     },
     "dependencies": {
         "@kearisp/cli": "^2.0.4",

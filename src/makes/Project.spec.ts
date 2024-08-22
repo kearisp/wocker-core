@@ -93,6 +93,27 @@ describe("Project", () => {
         expect(project.ports).toBeUndefined();
     });
 
+    it("Volumes", () => {
+        const project = new TestProject({
+            id: "1",
+            name: "test",
+            type: "dockerfile",
+            path: "/path/to/test/project"
+        });
+
+        const volume = "./:/var/www";
+
+        project.volumeMount(volume);
+
+        expect(project.volumes).toEqual([volume]);
+
+        expect(project.getVolumeBySource("./")).toBe(volume);
+
+        project.volumeUnmount(volume);
+
+        expect(project.volumes).toEqual([]);
+    });
+
     it("Meta", () => {
         const project = new TestProject({
             id: "123",

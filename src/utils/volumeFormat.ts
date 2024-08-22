@@ -1,8 +1,5 @@
-export type Volume = {
-    source: string;
-    destination: string;
-    options?: string;
-};
+import {Volume} from "../types";
+
 
 export const volumeFormat = (volume: Volume) => {
     const {

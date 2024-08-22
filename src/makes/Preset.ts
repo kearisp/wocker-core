@@ -1,3 +1,6 @@
+import {PickProperties} from "../types";
+
+
 type TextOption = {
     type: "string" | "number" | "int";
     message?: string;
@@ -19,6 +22,7 @@ type SelectOption = {
 
 type AnyOption = TextOption | ConfirmOption | SelectOption;
 
+export type PresetProperties = PickProperties<Preset>;
 
 export abstract class Preset {
     public id: string;
@@ -31,12 +35,14 @@ export abstract class Preset {
     public envOptions?: {
         [name: string]: AnyOption;
     };
+    public path: string;
     public volumes?: string[];
     public volumeOptions?: string[];
 
-    protected constructor(data: any) {
+    protected constructor(data: PresetProperties) {
         this.id = data.id;
         this.name = data.name;
+        this.path = data.path;
         this.version = data.version;
         this.dockerfile = data.dockerfile;
         this.buildArgsOptions = data.buildArgsOptions;

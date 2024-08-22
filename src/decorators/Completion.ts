@@ -1,10 +1,12 @@
 import "reflect-metadata";
 
+import {COMPLETION_METADATA} from "../env";
+
 
 export const Completion = (name: string, command?: string): MethodDecorator => {
-    return (target, propertyKey, descriptor: TypedPropertyDescriptor<any>) => {
-        Reflect.defineMetadata("completion", [
-            ...Reflect.getMetadata("completion", descriptor.value) || [],
+    return (_target: any, _propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<any>) => {
+        Reflect.defineMetadata(COMPLETION_METADATA, [
+            ...Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [],
             {
                 name,
                 command
