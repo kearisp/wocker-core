@@ -25,8 +25,8 @@ type AnyOption = TextOption | ConfirmOption | SelectOption;
 export type PresetProperties = PickProperties<Preset>;
 
 export abstract class Preset {
-    public id: string;
     public name: string;
+    public source?: PresetType;
     public version: string;
     public dockerfile?: string;
     public buildArgsOptions?: {
@@ -35,13 +35,13 @@ export abstract class Preset {
     public envOptions?: {
         [name: string]: AnyOption;
     };
-    public path: string;
+    public path?: string;
     public volumes?: string[];
     public volumeOptions?: string[];
 
     protected constructor(data: PresetProperties) {
-        this.id = data.id;
         this.name = data.name;
+        this.source = data.source;
         this.path = data.path;
         this.version = data.version;
         this.dockerfile = data.dockerfile;
@@ -52,4 +52,27 @@ export abstract class Preset {
     }
 
     public abstract save(): Promise<void>;
+
+    public abstract delete(): Promise<void>;
+
+    // noinspection JSUnusedGlobalSymbols
+    public toJSON(): PresetProperties {
+        return {
+            name: this.name,
+            source: this.source,
+            version: this.version,
+            dockerfile: this.dockerfile,
+            buildArgsOptions: this.buildArgsOptions,
+            envOptions: this.envOptions,
+            path: this.path,
+            volumes: this.volumes,
+            volumeOptions: this.volumeOptions
+        };
+    }
 }
+
+export const PRESET_SOURCE_INTERNAL = "internal";
+export const PRESET_SOURCE_EXTERNAL = "external";
+export const PRESET_SOURCE_GITHUB = "github";
+
+export type PresetType = typeof PRESET_SOURCE_INTERNAL | typeof PRESET_SOURCE_EXTERNAL | typeof PRESET_SOURCE_GITHUB;

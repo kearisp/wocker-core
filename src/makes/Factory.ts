@@ -1,4 +1,4 @@
-import {Cli, CommandInput, Logger} from "@kearisp/cli";
+import {Cli, CommandInput} from "@kearisp/cli";
 import {ApplicationContext} from "./ApplicationContext";
 
 import {Container} from "./Container";
@@ -6,6 +6,7 @@ import {Module} from "./Module";
 import {Provider} from "../types/Provider";
 import {
     MODULE_METADATA,
+    IS_MODULE_METADATA,
     COMMAND_METADATA,
     COMPLETION_METADATA,
     ARGS_METADATA
@@ -86,7 +87,7 @@ export class Factory {
                 const {imports} = await moduleType.prototype.load(this.container);
 
                 for(const type of imports) {
-                    const isModule = Reflect.getMetadata("isModule", type);
+                    const isModule = Reflect.getMetadata(IS_MODULE_METADATA, type);
 
                     if(!isModule) {
                         continue;

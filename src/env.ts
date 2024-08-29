@@ -1,4 +1,4 @@
-export const IS_MODULE = "IS_MODULE";
+export const IS_MODULE_METADATA = "isModule";
 export const INJECTABLE_WATERMARK = "__injectable__";
 export const ARGS_META = "__ARGS__";
 export const COMMAND_METADATA = "command";
@@ -12,7 +12,6 @@ export const INJECT_TOKEN_METADATA = "INJECT_TOKEN";
 export const PLUGIN_DIR_KEY = "PLUGIN_DIR";
 export const PLUGIN_NAME_METADATA = "name";
 export enum MODULE_METADATA {
-    NAME = "name",
     IMPORTS = "imports",
     EXPORTS = "exports",
     CONTROLLERS = "controllers",

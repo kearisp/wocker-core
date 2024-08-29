@@ -1,4 +1,5 @@
 import {EnvConfig, PickProperties} from "../types";
+import {PresetType} from "./Preset";
 
 
 export type ConfigProperties = Omit<PickProperties<Config>, "logLevel"> & {
@@ -9,6 +10,11 @@ export abstract class Config {
     public debug?: boolean;
     public logLevel: "off" | "info" | "warn" | "error" = "off";
     public plugins: string[] = [];
+    public presets?: {
+        name: string;
+        source: PresetType;
+        path?: string;
+    }[] = [];
     public projects: {
         id: string;
         name?: string;
@@ -47,6 +53,38 @@ export abstract class Config {
                 src: path
             }
         ];
+    }
+
+    public registerPreset(name: string, source: PresetType, path?: string): void {
+        if(!this.presets) {
+            this.presets = [];
+        }
+
+        const preset = this.presets.find((preset): boolean => {
+            return preset.name === name;
+        });
+
+        if(!preset) {
+            this.presets.push({
+                name,
+                source,
+                path
+            });
+        }
+    }
+
+    public unregisterPreset(name: string): void {
+        if(!this.presets) {
+            return;
+        }
+
+        this.presets = this.presets.filter((preset) => {
+            return preset.name !== name;
+        });
+
+        if(this.presets.length === 0) {
+            delete this.presets;
+        }
     }
 
     public getMeta(name: string, defaultValue: string): string;
@@ -109,14 +147,16 @@ export abstract class Config {
 
     public abstract save(): Promise<void>;
 
+    // noinspection JSUnusedGlobalSymbols
     public toJson(): ConfigProperties {
         return {
             debug: this.debug,
             logLevel: this.logLevel,
             plugins: this.plugins,
             projects: this.projects,
-            meta: this.meta,
-            env: this.env
+            presets: (this.presets || []).length > 0 ? this.presets : undefined,
+            env: this.env,
+            meta: this.meta
         };
     }
 }
