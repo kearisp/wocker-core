@@ -2,6 +2,7 @@ import {describe, it, expect, beforeEach} from "@jest/globals";
 import {Logger} from "@kearisp/cli";
 
 import {Project, ProjectProperties} from "./Project";
+import {volumeFormat} from "../utils/volumeFormat";
 
 
 describe("Project", () => {
@@ -20,7 +21,7 @@ describe("Project", () => {
         }
     }
 
-    it("", () => {
+    it("Env", () => {
         const project = new TestProject({
             id: "123",
             name: "project",
@@ -46,7 +47,8 @@ describe("Project", () => {
     it("Domains", () => {
         const project = new TestProject({
             id: "1",
-            type: "test",
+            type: "image",
+            imageName: "test",
             name: "Test",
             path: "/test/path"
         });
@@ -94,6 +96,7 @@ describe("Project", () => {
     });
 
     it("Volumes", () => {
+        Logger.unmute();
         const project = new TestProject({
             id: "1",
             name: "test",
@@ -101,17 +104,28 @@ describe("Project", () => {
             path: "/path/to/test/project"
         });
 
-        const volume = "./:/var/www";
+        const volume = volumeFormat({
+            source: "./",
+            destination: "/var/www",
+            options: "rw"
+        });
 
-        project.volumeMount(volume);
+        project.volumeMount(volumeFormat({
+            source: "./",
+            destination: "/var/www",
+            options: "rw"
+        }));
 
         expect(project.volumes).toEqual([volume]);
 
         expect(project.getVolumeBySource("./")).toBe(volume);
 
-        project.volumeUnmount(volume);
+        project.volumeUnmount(volumeFormat({
+            source: "./",
+            destination: "/var/www"
+        }));
 
-        expect(project.volumes).toEqual([]);
+        expect(project.volumes).toEqual(undefined);
     });
 
     it("Meta", () => {

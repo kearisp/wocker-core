@@ -2,6 +2,7 @@ import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 
 
+export type ProjectType = typeof PROJECT_TYPE_DOCKERFILE | typeof PROJECT_TYPE_IMAGE | typeof PROJECT_TYPE_PRESET;
 export type ProjectProperties = Omit<PickProperties<Project>, "containerName" | "domains">;
 
 export abstract class Project {
@@ -217,9 +218,26 @@ export abstract class Project {
     }
 
     public volumeUnmount(...volumes: string[]): void {
-        this.volumes = (this.volumes || []).filter((mounted): boolean => {
-            return !volumes.includes(mounted);
+        if(!this.volumes || volumes.length === 0) {
+            return;
+        }
+
+        const [volume, ...restVolumes] = volumes;
+
+        const v = volumeParse(volume);
+
+        this.volumes = this.volumes.filter((mounted): boolean => {
+            const m = volumeParse(mounted);
+
+            return v.source !== m.source && v.destination !== m.destination;
         });
+
+        if(this.volumes.length === 0) {
+            delete this.volumes;
+            return;
+        }
+
+        this.volumeUnmount(...restVolumes);
     }
 
     public abstract save(): Promise<void>;

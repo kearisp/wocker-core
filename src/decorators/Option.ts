@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {Option as O} from "@kearisp/cli";
 
 import {ARGS_METADATA} from "../env";

@@ -1,3 +1,4 @@
+export * from "./AppConfig";
 export * from "./Config";
 export * from "./Container";
 export * from "./FileSystem";
