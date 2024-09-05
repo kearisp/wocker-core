@@ -5,8 +5,8 @@ import {Project, ProjectProperties} from "./Project";
 import {volumeFormat} from "../utils/volumeFormat";
 
 
-describe("Project", () => {
-    beforeEach(() => {
+describe("Project", (): void => {
+    beforeEach((): void => {
         Logger.debug("-----------");
         Logger.mute();
     });
@@ -21,7 +21,7 @@ describe("Project", () => {
         }
     }
 
-    it("Env", () => {
+    it("Env", (): void => {
         const project = new TestProject({
             id: "123",
             name: "project",
@@ -44,7 +44,7 @@ describe("Project", () => {
         project.unsetEnv(VALUE_KEY);
     });
 
-    it("Domains", () => {
+    it("Domains", (): void => {
         const project = new TestProject({
             id: "1",
             type: "image",
@@ -75,7 +75,7 @@ describe("Project", () => {
         expect(project.domains).toEqual([]);
     });
 
-    it("Ports", () => {
+    it("Ports", (): void => {
         const project = new TestProject({
             id: "1",
             name: "test",
@@ -95,8 +95,7 @@ describe("Project", () => {
         expect(project.ports).toBeUndefined();
     });
 
-    it("Volumes", () => {
-        Logger.unmute();
+    it("Volumes", (): void => {
         const project = new TestProject({
             id: "1",
             name: "test",
@@ -128,7 +127,7 @@ describe("Project", () => {
         expect(project.volumes).toEqual(undefined);
     });
 
-    it("Meta", () => {
+    it("Meta", (): void => {
         const project = new TestProject({
             id: "123",
             name: "project",
