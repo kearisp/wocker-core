@@ -28,6 +28,8 @@ export abstract class Preset {
     public name: string;
     public source?: PresetType;
     public version: string;
+    public type?: string;
+    public image?: string;
     public dockerfile?: string;
     public buildArgsOptions?: {
         [name: string]: AnyOption;
@@ -41,9 +43,11 @@ export abstract class Preset {
 
     protected constructor(data: PresetProperties) {
         this.name = data.name;
+        this.version = data.version;
+        this.type = data.type;
         this.source = data.source;
         this.path = data.path;
-        this.version = data.version;
+        this.image = data.image;
         this.dockerfile = data.dockerfile;
         this.buildArgsOptions = data.buildArgsOptions;
         this.envOptions = data.envOptions;
@@ -59,8 +63,10 @@ export abstract class Preset {
     public toJSON(): PresetProperties {
         return {
             name: this.name,
-            source: this.source,
             version: this.version,
+            type: this.type,
+            source: this.source,
+            image: this.image,
             dockerfile: this.dockerfile,
             buildArgsOptions: this.buildArgsOptions,
             envOptions: this.envOptions,

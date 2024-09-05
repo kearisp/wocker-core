@@ -1,8 +1,9 @@
-import * as fs from "fs";
+import fs from "fs";
+import FS, {RmOptions, Stats, WriteFileOptions} from "fs";
 import * as Path from "path";
 
 
-type ReaddirOptions = fs.ObjectEncodingOptions & {
+type ReaddirOptions = FS.ObjectEncodingOptions & {
     recursive?: boolean | undefined;
 };
 
@@ -11,33 +12,37 @@ export class FileSystem {
         protected readonly source: string
     ) {}
 
-    public path(...parts: string[]) {
+    public path(...parts: string[]): string {
         return Path.join(this.source, ...parts);
+    }
+
+    public basename(...parts: string[]): string {
+        return Path.basename(this.path(...parts));
     }
 
     public exists(...parts: string[]): boolean {
         const fullPath = this.path(...parts);
 
-        return fs.existsSync(fullPath);
+        return FS.existsSync(fullPath);
     }
 
-    public stat(...parts: string[]) {
+    public stat(...parts: string[]): Stats {
         const fullPath = this.path(...parts);
 
-        return fs.statSync(fullPath);
+        return FS.statSync(fullPath);
     }
 
-    public mkdir(path: string, options?: fs.MakeDirectoryOptions): void {
+    public mkdir(path: string, options?: FS.MakeDirectoryOptions): void {
         const fullPath = this.path(path);
 
-        fs.mkdirSync(fullPath, options);
+        FS.mkdirSync(fullPath, options);
     }
 
     public async readdir(...parts: string[]) {
         const fullPath = this.path(...parts);
 
         return new Promise((resolve, reject) => {
-            fs.readdir(fullPath, (err, files) => {
+            FS.readdir(fullPath, (err, files) => {
                 if(err) {
                     reject(err);
                     return;
@@ -52,7 +57,7 @@ export class FileSystem {
         const fullPath = this.path(path);
 
         return new Promise((resolve, reject) => {
-            fs.readdir(fullPath, options as any, (err, files) => {
+            FS.readdir(fullPath, options as any, (err, files) => {
                 if(err) {
                     reject(err);
                     return;
@@ -66,6 +71,68 @@ export class FileSystem {
 
                 resolve(files);
             });
+        });
+    }
+
+    public async readJSON(...paths: string[]): Promise<any> {
+        const res: Buffer = await new Promise((resolve, reject) => {
+            const filePath = this.path(...paths);
+
+            FS.readFile(filePath, (err, data: Buffer): void => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(data);
+            });
+        });
+
+        return JSON.parse(res.toString());
+    }
+
+    public async writeJSON(path: string, data: any, options?: WriteFileOptions): Promise<void> {
+        const fullPath = this.path(path);
+        const json = JSON.stringify(data, null, 4);
+
+        return new Promise((resolve, reject) => {
+            const callback = (err: NodeJS.ErrnoException | null): void => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(undefined);
+            };
+
+            if(options) {
+                FS.writeFile(fullPath, json, options, callback);
+            }
+            else {
+                FS.writeFile(fullPath, json, callback);
+            }
+        });
+    }
+
+    public async rm(path: string, options?: RmOptions): Promise<void> {
+        const fullPath = this.path(path);
+
+        return new Promise((resolve, reject) => {
+            const callback = (err: NodeJS.ErrnoException | null) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(undefined);
+            };
+
+            if(options) {
+                fs.rm(fullPath, options, callback);
+            }
+            else {
+                fs.rm(fullPath, callback);
+            }
         });
     }
 }
