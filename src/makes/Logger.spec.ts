@@ -6,6 +6,7 @@ import {Logger} from "./Logger";
 
 describe("Logger", () => {
     class TestLogService extends LogService {
+        public debug(): void {}
         public log(): void {}
         public info(): void {}
         public warn(): void {}
