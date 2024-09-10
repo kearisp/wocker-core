@@ -74,21 +74,28 @@ export class FileSystem {
         });
     }
 
-    public async readJSON(...paths: string[]): Promise<any> {
-        const res: Buffer = await new Promise((resolve, reject) => {
-            const filePath = this.path(...paths);
+    public readJSON(...paths: string[]): any {
+        const filePath = this.path(...paths);
 
-            FS.readFile(filePath, (err, data: Buffer): void => {
+        const res: Buffer = FS.readFileSync(filePath);
+
+        return JSON.parse(res.toString());
+    }
+
+    public writeFile(path: string, data: string | Buffer): Promise<void> {
+        const fullPath = this.path(path);
+
+        return new Promise((resolve, reject) => {
+            FS.writeFile(fullPath, data, (err?: NodeJS.ErrnoException | null): void => {
                 if(err) {
                     reject(err);
+
                     return;
                 }
 
-                resolve(data);
+                resolve(undefined);
             });
         });
-
-        return JSON.parse(res.toString());
     }
 
     public async writeJSON(path: string, data: any, options?: WriteFileOptions): Promise<void> {
@@ -118,7 +125,7 @@ export class FileSystem {
         const fullPath = this.path(path);
 
         return new Promise((resolve, reject) => {
-            const callback = (err: NodeJS.ErrnoException | null) => {
+            const callback = (err: NodeJS.ErrnoException | null): void => {
                 if(err) {
                     reject(err);
                     return;

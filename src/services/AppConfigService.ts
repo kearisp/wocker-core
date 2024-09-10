@@ -1,10 +1,10 @@
 import {Injectable} from "../decorators";
-import {Config} from "../makes";
+import {AppConfig} from "../makes";
 
 
 @Injectable("APP_CONFIG")
 abstract class AppConfigService {
-    protected config?: Config;
+    protected config?: AppConfig;
 
     public abstract getPWD(): string;
     public abstract setPWD(pwd: string): void;
@@ -12,15 +12,15 @@ abstract class AppConfigService {
     public abstract dataPath(...args: string[]): string;
     public abstract pluginsPath(...args: string[]): string;
 
-    public async getConfig(): Promise<Config> {
+    public getConfig(): AppConfig {
         if(!this.config) {
-            this.config = await this.loadConfig();
+            this.config = this.loadConfig();
         }
 
         return this.config;
     }
 
-    protected abstract loadConfig(): Promise<Config>;
+    protected abstract loadConfig(): AppConfig;
 }
 
 
