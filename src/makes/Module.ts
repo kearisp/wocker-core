@@ -1,20 +1,23 @@
 import {Provider} from "../types/Provider";
+import {Type} from "../types/Type";
+import {Container} from "./Container";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
-export class Module {
-    public imports: Set<any> = new Set();
+export class Module<TInput = any> {
+    public imports: Map<any, InstanceWrapper> = new Map();
     public controllers: Map<any, InstanceWrapper> = new Map();
     public providers: Map<any, InstanceWrapper> = new Map();
-    public exports: Map<any, any> = new Map();
+    public exports: Set<any> = new Set();
 
     public constructor(
-        public type: any,
+        public readonly container: Container,
+        public type: TInput,
         public parent?: Module
     ) {}
 
-    public get<T = any>(type: any): T {
+    public get<TInput = any, TResult = TInput>(type: Type<TInput> | Function | string | symbol): TResult {
         const wrapper = this.getWrapper(type);
 
         if(!wrapper) {
@@ -28,38 +31,32 @@ export class Module {
         const token = typeof type !== "string"
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
             : type;
+
         const wrapper = this.providers.get(token);
 
         if(!wrapper && this.parent) {
             return this.parent.getWrapper(type);
         }
 
+        if(!wrapper) {
+            return this.container.providers.get(type);
+        }
+
         return wrapper;
     }
 
     public addImport(module: any): void {
-        this.imports.add(module);
+        // this.imports.add(module);
     }
 
     public addProvider(provider: Provider, instance?: any): void {
-        if("provide" in provider && "useValue" in provider) {
-            const wrapper = new InstanceWrapper(this, provider.provide, provider.useValue);
-
-            this.providers.set(provider.provide, wrapper);
-            return;
-        }
-
-        if("provide" in provider && "useClass" in provider) {
-            const wrapper = new InstanceWrapper(this, provider.useClass);
-
-            this.providers.set(provider.provide, wrapper);
-            return;
-        }
-
-        const token = Reflect.getMetadata("INJECT_TOKEN", provider) || provider;
         const wrapper = new InstanceWrapper(this, provider, instance);
 
-        this.providers.set(token, wrapper);
+        this.providers.set(wrapper.token, wrapper);
+    }
+
+    public getProvider() {
+        //
     }
 
     public addInjection(): void {
@@ -84,5 +81,9 @@ export class Module {
 
             // console.log(">", name, command);
         }
+    }
+
+    public addExport(type: any): void {
+        this.exports.add(type);
     }
 }

@@ -1,5 +1,6 @@
 import {Logger} from "@kearisp/cli";
 import {describe, it, expect, beforeEach} from "@jest/globals";
+import {Container} from "./Container";
 
 import {InstanceWrapper} from "./InstanceWrapper";
 import {Module} from "./Module";
@@ -15,9 +16,10 @@ describe("InstanceWrapper", () => {
         class ModuleType {}
         class Service {}
 
-        const module = new Module(ModuleType);
+        const container = new Container();
+        const module = new Module(container, ModuleType);
 
-        const instanceWrapper = new InstanceWrapper(module, Service, Service);
+        const instanceWrapper = new InstanceWrapper(module, Service);
 
         expect("").toBe("");
     });
