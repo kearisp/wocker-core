@@ -4,7 +4,6 @@ import {Cli, CommandInput} from "@kearisp/cli";
 import {Provider} from "../types/Provider";
 import {Container} from "./Container";
 import {Module} from "./Module";
-import {Logger} from "./Logger";
 import {
     ARGS_METADATA,
     COMMAND_DESCRIPTION_METADATA,
@@ -92,7 +91,7 @@ export class Scanner {
                 const wrapper = module.getWrapper(type);
 
                 if(wrapper) {
-                    this.container.providers.set(type, wrapper);
+                    this.container.addProvider(type, wrapper);
                 }
             }
         });
@@ -107,11 +106,12 @@ export class Scanner {
 
         const cli: Cli = cliWrapper.instance;
 
-        // Logger.unmute();
-        Logger.info(">_<");
-
         for(const [, module] of this.container.modules) {
             for(const [type, controller] of module.controllers) {
+                if(!controller.instance) {
+                    continue;
+                }
+
                 const controllerCommands: any[] = [];
                 const controllerCompletions: any[] = [];
 
@@ -245,6 +245,7 @@ export class Scanner {
 
                     if(!provider) {
                         // console.log(type, ">_<", provider);
+                        return;
                     }
 
                     // @ts-ignore

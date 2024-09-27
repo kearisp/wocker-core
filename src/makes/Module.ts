@@ -13,14 +13,20 @@ export class Module<TInput = any> {
 
     public constructor(
         public readonly container: Container,
-        public type: TInput,
-        public parent?: Module
+        public type: TInput
     ) {}
 
     public get<TInput = any, TResult = TInput>(type: Type<TInput> | Function | string | symbol): TResult {
         const wrapper = this.getWrapper(type);
 
         if(!wrapper) {
+            if(typeof type === "function") {
+                throw new Error(`Provider "${type.prototype.constructor.name}" not found`);
+            }
+            else if(typeof type === "string") {
+                throw new Error(`Provider "${type}" not found`);
+            }
+
             throw new Error("Provider not found");
         }
 
@@ -34,33 +40,17 @@ export class Module<TInput = any> {
 
         const wrapper = this.providers.get(token);
 
-        if(!wrapper && this.parent) {
-            return this.parent.getWrapper(type);
-        }
-
         if(!wrapper) {
-            return this.container.providers.get(type);
+            return this.container.providers.get(token);
         }
 
         return wrapper;
-    }
-
-    public addImport(module: any): void {
-        // this.imports.add(module);
     }
 
     public addProvider(provider: Provider, instance?: any): void {
         const wrapper = new InstanceWrapper(this, provider, instance);
 
         this.providers.set(wrapper.token, wrapper);
-    }
-
-    public getProvider() {
-        //
-    }
-
-    public addInjection(): void {
-        //
     }
 
     public addController(type: any): void {
@@ -78,12 +68,14 @@ export class Module<TInput = any> {
             if(!command) {
                 continue;
             }
-
-            // console.log(">", name, command);
         }
     }
 
     public addExport(type: any): void {
-        this.exports.add(type);
+        const token = typeof type !== "string"
+            ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
+            : type;
+
+        this.exports.add(token);
     }
 }

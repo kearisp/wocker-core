@@ -4,6 +4,7 @@ import {InstanceWrapper} from "./InstanceWrapper";
 import {Module} from "./Module";
 import {InjectionToken} from "../types/InjectionToken";
 import {Type} from "../types/Type";
+import {INJECT_TOKEN_METADATA} from "../env";
 
 
 export class Container {
@@ -32,6 +33,14 @@ export class Container {
         }
 
         return module;
+    }
+
+    public addProvider(type: Type, wrapper: InstanceWrapper): void {
+        const token = typeof type !== "string"
+            ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
+            : type;
+
+        this.providers.set(token, wrapper);
     }
 
     // public addController(moduleType: any, type: any): void {

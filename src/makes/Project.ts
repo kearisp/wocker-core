@@ -11,6 +11,7 @@ export abstract class Project {
     public type: string;
     public path: string;
     public preset?: string;
+    public presetMode?: "global" | "project";
     public imageName?: string;
     public dockerfile?: string;
     public scripts?: string[];
@@ -26,6 +27,7 @@ export abstract class Project {
         this.type = data.type;
         this.path = data.path;
         this.preset = data.preset;
+        this.presetMode = data.presetMode;
         this.imageName = data.imageName;
         this.dockerfile = data.dockerfile;
         this.scripts = data.scripts;
@@ -249,6 +251,7 @@ export abstract class Project {
             type: this.type,
             path: this.path,
             preset: this.preset,
+            presetMode: this.presetMode,
             imageName: this.imageName,
             dockerfile: this.dockerfile,
             scripts: this.scripts,
