@@ -7,6 +7,7 @@ import {Module} from "./Module";
 import {Logger} from "./Logger";
 import {
     ARGS_METADATA,
+    COMMAND_DESCRIPTION_METADATA,
     COMMAND_METADATA,
     COMPLETION_METADATA,
     IS_GLOBAL_METADATA,
@@ -121,6 +122,7 @@ export class Scanner {
                         continue;
                     }
 
+                    const description = Reflect.getMetadata(COMMAND_DESCRIPTION_METADATA, descriptor.value);
                     const commandName = Reflect.getMetadata(COMMAND_METADATA, descriptor.value);
                     const completions = (Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [])
                         .map((completion: any) => {
@@ -147,7 +149,7 @@ export class Scanner {
                         const command = cli.command(commandName);
 
                         command.help({
-                            description: "Des"
+                            description: description
                         });
 
                         for(const argMeta of argsMeta) {
