@@ -132,7 +132,7 @@ describe("Project", (): void => {
             id: "123",
             name: "project",
             type: "dockerfile",
-            path: "/path/to/project",
+            path: "/path/to/project"
         });
 
         const VALUE_KEY = "value";
@@ -162,5 +162,38 @@ describe("Project", (): void => {
         project.setMeta(VALUE_KEY, false);
 
         expect(project.getMeta(VALUE_KEY)).toBe("false");
+    });
+
+    it("Extra host", (): void => {
+        const project = new TestProject({
+            id: "123",
+            name: "project",
+            type: "dockerfile",
+            path: "/path/to/project"
+        });
+        const EXTRA_HOST_1 = "127.0.0.1";
+        const EXTRA_HOST_2 = "127.0.0.2";
+        const EXTRA_DOMAIN_1 = 'test.host';
+        const EXTRA_DOMAIN_2 = 'test-2.host';
+
+        expect(project.extraHosts).toBeUndefined();
+
+        project.addExtraHost(EXTRA_HOST_1, EXTRA_DOMAIN_1);
+
+        expect(project.extraHosts).toEqual({
+            [EXTRA_HOST_1]: EXTRA_DOMAIN_1
+        });
+
+        project.removeExtraHost(EXTRA_HOST_1);
+
+        expect(project.extraHosts).toBeUndefined();
+
+        project.addExtraHost(EXTRA_HOST_1, EXTRA_DOMAIN_1);
+        project.addExtraHost(EXTRA_HOST_2, EXTRA_DOMAIN_2);
+
+        expect(project.extraHosts).toEqual({
+            [EXTRA_HOST_1]: EXTRA_DOMAIN_1,
+            [EXTRA_HOST_2]: EXTRA_DOMAIN_2
+        });
     });
 });

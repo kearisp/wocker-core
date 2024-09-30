@@ -2,6 +2,7 @@ export * from "./Command";
 export * from "./Completion";
 export * from "./Controller";
 export * from "./Description";
+export * from "./Global";
 export * from "./Inject";
 export * from "./Injectable";
 export * from "./Module";

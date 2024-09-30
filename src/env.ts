@@ -1,3 +1,4 @@
+export const IS_GLOBAL_METADATA = "IS_GLOBAL";
 export const IS_MODULE_METADATA = "isModule";
 export const INJECTABLE_WATERMARK = "__injectable__";
 export const ARGS_META = "__ARGS__";
