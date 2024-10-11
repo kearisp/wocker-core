@@ -123,7 +123,7 @@ export class Scanner {
                     }
 
                     const description = Reflect.getMetadata(COMMAND_DESCRIPTION_METADATA, descriptor.value);
-                    const commandName = Reflect.getMetadata(COMMAND_METADATA, descriptor.value);
+                    const commandNames: string[] = Reflect.getMetadata(COMMAND_METADATA, descriptor.value) || [];
                     const completions = (Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [])
                         .map((completion: any) => {
                             return {
@@ -136,39 +136,41 @@ export class Scanner {
                         controllerCompletions.push(...completions);
                     }
 
-                    if(commandName) {
-                        controllerCommands.push({
-                            command: commandName,
-                            controller,
-                            method: name,
-                            argsMeta: Reflect.getMetadata(ARGS_METADATA, type, name) || []
-                        });
+                    if(commandNames.length > 0) {
+                        for(const commandName of commandNames) {
+                            controllerCommands.push({
+                                command: commandName,
+                                controller,
+                                method: name,
+                                argsMeta: Reflect.getMetadata(ARGS_METADATA, type, name) || []
+                            });
 
-                        const argsMeta = Reflect.getMetadata(ARGS_METADATA, type, name) || [];
+                            const argsMeta = Reflect.getMetadata(ARGS_METADATA, type, name) || [];
 
-                        const command = cli.command(commandName);
+                            const command = cli.command(commandName);
 
-                        command.help({
-                            description: description
-                        });
+                            command.help({
+                                description: description
+                            });
 
-                        for(const argMeta of argsMeta) {
-                            if(argMeta.type === "option") {
-                                command.option(argMeta.name, argMeta.params);
+                            for(const argMeta of argsMeta) {
+                                if(argMeta.type === "option") {
+                                    command.option(argMeta.name, argMeta.params);
+                                }
                             }
-                        }
 
-                        // command.action((options, ...params) => {
-                        //     const args: any[] = [];
-                        //
-                        //     argsMeta.forEach((argMeta: any) => {
-                        //         if(argMeta.type === "option") {
-                        //             args[argMeta.index] = options[argMeta.name];
-                        //         }
-                        //     });
-                        //
-                        //     return controller.instance[name](...args, ...params);
-                        // });
+                            // command.action((options, ...params) => {
+                            //     const args: any[] = [];
+                            //
+                            //     argsMeta.forEach((argMeta: any) => {
+                            //         if(argMeta.type === "option") {
+                            //             args[argMeta.index] = options[argMeta.name];
+                            //         }
+                            //     });
+                            //
+                            //     return controller.instance[name](...args, ...params);
+                            // });
+                        }
                     }
                 }
 
