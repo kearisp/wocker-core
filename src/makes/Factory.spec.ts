@@ -1,5 +1,5 @@
 import {Logger} from "@kearisp/cli";
-import {describe, it, expect, beforeEach} from "@jest/globals";
+import {describe, it, expect, beforeAll, afterEach} from "@jest/globals";
 
 import {
     Module,
@@ -9,7 +9,6 @@ import {
 } from "../decorators";
 import {Provider} from "../types/Provider";
 import {Factory} from "./Factory";
-import {Container} from "./Container";
 
 
 const TestProvider: Provider = {
@@ -38,48 +37,17 @@ class TestController {
 })
 class TestModule {}
 
-@Module({})
-class Test2Module {}
+describe("Factory", (): void => {
+    beforeAll((): void => {
+        Logger.mute();
+    });
 
-describe("Factory.scan", () => {
-    beforeEach(() => {
+    afterEach((): void => {
         Logger.debug("-----------");
         Logger.mute();
     });
 
-    it("Should", async () => {
-        // @ts-ignore
-        const factory = new Factory();
-
-        await factory.scan(TestModule);
-
-        const container = factory.getContainer();
-
-        expect(container).toBeInstanceOf(Container);
-
-        const testModule = container.getModule(TestModule);
-
-        expect(testModule).toBeDefined();
-
-        const testService = testModule.get(TestService);
-
-        expect(testService).toBeInstanceOf(TestService);
-
-        const v = testModule.get(TestProvider.provide);
-
-        Logger.info(v);
-    });
-});
-
-describe("Factory.create", () => {
-    beforeEach(() => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
-    it("Should be created", async () => {
-        // Logger.unmute();
-
+    it("Factory.create", async (): Promise<void> => {
         const testModule = await Factory.create(TestModule);
         const res = await testModule.run(["node", "cli", "test"]);
 

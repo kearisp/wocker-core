@@ -1,7 +1,7 @@
 import {Cli} from "@kearisp/cli";
 
-import {Type} from "../types/Type";
 import {Container} from "./Container";
+import {Type} from "../types/Type";
 
 
 export class ApplicationContext {
@@ -17,7 +17,7 @@ export class ApplicationContext {
             throw new Error("Module not found");
         }
 
-        const res = module.get(typeOrToken);
+        const res = module.get<TInput, TResult>(typeOrToken);
 
         if(!res) {
             throw new Error("Instance not found");
@@ -26,7 +26,7 @@ export class ApplicationContext {
         return res;
     }
 
-    public async run(args: string[]) {
+    public async run(args: string[]): Promise<string> {
         const cli = this.get(Cli);
 
         return cli.run(args);

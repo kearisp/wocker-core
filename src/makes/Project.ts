@@ -11,6 +11,7 @@ export abstract class Project {
     public type: string;
     public path: string;
     public preset?: string;
+    public presetMode?: "global" | "project";
     public imageName?: string;
     public dockerfile?: string;
     public scripts?: string[];
@@ -18,6 +19,7 @@ export abstract class Project {
     public env?: EnvConfig;
     public ports?: string[];
     public volumes?: string[];
+    public extraHosts?: EnvConfig;
     public metadata?: EnvConfig;
 
     protected constructor(data: ProjectProperties) {
@@ -26,6 +28,7 @@ export abstract class Project {
         this.type = data.type;
         this.path = data.path;
         this.preset = data.preset;
+        this.presetMode = data.presetMode;
         this.imageName = data.imageName;
         this.dockerfile = data.dockerfile;
         this.scripts = data.scripts;
@@ -33,6 +36,7 @@ export abstract class Project {
         this.env = data.env;
         this.ports = data.ports;
         this.volumes = data.volumes;
+        this.extraHosts = data.extraHosts;
         this.metadata = data.metadata;
 
         Object.assign(this, data);
@@ -240,6 +244,26 @@ export abstract class Project {
         this.volumeUnmount(...restVolumes);
     }
 
+    public addExtraHost(host: string, domain: string): void {
+        if(!this.extraHosts) {
+            this.extraHosts = {};
+        }
+
+        this.extraHosts[host] = domain;
+    }
+
+    public removeExtraHost(host: string): void {
+        if(!this.extraHosts || !this.extraHosts[host]) {
+            return;
+        }
+
+        delete this.extraHosts[host];
+
+        if(Object.keys(this.extraHosts).length === 0) {
+            delete this.extraHosts;
+        }
+    }
+
     public abstract save(): Promise<void>;
 
     public toJSON(): ProjectProperties {
@@ -249,6 +273,7 @@ export abstract class Project {
             type: this.type,
             path: this.path,
             preset: this.preset,
+            presetMode: this.presetMode,
             imageName: this.imageName,
             dockerfile: this.dockerfile,
             scripts: this.scripts,
@@ -256,6 +281,7 @@ export abstract class Project {
             env: this.env,
             ports: this.ports,
             volumes: this.volumes,
+            extraHosts: this.extraHosts,
             metadata: this.metadata
         };
     }

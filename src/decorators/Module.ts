@@ -17,7 +17,7 @@ export const Module = (config: ModuleConfig): ClassDecorator => {
         [MODULE_METADATA.EXPORTS]: exports = []
     } = config;
 
-    return (target) => {
+    return (target): void => {
         Reflect.defineMetadata(IS_MODULE_METADATA, true, target);
         Reflect.defineMetadata(MODULE_METADATA.IMPORTS, imports, target);
         Reflect.defineMetadata(MODULE_METADATA.CONTROLLERS, controllers, target);

@@ -20,5 +20,5 @@ it("Completion", () => {
         ? Reflect.getMetadata(COMMAND_METADATA, descriptor.value)
         : null;
 
-    expect(command).toEqual(argName);
+    expect(command).toEqual([argName]);
 });
