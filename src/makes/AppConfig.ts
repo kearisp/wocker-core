@@ -67,34 +67,6 @@ export abstract class AppConfig {
         });
     }
 
-    /* istanbul ignore next */
-    /**
-     * @deprecated
-     * @see Project.addProject
-     */
-    public setProject(id: string, path: string): void {
-        if(!this.projects) {
-            this.projects = [];
-        }
-
-        let projectData = this.projects.find((projectData) => {
-            return projectData.id === id;
-        });
-
-        if(!projectData) {
-            this.projects.push({
-                id,
-                path,
-                src: path
-            });
-            return;
-        }
-
-        projectData.name = id;
-        projectData.path = path;
-        projectData.src = path;
-    }
-
     public addProject(id: string, name: string, path: string): void {
         if(!this.projects) {
             this.projects = [];
