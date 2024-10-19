@@ -3,11 +3,11 @@ import {AppConfig} from "../makes";
 
 
 @Injectable("APP_CONFIG")
-abstract class AppConfigService {
+export abstract class AppConfigService {
     protected config?: AppConfig;
 
-    public abstract setPWD(pwd: string): void;
     public abstract pwd(...parts: string[]): string;
+    public abstract setPWD(pwd: string): void;
 
     public abstract dataPath(...args: string[]): string;
     public abstract pluginsPath(...args: string[]): string;
@@ -22,6 +22,3 @@ abstract class AppConfigService {
 
     protected abstract loadConfig(): AppConfig;
 }
-
-
-export {AppConfigService};
