@@ -1,14 +1,20 @@
-import {AppConfig, AppConfigProperties} from "./AppConfig";
+export type ConfigProperties = {
+    name: string;
+};
 
-export type ConfigProperties = AppConfigProperties;
+export class Config<T extends ConfigProperties> {
+    public name: string;
 
-/* istanbul ignore next */
-/**
- * @deprecated
- * @see AppConfig
- */
-export abstract class Config extends AppConfig {
-    protected constructor(data: ConfigProperties) {
-        super(data);
+    public constructor(data: T) {
+        this.name = data.name;
+    }
+
+    public toObject(): T {
+        return Object.keys(this)
+            .reduce<T>((res: T, key: string) => {
+                (res as any)[key] = (this as any)[key];
+
+                return res;
+            }, {} as T);
     }
 }

@@ -10,7 +10,7 @@ export abstract class AppConfigService {
         return "0.0.0";
     }
 
-    public isVersionGTE(version: string) {
+    public isVersionGTE(version: string): boolean {
         const current = this.version.split(".").map(Number);
         const compare = version.split(".").map(Number);
 
