@@ -13,23 +13,27 @@ import {PLUGIN_DIR_KEY} from "../env";
 
 @Injectable()
 export class PluginConfigService {
+    protected _fs?: FileSystem;
+
     public constructor(
         @Inject(PLUGIN_DIR_KEY)
         protected readonly pluginDir: string
     ) {}
 
     public get fs(): FileSystem {
-        if(!this.pluginDir) {
-            throw new Error("Plugin dir missed");
+        if(!this._fs) {
+            if(!this.pluginDir) {
+                throw new Error("Plugin dir missed");
+            }
+
+            this._fs = new FileSystem(this.pluginDir);
+
+            if(!this._fs.exists()) {
+                this._fs.mkdir();
+            }
         }
 
-        const fs = new FileSystem(this.pluginDir);
-
-        if(!fs.exists()) {
-            fs.mkdir();
-        }
-
-        return fs;
+        return this._fs;
     }
 
     /** @deprecated */
