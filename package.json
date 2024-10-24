@@ -1,6 +1,6 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.18",
+    "version": "1.0.19",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of the Wocker",
     "license": "MIT",
@@ -25,7 +25,7 @@
         "test-watch": "jest --colors --watchAll --coverage"
     },
     "dependencies": {
-        "@kearisp/cli": "^2.0.5",
+        "@kearisp/cli": "^2.0.6",
         "fs": "^0.0.1-security",
         "path": "^0.12.7",
         "reflect-metadata": "^0.2.2"

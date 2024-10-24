@@ -31,7 +31,7 @@ export namespace DockerServiceParams {
 
     export type ImageList = {
         tag?: string;
-        reference?: string;
+        reference?: string[];
         labels?: {
             [key: string]: string;
         };
@@ -61,9 +61,10 @@ export abstract class DockerService {
     public abstract buildImage(params: DockerServiceParams.BuildImage): Promise<any>;
     public abstract imageExists(tag: string): Promise<boolean>;
     public abstract imageLs(options?: DockerServiceParams.ImageList): Promise<ImageInfo[]>;
-    public abstract imageRm(tag: string): Promise<void>;
+    public abstract imageRm(tag: string, force?: boolean): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
     public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<void>;
     public abstract exec(name: string, command?: string[], tty?: boolean): Promise<Duplex>;
+    public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream>;
 }

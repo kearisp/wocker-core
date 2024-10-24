@@ -6,6 +6,26 @@ import {AppConfig} from "../makes";
 export abstract class AppConfigService {
     protected config?: AppConfig;
 
+    get version(): string {
+        return "0.0.0";
+    }
+
+    public isVersionGTE(version: string): boolean {
+        const current = this.version.split(".").map(Number);
+        const compare = version.split(".").map(Number);
+
+        for(let i = 0; i < 3; i++) {
+            if(current[i] > compare[i]) {
+                return true;
+            }
+            else if(current[i] < compare[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public abstract pwd(...parts: string[]): string;
     public abstract setPWD(pwd: string): void;
 

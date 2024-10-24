@@ -1,5 +1,6 @@
 export * from "./AppConfig";
 export * from "./Config";
+export * from "./ConfigCollection";
 export * from "./Container";
 export * from "./FileSystem";
 export * from "./FS";

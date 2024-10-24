@@ -1,97 +1,88 @@
-import * as Path from "path";
 import {
-    mkdirSync,
-    existsSync,
-    createWriteStream,
-    createReadStream,
-    readdir,
-    rm,
     WriteFileOptions,
     MakeDirectoryOptions,
-    RmOptions
+    RmOptions,
+    WriteStream,
+    ReadStream
 } from "fs";
 
-import {FS} from "../makes";
+import {FileSystem} from "../makes";
 import {Injectable, Inject} from "../decorators";
 import {PLUGIN_DIR_KEY} from "../env";
 
 
 @Injectable()
 export class PluginConfigService {
+    protected _fs?: FileSystem;
+
     public constructor(
         @Inject(PLUGIN_DIR_KEY)
         protected readonly pluginDir: string
     ) {}
 
+    public get fs(): FileSystem {
+        if(!this._fs) {
+            if(!this.pluginDir) {
+                throw new Error("Plugin dir missed");
+            }
+
+            this._fs = new FileSystem(this.pluginDir);
+
+            if(!this._fs.exists()) {
+                this._fs.mkdir();
+            }
+        }
+
+        return this._fs;
+    }
+
+    /** @deprecated */
     public dataPath(...parts: string[]): string {
-        if(!this.pluginDir) {
-            throw new Error("Plugin dir missed");
-        }
-
-        if(!existsSync(this.pluginDir)) {
-            mkdirSync(this.pluginDir, {
-                recursive: true
-            });
-        }
-
-        return Path.join(this.pluginDir, ...parts);
+        return this.fs.path(...parts);
     }
 
-    public async mkdir(path: string, options?: MakeDirectoryOptions) {
-        await FS.mkdir(this.dataPath(path), options);
+    /** @deprecated */
+    public mkdir(path: string, options?: MakeDirectoryOptions): void {
+        this.fs.mkdir(path, options);
     }
 
-    public async writeFile(path: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions) {
-        await FS.writeFile(this.dataPath(path), data, options);
+    /** @deprecated */
+    public async writeFile(path: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): Promise<void> {
+        await this.fs.writeFile(path, data, options);
     }
 
-    public async writeJSON(path: string, data: any, options?: WriteFileOptions) {
-        await FS.writeJSON(this.dataPath(path), data, options);
+    /** @deprecated */
+    public writeJSON(path: string, data: any, options?: WriteFileOptions): void {
+        this.fs.writeJSON(path, data, options);
     }
 
-    public async readJSON(path: string) {
-        return FS.readJSON(this.dataPath(path));
+    /** @deprecated */
+    public readJSON(path: string): any {
+        return this.fs.readJSON(path);
     }
 
-    public exists(path: string) {
-        return existsSync(this.dataPath(path));
+    /** @deprecated */
+    public exists(path: string): boolean {
+        return this.fs.exists(path);
     }
 
-    public async rm(path: string, options: RmOptions = {}) {
-        const fullPath = this.dataPath(path);
-
-        return new Promise((resolve, reject) => {
-            rm(fullPath, options, (err) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(undefined);
-            });
-        });
+    /** @deprecated */
+    public async rm(path: string, options?: RmOptions): Promise<void> {
+        await this.fs.rm(path, options);
     }
 
+    /** @deprecated */
     public async readdir(path: string): Promise<string[]> {
-        const fullPath = this.dataPath(path);
-
-        return new Promise((resolve, reject) => {
-            readdir(fullPath, (err, files) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(files);
-            });
-        });
+        return this.fs.readdir(path);
     }
 
-    public createWriteSteam(path: string) {
-        return createWriteStream(this.dataPath(path));
+    /** @deprecated */
+    public createWriteSteam(path: string): WriteStream {
+        return this.fs.createWriteStream(path);
     }
 
-    public createReadStream(path: string) {
-        return createReadStream(this.dataPath(path));
+    /** @deprecated */
+    public createReadStream(path: string): ReadStream {
+        return this.fs.createReadStream(path);
     }
 }
