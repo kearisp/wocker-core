@@ -48,6 +48,11 @@ export namespace DockerServiceParams {
         context: string;
         src: string;
     };
+
+    export type Exec = {
+        cmd: string[];
+        tty?: boolean;
+    };
 }
 
 @Injectable("DOCKER_SERVICE")
@@ -65,6 +70,6 @@ export abstract class DockerService {
     public abstract pullImage(tag: string): Promise<void>;
     public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<void>;
-    public abstract exec(name: string, command?: string[], tty?: boolean): Promise<Duplex>;
+    public abstract exec(name: string, command?: DockerServiceParams.Exec|string[], tty?: boolean): Promise<Duplex>;
     public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream>;
 }
