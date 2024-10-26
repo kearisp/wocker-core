@@ -52,6 +52,7 @@ export namespace DockerServiceParams {
     export type Exec = {
         cmd: string[];
         tty?: boolean;
+        user?: string;
     };
 }
 
