@@ -158,6 +158,7 @@ export class Scanner {
 
                 command.action((input: CommandInput) => {
                     const args: any[] = [];
+                    const params = Object.values(input.arguments());
 
                     argsMeta.forEach((argMeta: any) => {
                         switch(argMeta.type) {
@@ -176,7 +177,7 @@ export class Scanner {
                         }
                     });
 
-                    return wrapper.instance[name](...args);
+                    return wrapper.instance[name](...args, ...params);
                 });
             }
         }
