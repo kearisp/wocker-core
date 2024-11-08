@@ -133,11 +133,11 @@ export class FileSystem {
         });
     }
 
-    public createWriteStream(path: string): fs.WriteStream {
-        return fs.createWriteStream(this.path(path));
+    public createWriteStream(path: string, options?: BufferEncoding): fs.WriteStream {
+        return fs.createWriteStream(this.path(path), options);
     }
 
-    public createReadStream(path: string): fs.ReadStream {
-        return fs.createReadStream(this.path(path));
+    public createReadStream(path: string, options?: BufferEncoding): fs.ReadStream {
+        return fs.createReadStream(this.path(path), options);
     }
 }
