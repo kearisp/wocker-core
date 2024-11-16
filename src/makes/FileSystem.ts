@@ -41,14 +41,16 @@ export class FileSystem {
         const fullPath = this.path(...parts);
 
         return new Promise((resolve, reject) => {
-            fs.readdir(fullPath, (err, files) => {
+            const callback = (err: NodeJS.ErrnoException | null, files: unknown) => {
                 if(err) {
                     reject(err);
                     return;
                 }
 
-                resolve(files);
-            });
+                resolve(files as string[]);
+            };
+
+            fs.readdir(fullPath, callback);
         });
     }
 
