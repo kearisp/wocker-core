@@ -1,4 +1,6 @@
+import "reflect-metadata";
 export {Cli} from "@kearisp/cli";
+export * from "./core";
 export * from "./decorators";
 export * from "./makes";
 export * from "./services";

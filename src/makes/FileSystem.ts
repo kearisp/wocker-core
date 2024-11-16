@@ -41,14 +41,16 @@ export class FileSystem {
         const fullPath = this.path(...parts);
 
         return new Promise((resolve, reject) => {
-            fs.readdir(fullPath, (err, files) => {
+            const callback = (err: NodeJS.ErrnoException | null, files: unknown) => {
                 if(err) {
                     reject(err);
                     return;
                 }
 
-                resolve(files);
-            });
+                resolve(files as string[]);
+            };
+
+            fs.readdir(fullPath, callback);
         });
     }
 
@@ -133,11 +135,11 @@ export class FileSystem {
         });
     }
 
-    public createWriteStream(path: string): fs.WriteStream {
-        return fs.createWriteStream(this.path(path));
+    public createWriteStream(path: string, options?: BufferEncoding): fs.WriteStream {
+        return fs.createWriteStream(this.path(path), options);
     }
 
-    public createReadStream(path: string): fs.ReadStream {
-        return fs.createReadStream(this.path(path));
+    public createReadStream(path: string, options?: BufferEncoding): fs.ReadStream {
+        return fs.createReadStream(this.path(path), options);
     }
 }

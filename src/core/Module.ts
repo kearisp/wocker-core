@@ -34,7 +34,7 @@ export class Module<TInput = any> {
     }
 
     public getWrapper(type: any): InstanceWrapper | undefined {
-        const token = typeof type !== "string"
+        const token = typeof type === "function"
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
             : type;
 

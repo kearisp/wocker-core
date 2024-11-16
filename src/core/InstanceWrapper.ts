@@ -38,7 +38,7 @@ export class InstanceWrapper<TInput = any> {
 
     get instance() {
         if(!this._instance && this.type) {
-            const types = Reflect.getMetadata(PARAMTYPES_METADATA, this.type) || [];
+            const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this.type) || [];
             const selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this.type) || [];
 
             if(selfTypes.length > 0) {

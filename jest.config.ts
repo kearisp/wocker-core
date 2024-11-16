@@ -134,16 +134,13 @@ const config: Config.InitialOptionsWithRootDir = {
     setupFiles: [
         // "<rootDir>/test/index.ts"
     ],
-
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     // setupFilesAfterEnv: [
     //     "<rootDir>/test/index.ts"
     // ],
-
-    // transform: {
-    //     "^.+\\.(t|j)s$": "babel-jest"
-    // },
-
+    transform: {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
     moduleNameMapper: {
         "^src/(.*)": "<rootDir>/src/$1"
     },
