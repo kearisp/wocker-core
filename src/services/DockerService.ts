@@ -27,6 +27,8 @@ export namespace DockerServiceParams {
         volumes?: string[];
         ports?: string[];
         cmd?: string[];
+        network?: string;
+        aliases?: string[];
     };
 
     export type ImageList = {
