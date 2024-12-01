@@ -12,6 +12,8 @@ export namespace DockerServiceParams {
         entrypoint?: string | string[];
         projectId?: string;
         tty?: boolean;
+        memory?: number;
+        memorySwap?: number;
         ulimits?: {
             [key: string]: {
                 hard?: number;

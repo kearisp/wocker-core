@@ -6,6 +6,7 @@ import {
     ReadStream
 } from "fs";
 
+import {AppConfigService} from "./AppConfigService";
 import {FileSystem} from "../makes";
 import {Injectable, Inject} from "../decorators";
 import {PLUGIN_DIR_KEY} from "../env";
@@ -16,6 +17,7 @@ export class PluginConfigService {
     protected _fs?: FileSystem;
 
     public constructor(
+        protected readonly appConfigService: AppConfigService,
         @Inject(PLUGIN_DIR_KEY)
         protected readonly pluginDir: string
     ) {}
@@ -34,6 +36,14 @@ export class PluginConfigService {
         }
 
         return this._fs;
+    }
+
+    public isVersionGTE(version: string): boolean {
+        if(!this.appConfigService.isVersionGTE) {
+            return false;
+        }
+
+        return this.appConfigService.isVersionGTE(version);
     }
 
     /** @deprecated */
