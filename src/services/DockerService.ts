@@ -72,7 +72,7 @@ export abstract class DockerService {
     public abstract imageRm(tag: string, force?: boolean): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
     public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream>;
-    public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<void>;
+    public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<NodeJS.ReadWriteStream>;
     public abstract exec(name: string, command?: DockerServiceParams.Exec|string[], tty?: boolean): Promise<Duplex>;
     public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream>;
 }

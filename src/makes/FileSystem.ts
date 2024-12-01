@@ -75,6 +75,12 @@ export class FileSystem {
         });
     }
 
+    public readFile(path: string) {
+        const filePath = this.path(path);
+
+        return fs.readFileSync(filePath);
+    }
+
     public readJSON(...paths: string[]): any {
         const filePath = this.path(...paths);
 
