@@ -93,6 +93,7 @@ describe("Config", (): void => {
         });
         expect(config.getMeta("TEST")).toEqual("1");
         expect(config.getMeta("TEST-2", "default")).toEqual("default");
+        expect(config.hasMeta("TEST")).toBeTruthy();
 
         config.unsetMeta("TEST");
 

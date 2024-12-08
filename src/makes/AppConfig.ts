@@ -150,6 +150,14 @@ export abstract class AppConfig {
         }
     }
 
+    public hasMeta(name: string): boolean {
+        if(!this.meta) {
+            return false;
+        }
+
+        return name in this.meta;
+    }
+
     public getMeta(name: string): string|undefined;
     public getMeta(name: string, defaultValue: string): string;
     public getMeta(name: string, defaultValue?: string): string|undefined {

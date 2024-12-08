@@ -7,7 +7,7 @@ interface Constructible<P extends ConfigProperties, C extends Config<P>> {
 
 
 export class ConfigCollection<C extends Config<P>, P extends ConfigProperties> {
-    public items: C[]
+    public items: C[];
 
     public constructor(
         protected ConfigClass: Constructible<P, C>,

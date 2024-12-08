@@ -1,51 +1,27 @@
 import fs, {
     readFile,
     writeFile,
-    copyFile,
-    mkdir,
     readdir,
-    existsSync,
     createWriteStream,
     createReadStream,
-    MakeDirectoryOptions,
     RmOptions
 } from "fs";
 
-import {FileSystem} from "./FileSystem";
+import {FileSystemManager} from "./FileSystemManager";
 
 
-export class FSManager {
-    public readonly source: FileSystem;
-    public readonly destination: FileSystem;
-
-    public constructor(source: string, destination: string) {
-        this.source = new FileSystem(source);
-        this.destination = new FileSystem(destination);
-    }
-
+/**
+ * @deprecated
+ */
+export class FSManager extends FileSystemManager {
     public path(...parts: string[]): string {
         return this.destination.path(...parts);
-    }
-
-    public async mkdir(path: string, options: MakeDirectoryOptions = {}) {
-        const fullPath = this.path(path);
-
-        return new Promise((resolve, reject) => {
-            mkdir(fullPath, options, (err) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(undefined);
-            });
-        });
     }
 
     public async readdir(path: string): Promise<string[]> {
         const filePath = this.path(path);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<string[]>((resolve, reject) => {
             readdir(filePath, (err, files) => {
                 if(err) {
                     reject(err);
@@ -53,31 +29,6 @@ export class FSManager {
                 }
 
                 resolve(files);
-            });
-        });
-    }
-
-    public exists(path: string) {
-        const fullPath = this.path(path);
-
-        return existsSync(fullPath);
-    }
-
-    public copy(path: string): Promise<void> {
-        const destination = this.path(path);
-
-        if(existsSync(destination)) {
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve, reject) => {
-            copyFile(this.source.path(path), destination, (err) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(undefined);
             });
         });
     }
@@ -103,7 +54,7 @@ export class FSManager {
         const json = JSON.stringify(data, null, 4);
         const filePath = this.path(path);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             writeFile(filePath, json, (err) => {
                 if(err) {
                     reject(err);

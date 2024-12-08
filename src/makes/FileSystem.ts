@@ -1,4 +1,4 @@
-import fs, {RmOptions, Stats, WriteFileOptions} from "fs";
+import fs, {RmOptions, Stats, WriteFileOptions, MakeDirectoryOptions} from "fs";
 import * as Path from "path";
 
 
@@ -31,16 +31,16 @@ export class FileSystem {
         return fs.statSync(fullPath);
     }
 
-    public mkdir(path: string = "", options?: fs.MakeDirectoryOptions): void {
+    public mkdir(path: string = "", options?: MakeDirectoryOptions): void {
         const fullPath = this.path(path);
 
-        fs.mkdirSync(fullPath, options);
+        fs.mkdirSync(fullPath, options as any);
     }
 
     public async readdir(...parts: string[]): Promise<string[]> {
         const fullPath = this.path(...parts);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<string[]>((resolve, reject) => {
             const callback = (err: NodeJS.ErrnoException | null, files: unknown) => {
                 if(err) {
                     reject(err);
@@ -57,7 +57,7 @@ export class FileSystem {
     public async readdirFiles(path: string = "", options?: ReaddirOptions): Promise<string[]> {
         const fullPath = this.path(path);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<string[]>((resolve, reject) => {
             fs.readdir(fullPath, options as any, (err, files) => {
                 if(err) {
                     reject(err);
@@ -73,6 +73,12 @@ export class FileSystem {
                 resolve(files);
             });
         });
+    }
+
+    public readFile(path: string): Buffer {
+        const filePath = this.path(path);
+
+        return fs.readFileSync(filePath);
     }
 
     public readJSON(...paths: string[]): any {
@@ -113,26 +119,10 @@ export class FileSystem {
         fs.writeFileSync(fullPath, json, options)
     }
 
-    public async rm(path: string, options?: RmOptions): Promise<void> {
+    public rm(path: string, options?: RmOptions): void {
         const fullPath = this.path(path);
 
-        return new Promise((resolve, reject) => {
-            const callback = (err: NodeJS.ErrnoException | null): void => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(undefined);
-            };
-
-            if(options) {
-                fs.rm(fullPath, options, callback);
-            }
-            else {
-                fs.rm(fullPath, callback);
-            }
-        });
+        fs.rmdirSync(fullPath, options);
     }
 
     public createWriteStream(path: string, options?: BufferEncoding): fs.WriteStream {

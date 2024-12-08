@@ -14,6 +14,9 @@ type ReadFileOptions = Abortable & {
     flag?: string;
 };
 
+/**
+ * @deprecated
+ */
 export class FS {
     public static async mkdir(path: PathLike, options?: MakeDirectoryOptions) {
         return new Promise((resolve, reject) => {
@@ -29,7 +32,7 @@ export class FS {
     }
 
     public static async readFile(filePath: PathOrFileDescriptor, options?: ReadFileOptions): Promise<string | Buffer> {
-        return new Promise((resolve, reject) => {
+        return new Promise<string|Buffer>((resolve, reject) => {
             fs.readFile(filePath, options, (err, res) => {
                 if(err) {
                     reject(err);
@@ -83,7 +86,7 @@ export class FS {
     public static async writeJSON(filePath: PathOrFileDescriptor, data: any, options?: WriteFileOptions): Promise<void> {
         const json = JSON.stringify(data, null, 4);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             const callback = (err: NodeJS.ErrnoException | null) => {
                 if(err) {
                     reject(err);
@@ -104,7 +107,7 @@ export class FS {
     }
 
     public static async readdir(path: PathLike): Promise<string[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise<string[]>((resolve, reject) => {
             fs.readdir(path, (err, files) => {
                 if(!err) {
                     resolve(files);
@@ -117,7 +120,7 @@ export class FS {
     }
 
     public static async rm(path: PathLike, options?: RmOptions): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             const callback = (err: NodeJS.ErrnoException | null) => {
                 if(err) {
                     reject(err);
