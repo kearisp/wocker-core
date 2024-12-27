@@ -4,22 +4,22 @@ import {Option as O} from "@kearisp/cli";
 import {ARGS_METADATA} from "../env";
 
 
-type Params = Omit<O, "name">;
+type AliasOrParams = string | Partial<Omit<O, "name">>;
 
-export const Option = (name: string, params?: Partial<Params>): ParameterDecorator => {
+export const Option = (name: string, aliasOrParams?: AliasOrParams): ParameterDecorator => {
     return (target: object, key: string | symbol | undefined, index: number): void => {
         if(!key) {
             return;
         }
 
         Reflect.defineMetadata(ARGS_METADATA, [
-            ...Reflect.getMetadata(ARGS_METADATA, target.constructor, key) || [],
             {
                 type: "option",
                 name,
-                params,
+                params: typeof aliasOrParams === "string" ? {alias: aliasOrParams} : aliasOrParams,
                 index
-            }
+            },
+            ...Reflect.getMetadata(ARGS_METADATA, target.constructor, key) || []
         ], target.constructor, key);
     };
 };

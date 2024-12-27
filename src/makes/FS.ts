@@ -14,6 +14,7 @@ type ReadFileOptions = Abortable & {
     flag?: string;
 };
 
+/* istanbul ignore next */
 /**
  * @deprecated
  */

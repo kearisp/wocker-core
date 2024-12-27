@@ -1,10 +1,8 @@
-import "reflect-metadata";
-
 import {ARGS_METADATA} from "../env";
 
 
 export const Param = (name: string): ParameterDecorator => {
-    return (target, propertyKey, parameterIndex): void => {
+    return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
         if(!propertyKey) {
             return;
         }

@@ -16,6 +16,12 @@ describe("Project", (): void => {
             super(data);
         }
 
+        public async getSecret(key: string, byDefault: string) {
+            return byDefault;
+        }
+
+        public async setSecret() {}
+
         public async save() {
             //
         }

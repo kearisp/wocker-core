@@ -16,7 +16,7 @@ describe("Config", (): void => {
             super(data);
         }
 
-        public async save() {
+        public save() {
             //
         }
     }
@@ -36,27 +36,40 @@ describe("Config", (): void => {
 
         config.removeProject("test");
 
-        expect(config.projects).toEqual(undefined);
+        expect(config.projects).toEqual([]);
 
         config.removeProject("test-2");
 
-        expect(config.projects).toEqual(undefined);
+        expect(config.projects).toEqual([]);
     });
 
     it("Plugin", (): void => {
         const config = new TestConfig({});
 
-        const PLUGIN_1 = "test-1";
+        const PLUGIN_1 = "test-1",
+              PLUGIN_2 = "test-2";
 
         config.addPlugin(PLUGIN_1);
         config.addPlugin(PLUGIN_1);
 
-        expect(config.plugins).toEqual([PLUGIN_1]);
+        expect(config.plugins).toEqual([{name: PLUGIN_1, env: "latest"}]);
+
+        config.addPlugin(PLUGIN_2, "beta");
+
+        expect(config.plugins).toEqual([
+            {name: PLUGIN_1, env: "latest"},
+            {name: PLUGIN_2, env: "beta"}
+        ]);
 
         config.removePlugin(PLUGIN_1);
-        config.removePlugin(PLUGIN_1);
 
-        expect(config.plugins).toEqual(undefined);
+        expect(config.plugins).toEqual([
+            {name: PLUGIN_2, env: "beta"}
+        ]);
+
+        config.removePlugin(PLUGIN_2);
+
+        expect(config.plugins).toEqual([]);
     });
 
     it("Preset", (): void => {
@@ -71,7 +84,7 @@ describe("Config", (): void => {
         config.registerPreset("test", PRESET_SOURCE_INTERNAL);
 
         expect(config.presets).toEqual([
-            {name: "test", source: PRESET_SOURCE_INTERNAL}
+            {name: "test", source: PRESET_SOURCE_EXTERNAL, path: "/test"}
         ]);
 
         config.unregisterPreset("test");
@@ -79,7 +92,7 @@ describe("Config", (): void => {
         config.unregisterPreset("test");
         config.unregisterPreset("test");
 
-        expect(config.presets).toBeUndefined();
+        expect(config.presets).toEqual([]);
     });
 
     it("Meta", (): void => {
@@ -116,10 +129,10 @@ describe("Config", (): void => {
         expect(config.env).toBeUndefined();
     });
 
-    it("toJson", (): void => {
+    it("toObject", (): void => {
         const config = new TestConfig({});
 
-        expect(config.toJson()).toEqual({
+        expect(config.toObject()).toEqual({
             logLevel: "off"
         });
     });

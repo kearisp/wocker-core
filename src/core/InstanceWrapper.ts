@@ -16,8 +16,8 @@ export class InstanceWrapper<TInput = any> {
     public readonly type?: Type<TInput>;
 
     public constructor(
-        private readonly module: Module,
-        private readonly provider: Provider<TInput>,
+        protected readonly module: Module,
+        protected readonly provider: Provider<TInput>,
         protected _instance?: TInput
     ) {
         if("provide" in this.provider && "useValue" in this.provider) {
@@ -36,8 +36,12 @@ export class InstanceWrapper<TInput = any> {
         this.type = this.provider;
     }
 
-    get instance() {
-        if(!this._instance && this.type) {
+    public get instance(): TInput {
+        if(!this._instance) {
+            if(!this.type) {
+                throw new Error("Type not defined");
+            }
+
             const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this.type) || [];
             const selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this.type) || [];
 

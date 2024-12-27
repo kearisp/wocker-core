@@ -6,7 +6,7 @@
 
 # Source code
 /src
-*.spec.ts
+/test
 *.spec.js
 
 # Build configs

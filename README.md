@@ -2,6 +2,14 @@
 
 ###### Docker workspace for web projects
 
+[![npm version](https://img.shields.io/npm/v/@wocker/core.svg)](https://www.npmjs.com/package/@wocker/core)
+[![Publish](https://github.com/kearisp/wocker-core/actions/workflows/publish-latest.yml/badge.svg?event=release)](https://github.com/kearisp/wocker-core/actions/workflows/publish-latest.yml)
+[![License](https://img.shields.io/npm/l/@wocker/core)](https://github.com/kearisp/wocker-core/blob/main/LICENSE)
+
+[![npm total downloads](https://img.shields.io/npm/dt/@wocker/core.svg)](https://www.npmjs.com/package/@wocker/core)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@wocker/core)](https://bundlephobia.com/package/@wocker/core)
+![Coverage](https://gist.githubusercontent.com/kearisp/f17f46c6332ea3bb043f27b0bddefa9f/raw/coverage-wocker-core-latest.svg)
+
 ## Installation
 
 **Note:** It is recommended to install Wocker globally to ensure accessibility from any directory in your terminal.

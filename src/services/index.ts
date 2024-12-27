@@ -1,6 +1,7 @@
 export * from "./AppConfigService";
 export * from "./AppEventsService";
 export * from "./DockerService";
+export * from "./KeystoreService";
 export * from "./LogService";
 export * from "./PluginConfigService";
 export * from "./PresetService";

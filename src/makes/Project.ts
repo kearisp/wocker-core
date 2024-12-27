@@ -264,7 +264,10 @@ export abstract class Project {
         }
     }
 
-    public abstract save(): Promise<void>;
+    public abstract getSecret(key: string, byDefault: string): Promise<string>;
+    public abstract getSecret(key: string, byDefault?: string): Promise<string | undefined>;
+    public abstract setSecret(key: string, value: string): Promise<void>;
+    public abstract save(): void;
 
     public toJSON(): ProjectProperties {
         return {

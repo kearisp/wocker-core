@@ -2,7 +2,7 @@ import {PickProperties} from "../types";
 
 
 type TextOption = {
-    type: "string" | "number" | "int";
+    type: "text" | "string" | "number" | "int" | "password";
     message?: string;
     default?: string | number;
 };
@@ -10,32 +10,35 @@ type TextOption = {
 type ConfirmOption = {
     type: "boolean";
     message?: string;
+    required?: boolean;
     default?: boolean;
 };
 
 type SelectOption = {
     type: "select";
+    required?: boolean;
+    multiple?: boolean;
     options: string[]|{label?: string; value: string}[]|{[name: string]: string};
     message?: string;
     default?: string;
 };
 
-type AnyOption = TextOption | ConfirmOption | SelectOption;
+export type PresetVariableConfig = TextOption | ConfirmOption | SelectOption;
 
 export type PresetProperties = PickProperties<Preset>;
 
 export abstract class Preset {
     public name: string;
-    public source?: PresetType;
+    public source?: PresetSource;
     public version: string;
     public type?: string;
     public image?: string;
     public dockerfile?: string;
     public buildArgsOptions?: {
-        [name: string]: AnyOption;
+        [name: string]: PresetVariableConfig;
     };
     public envOptions?: {
-        [name: string]: AnyOption;
+        [name: string]: PresetVariableConfig;
     };
     public path?: string;
     public volumes?: string[];
@@ -55,30 +58,36 @@ export abstract class Preset {
         this.volumeOptions = data.volumeOptions;
     }
 
-    public abstract save(): Promise<void>;
+    public abstract save(): void;
 
-    public abstract delete(): Promise<void>;
+    public abstract delete(): void;
 
-    // noinspection JSUnusedGlobalSymbols
+    /**
+     * @deprecated
+     */
     public toJSON(): PresetProperties {
+        return this.toObject();
+    }
+
+    public toObject(): PresetProperties {
         return {
             name: this.name,
             version: this.version,
             type: this.type,
-            source: this.source,
             image: this.image,
             dockerfile: this.dockerfile,
             buildArgsOptions: this.buildArgsOptions,
             envOptions: this.envOptions,
-            path: this.path,
             volumes: this.volumes,
             volumeOptions: this.volumeOptions
         };
     }
 }
 
-export const PRESET_SOURCE_INTERNAL = "internal";
-export const PRESET_SOURCE_EXTERNAL = "external";
-export const PRESET_SOURCE_GITHUB = "github";
+export const PRESET_SOURCE_INTERNAL = "internal" as const;
+export const PRESET_SOURCE_EXTERNAL = "external" as const;
+export const PRESET_SOURCE_GITHUB = "github" as const;
 
-export type PresetType = typeof PRESET_SOURCE_INTERNAL | typeof PRESET_SOURCE_EXTERNAL | typeof PRESET_SOURCE_GITHUB;
+export type PresetSource = typeof PRESET_SOURCE_INTERNAL |
+                           typeof PRESET_SOURCE_EXTERNAL |
+                           typeof PRESET_SOURCE_GITHUB;

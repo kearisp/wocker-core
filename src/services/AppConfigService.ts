@@ -1,12 +1,12 @@
 import {Injectable} from "../decorators";
-import {AppConfig} from "../makes";
+import {AppConfig, PresetSource} from "../makes";
 
 
 @Injectable("APP_CONFIG")
 export abstract class AppConfigService {
-    protected config?: AppConfig;
+    public abstract get config(): AppConfig;
 
-    get version(): string {
+    public get version(): string {
         return "0.0.0";
     }
 
@@ -32,13 +32,34 @@ export abstract class AppConfigService {
     public abstract dataPath(...args: string[]): string;
     public abstract pluginsPath(...args: string[]): string;
 
+    /**
+     * @deprecated
+     */
     public getConfig(): AppConfig {
-        if(!this.config) {
-            this.config = this.loadConfig();
-        }
-
         return this.config;
     }
 
-    protected abstract loadConfig(): AppConfig;
+    public addProject(id: string, name: string, path: string): void {
+        this.config.addProject(id, name, path);
+        this.config.save();
+    }
+
+    public removeProject(id: string): void {
+        this.config.removeProject(id);
+        this.config.save();
+    }
+
+    public registerPreset(name: string, source: PresetSource, path?: string): void {
+        this.config.registerPreset(name, source, path);
+        this.save();
+    }
+
+    public unregisterPreset(name: string): void {
+        this.config.unregisterPreset(name);
+        this.config.save();
+    }
+
+    public save(): void {
+        this.config.save();
+    }
 }

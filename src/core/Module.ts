@@ -2,18 +2,19 @@ import {Provider} from "../types/Provider";
 import {Type} from "../types/Type";
 import {Container} from "./Container";
 import {InstanceWrapper} from "./InstanceWrapper";
+import {ControllerWrapper} from "./ControllerWrapper";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
 export class Module<TInput = any> {
     public imports: Map<any, InstanceWrapper> = new Map();
-    public controllers: Map<any, InstanceWrapper> = new Map();
+    public controllers: Map<any, ControllerWrapper> = new Map();
     public providers: Map<any, InstanceWrapper> = new Map();
     public exports: Set<any> = new Set();
 
     public constructor(
         public readonly container: Container,
-        public type: TInput
+        public readonly type: TInput
     ) {}
 
     public get<TInput = any, TResult = TInput>(type: Type<TInput> | Function | string | symbol): TResult {
@@ -54,21 +55,9 @@ export class Module<TInput = any> {
     }
 
     public addController(type: any): void {
-        this.controllers.set(type, new InstanceWrapper(this, type));
+        const controllerWrapper = new ControllerWrapper(this, type);
 
-        for(const name of Object.getOwnPropertyNames(type.prototype)) {
-            const descriptor = Object.getOwnPropertyDescriptor(type.prototype, name);
-
-            if(!descriptor) {
-                continue;
-            }
-
-            const command = Reflect.getMetadata("command", descriptor.value);
-
-            if(!command) {
-                continue;
-            }
-        }
+        this.controllers.set(type, controllerWrapper);
     }
 
     public addExport(type: any): void {
