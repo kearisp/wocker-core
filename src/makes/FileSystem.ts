@@ -37,21 +37,10 @@ export class FileSystem {
         fs.mkdirSync(fullPath, options as any);
     }
 
-    public async readdir(...parts: string[]): Promise<string[]> {
-        const fullPath = this.path(...parts);
+    public readdir(path: string): string[] {
+        const fullPath = this.path(path);
 
-        return new Promise<string[]>((resolve, reject) => {
-            const callback = (err: NodeJS.ErrnoException | null, files: unknown) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(files as string[]);
-            };
-
-            fs.readdir(fullPath, callback);
-        });
+        return fs.readdirSync(fullPath);
     }
 
     public async readdirFiles(path: string = "", options?: ReaddirOptions): Promise<string[]> {
@@ -89,27 +78,10 @@ export class FileSystem {
         return JSON.parse(res.toString());
     }
 
-    public writeFile(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: fs.WriteFileOptions): Promise<void> {
+    public writeFile(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: fs.WriteFileOptions): void {
         const fullPath = this.path(path);
 
-        return new Promise((resolve, reject) => {
-            const callback = (err: NodeJS.ErrnoException | null): void => {
-                if(err) {
-                    reject(err);
-
-                    return;
-                }
-
-                resolve(undefined);
-            };
-
-            if(options) {
-                fs.writeFile(fullPath, data, options, callback);
-            }
-            else {
-                fs.writeFile(fullPath, data, callback);
-            }
-        });
+        fs.writeFileSync(fullPath, data, options);
     }
 
     public writeJSON(path: string, data: any, options?: WriteFileOptions): void {
@@ -119,10 +91,16 @@ export class FileSystem {
         fs.writeFileSync(fullPath, json, options)
     }
 
+    public appendFile(path: string, data: string | Uint8Array, options?: WriteFileOptions): void {
+        const fullPath = this.path(path);
+
+        fs.appendFileSync(fullPath, data, options);
+    }
+
     public rm(path: string, options?: RmOptions): void {
         const fullPath = this.path(path);
 
-        fs.rmdirSync(fullPath, options);
+        fs.rmSync(fullPath, options);
     }
 
     public createWriteStream(path: string, options?: BufferEncoding): fs.WriteStream {

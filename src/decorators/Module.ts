@@ -2,14 +2,14 @@ import {MODULE_METADATA, IS_MODULE_METADATA} from "../env";
 import {Provider} from "../types/Provider";
 
 
-export type ModuleConfig = {
+export type ModuleMetadata = {
     [MODULE_METADATA.CONTROLLERS]?: any[];
     [MODULE_METADATA.PROVIDERS]?: Provider[];
     [MODULE_METADATA.IMPORTS]?: any[];
     [MODULE_METADATA.EXPORTS]?: any[];
 };
 
-export const Module = (config: ModuleConfig): ClassDecorator => {
+export const Module = (config: ModuleMetadata): ClassDecorator => {
     const {
         [MODULE_METADATA.CONTROLLERS]: controllers = [],
         [MODULE_METADATA.PROVIDERS]: providers = [],
@@ -25,3 +25,4 @@ export const Module = (config: ModuleConfig): ClassDecorator => {
         Reflect.defineMetadata(MODULE_METADATA.EXPORTS, exports, target);
     };
 };
+

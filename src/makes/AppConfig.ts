@@ -1,5 +1,5 @@
-import {EnvConfig, PickProperties} from "../types";
-import {PRESET_SOURCE_EXTERNAL, PresetType} from "./Preset";
+import {EnvConfig} from "../types";
+import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL, PresetSource} from "./Preset";
 
 
 type ProjectData = {
@@ -10,51 +10,84 @@ type ProjectData = {
     src?: string;
 };
 
+type PluginData = {
+    name: string;
+    env: "latest" | "beta";
+};
+
 type PresetData = {
     name: string;
-    source: PresetType;
+    source: PresetSource;
     path?: string;
 };
 
-export type AppConfigProperties = Omit<PickProperties<AppConfig>, "logLevel"> & {
-    logLevel?: AppConfig["logLevel"];
+export type AppConfigProperties = {
+    debug?: boolean;
+    keystore?: string;
+    logLevel?: "off" | "info" | "warn" | "error";
+    plugins?: PluginData[];
+    presets?: PresetData[];
+    projects?: ProjectData[];
+    meta?: EnvConfig;
+    env?: EnvConfig;
 };
 
 export abstract class AppConfig {
     public debug?: boolean;
+    public keystore?: string;
     public logLevel: "off" | "info" | "warn" | "error" = "off";
-    public plugins?: string[];
-    public presets?: PresetData[];
-    public projects?: ProjectData[];
+    public plugins: PluginData[];
+    public presets: PresetData[];
+    public projects: ProjectData[];
     public meta?: EnvConfig;
     public env?: EnvConfig;
 
     protected constructor(data: AppConfigProperties) {
-        Object.assign(this, data);
+        const {
+            plugins = [],
+            presets = [],
+            projects = [],
+            ...rest
+        } = data;
+
+        Object.assign(this as Object, rest);
+
+        this.plugins = plugins.map((plugin) => {
+            if(typeof plugin === "string") {
+                return {
+                    name: plugin,
+                    env: "latest"
+                };
+            }
+
+            return plugin;
+        });
+
+        this.presets = presets;
+        this.projects = projects;
     }
 
-    public addPlugin(plugin: string): void {
-        if(!this.plugins) {
-            this.plugins = [];
-        }
+    public addPlugin(name: string, env: PluginData["env"] = "latest"): void {
+        const plugin = this.plugins.find((plugin) => plugin.name === name);
 
-        if(this.plugins.includes(plugin)) {
+        if(plugin) {
+            plugin.name = name;
+            plugin.env = env;
             return;
         }
 
-        this.plugins.push(plugin);
+        this.plugins.push({
+            name,
+            env
+        });
     }
 
-    public removePlugin(removePlugin: string): void {
-        if(!this.plugins) {
-            return;
-        }
-
-        this.plugins = this.plugins.filter((plugin) => plugin !== removePlugin);
-
+    public removePlugin(name: string): void {
         if(this.plugins.length === 0) {
-            delete this.plugins;
+            return;
         }
+
+        this.plugins = this.plugins.filter((plugin) => plugin.name !== name);
     }
 
     public getProject(id: string): ProjectData|undefined {
@@ -95,25 +128,25 @@ export abstract class AppConfig {
     }
 
     public removeProject(id: string): void {
-        if(!this.projects) {
+        if(this.projects.length === 0) {
             return;
         }
 
         this.projects = this.projects.filter((projectData): boolean => {
             return projectData.id !== id;
         });
-
-        if(this.projects.length === 0) {
-            delete this.projects;
-        }
     }
 
-    public registerPreset(name: string, source: PresetType, path?: string): void {
-        if(!this.presets) {
-            this.presets = [];
+    public registerPreset(name: string, source: PresetSource, path?: string): void {
+        if(source === PRESET_SOURCE_INTERNAL) {
+            return;
         }
 
         let presetData = this.presets.find((preset): boolean => {
+            if(source === PRESET_SOURCE_EXTERNAL && preset.path === path) {
+                return true;
+            }
+
             return preset.name === name;
         });
 
@@ -137,17 +170,13 @@ export abstract class AppConfig {
     }
 
     public unregisterPreset(name: string): void {
-        if(!this.presets) {
+        if(this.presets.length === 0) {
             return;
         }
 
         this.presets = this.presets.filter((preset) => {
             return preset.name !== name;
         });
-
-        if(this.presets.length === 0) {
-            delete this.presets;
-        }
     }
 
     public hasMeta(name: string): boolean {
@@ -218,25 +247,35 @@ export abstract class AppConfig {
         }
     }
 
-    public abstract save(): Promise<void>;
+    public abstract save(): void;
 
+    /**
+     * @deprecated
+     */
     public toJson(): AppConfigProperties {
-        const json: any = {
+        return this.toObject();
+    }
+
+    public toObject(): AppConfigProperties {
+        return {
             debug: this.debug,
             logLevel: this.logLevel,
-            plugins: this.plugins,
-            projects: this.projects,
-            presets: this.presets,
+            keystore: this.keystore,
+            plugins: this.plugins.length > 0 ? this.plugins : undefined,
+            presets: this.presets.length > 0 ? this.presets : undefined,
+            projects: this.projects.length > 0 ? this.projects : undefined,
             env: this.env,
             meta: this.meta
         };
+    }
 
-        return Object.keys(json).reduce((res: AppConfigProperties, key: string) => {
-            if(typeof json[key] !== "undefined") {
-                (res as any)[key] = json[key];
-            }
+    public toJsString(): string {
+        const json = JSON.stringify(this.toObject(), null, 4);
 
-            return res;
-        }, {});
+        return `// Wocker config\nexports.config = ${json};`;
+    }
+
+    public toString(): string {
+        return JSON.stringify(this.toObject(), null, 4);
     }
 }

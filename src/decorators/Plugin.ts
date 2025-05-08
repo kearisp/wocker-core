@@ -1,8 +1,8 @@
-import {Module, ModuleConfig} from "./Module";
+import {Module, ModuleMetadata} from "./Module";
 import {PLUGIN_NAME_METADATA} from "../env";
 
 
-type PluginConfig = ModuleConfig & {
+type PluginConfig = ModuleMetadata & {
     [PLUGIN_NAME_METADATA]: string;
 };
 

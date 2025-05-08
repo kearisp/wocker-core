@@ -9,3 +9,10 @@ export * from "./Module";
 export * from "./Option";
 export * from "./Param";
 export * from "./Plugin";
+
+export type {
+    /**
+     * @deprecated
+     */
+    ModuleMetadata as ModuleConfig
+} from "./Module";

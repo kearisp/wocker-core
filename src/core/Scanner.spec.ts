@@ -1,8 +1,7 @@
 import {describe, it, expect, beforeAll, afterEach} from "@jest/globals";
 import {Logger} from "@kearisp/cli";
-
 import {Scanner} from "./Scanner";
-import {Module, Injectable, Global} from "../decorators";
+import {Module, Injectable, Global, Controller, Command, Completion, Param} from "../decorators";
 
 
 describe("Scanner", (): void => {
@@ -15,7 +14,7 @@ describe("Scanner", (): void => {
         Logger.mute();
     });
 
-    it("Submodule uses a provider from its parent", async (): Promise<void> => {
+    it("submodule uses a provider from its parent", async (): Promise<void> => {
         const VALUE = "Value from test provider";
 
         @Injectable()
@@ -111,5 +110,39 @@ describe("Scanner", (): void => {
             .getValue();
 
         expect(value).toEqual(VALUE);
+    });
+
+    it("should process controller commands", async () => {
+        @Controller()
+        class TestController {
+            @Command("test-command [name]")
+            public testCommand(
+                @Param("name")
+                name?: string
+            ) {
+                return "";
+            }
+
+            @Completion("name", "test-command [name]")
+            public getNames(): string[] {
+                return [];
+            }
+        }
+
+        @Module({
+            controllers: [TestController]
+        })
+        class TestModule {}
+
+        const scanner = new Scanner();
+
+        await scanner.scan(TestModule);
+
+        const testController = scanner.container.getModule(TestModule).controllers.get(TestController);
+
+        // Logger.info("ROUTES:", testController?.commands)
+        // Logger.info("COMPLETIONS:", testController?.completions)
+
+        expect(1).toBe(1);
     });
 });

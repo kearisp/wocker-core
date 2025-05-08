@@ -78,7 +78,7 @@ export class PluginConfigService {
 
     /** @deprecated */
     public async rm(path: string, options?: RmOptions): Promise<void> {
-        await this.fs.rm(path, options);
+        this.fs.rm(path, options);
     }
 
     /** @deprecated */

@@ -7,12 +7,12 @@ import {Option} from "./Option";
 it("Option", (): void => {
     class TestClass {
         public constructor(
-            @Option("value")
+            @Option("value", "v")
             _value: string
         ) {}
 
         public testMethod(
-            @Option("value")
+            @Option("value", "v")
             _value: string
         ): void {}
     }
