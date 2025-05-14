@@ -1,7 +1,14 @@
+/**
+ * @deprecated
+ */
 export type ConfigProperties = {
     name: string;
 };
 
+/**
+ * @deprecated
+ */
+/* istanbul ignore next */
 export class Config<T extends ConfigProperties> {
     public name: string;
 

@@ -4,6 +4,12 @@ import {AppConfig, PresetSource} from "../makes";
 
 @Injectable("APP_CONFIG")
 export abstract class AppConfigService {
+    public get experimentalFeatures(): string[] {
+        return [
+            "projectComposeType"
+        ];
+    }
+
     public abstract get config(): AppConfig;
 
     public get version(): string {
@@ -41,12 +47,12 @@ export abstract class AppConfigService {
 
     public addProject(id: string, name: string, path: string): void {
         this.config.addProject(id, name, path);
-        this.config.save();
+        this.save();
     }
 
     public removeProject(id: string): void {
         this.config.removeProject(id);
-        this.config.save();
+        this.save();
     }
 
     public registerPreset(name: string, source: PresetSource, path?: string): void {
@@ -56,10 +62,22 @@ export abstract class AppConfigService {
 
     public unregisterPreset(name: string): void {
         this.config.unregisterPreset(name);
-        this.config.save();
+        this.save();
     }
 
-    public save(): void {
-        this.config.save();
+    public getMeta(name: string, byDefault?: string): string|undefined;
+    public getMeta(name: string, byDefault: string): string;
+    public getMeta(name: string, byDefault?: string): string|undefined {
+        return this.config.getMeta(name, byDefault);
     }
+
+    public setMeta(name: string, value: string): void {
+        this.config.setMeta(name, value);
+    }
+
+    public unsetMeta(name: string): void {
+        this.config.unsetMeta(name);
+    }
+
+    public abstract save(): void;
 }

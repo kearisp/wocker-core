@@ -3,6 +3,7 @@ export * from "./AppEventsService";
 export * from "./DockerService";
 export * from "./KeystoreService";
 export * from "./LogService";
+export * from "./ModemService";
 export * from "./PluginConfigService";
 export * from "./PresetService";
 export * from "./ProjectService";

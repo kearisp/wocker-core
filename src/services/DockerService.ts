@@ -1,6 +1,7 @@
-import {Container, ImageInfo, VolumeCreateResponse} from "dockerode";
-import {Injectable} from "../decorators";
+import type Docker from "dockerode";
+import type {Container, ImageInfo, VolumeCreateResponse} from "dockerode";
 import {Duplex} from "node:stream";
+import {Injectable} from "../decorators";
 
 
 export namespace DockerServiceParams {
@@ -62,6 +63,7 @@ export namespace DockerServiceParams {
 
 @Injectable("DOCKER_SERVICE")
 export abstract class DockerService {
+    public abstract get docker(): Docker;
     public abstract createContainer(params: DockerServiceParams.CreateContainer): Promise<Container>;
     public abstract getContainer(name: string): Promise<Container|null>;
     public abstract removeContainer(name: string): Promise<void>;

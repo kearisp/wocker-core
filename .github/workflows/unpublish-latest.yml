@@ -22,6 +22,7 @@ jobs:
                 registry-url: 'https://registry.npmjs.org'
 
           - name: Delete package version
+            shell: bash
             env:
                 NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
             run: |

@@ -2,6 +2,7 @@ import "reflect-metadata";
 export {Cli, CommandNotFoundError} from "@kearisp/cli";
 export * from "./core";
 export * from "./decorators";
+export * from "./exceptions";
 export * from "./makes";
 export * from "./services";
 export * from "./types";

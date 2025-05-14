@@ -1,11 +1,17 @@
 import {Config, ConfigProperties} from "./Config";
 
 
+/**
+ * @deprecated
+ */
 interface Constructible<P extends ConfigProperties, C extends Config<P>> {
     new (props: P): C;
 }
 
-
+/**
+ * @deprecated
+ */
+/* istanbul ignore next */
 export class ConfigCollection<C extends Config<P>, P extends ConfigProperties> {
     public items: C[];
 

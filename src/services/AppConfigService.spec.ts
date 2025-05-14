@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {AppConfigService} from "./AppConfigService";
-import {AppConfig, AppConfigProperties, PRESET_SOURCE_EXTERNAL} from "../makes";
+import {AppConfig, PRESET_SOURCE_EXTERNAL} from "../makes";
 
 
 describe("AppConfigService", () => {
@@ -32,26 +32,22 @@ describe("AppConfigService", () => {
 
         public get config(): AppConfig {
             if(!this._config) {
-                this._config = new class extends AppConfig {
-                    constructor(props: AppConfigProperties) {
-                        super(props);
-                    }
-
-                    public save() {}
-                }({});
+                this._config = new AppConfig({});
             }
 
             return this._config;
         }
+
+        public save(): void {}
     }
 
-    it("should ...", () => {
+    it("should return instance of AppConfig when getting config", (): void => {
         const testConfigService = new TestConfigService();
 
         expect(testConfigService.getConfig()).toBeInstanceOf(AppConfig);
     });
 
-    it("should ...", () => {
+    it("should correctly compare versions using isVersionGTE", (): void => {
         const testConfigService = new TestConfigService();
 
         expect(testConfigService.isVersionGTE("0.0.-1")).toBeTruthy();
@@ -60,14 +56,13 @@ describe("AppConfigService", () => {
         expect(testConfigService.isVersionGTE("1.0.0")).toBeFalsy();
     });
 
-    it("should ...", () => {
+    it("should properly manage project addition and removal", (): void => {
         const testConfigService = new TestConfigService();
 
         testConfigService.addProject("test", "test", "/home/test");
 
         expect(testConfigService.config.projects).toEqual([
             {
-                id: "test",
                 name: "test",
                 path: "/home/test"
             }
@@ -80,7 +75,7 @@ describe("AppConfigService", () => {
         testConfigService.save();
     });
 
-    it("should ...", () => {
+    it("should properly manage preset registration and unregistration", (): void => {
         const testConfigService = new TestConfigService();
 
         testConfigService.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/home/test");

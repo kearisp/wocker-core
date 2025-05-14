@@ -1,18 +1,50 @@
-import fs, {RmOptions, Stats, WriteFileOptions, MakeDirectoryOptions} from "fs";
-import * as Path from "path";
+import FS from "fs";
+import Path from "path";
+import {Readable} from "stream";
+import {FileSystemDriver, ReadStreamOptions, WriteStreamOptions} from "../types";
+import {File} from "./File";
 
 
-type ReaddirOptions = fs.ObjectEncodingOptions & {
+type ReaddirOptions = FS.ObjectEncodingOptions & {
     recursive?: boolean | undefined;
+};
+
+type ReadlineOptions = {
+    encoding?: BufferEncoding;
+    start?: number;
+    end?: number;
 };
 
 export class FileSystem {
     public constructor(
-        protected readonly source: string
+        protected readonly source: string,
+        protected readonly driver: FileSystemDriver = FS
     ) {}
 
     public path(...parts: string[]): string {
         return Path.join(this.source, ...parts);
+    }
+
+    public cd(path: string): FileSystem {
+        return new FileSystem(
+            this.path(path),
+            this.driver
+        );
+    }
+
+    public readBytes(path: string, position?: number, size?: number): Buffer<ArrayBuffer> {
+        const file = this.open(path, "r");
+
+        try {
+            return file.readBytes(position, size);
+        }
+        finally {
+            file.close();
+        }
+    }
+
+    public open(path: string, flags: FS.OpenMode, mode?: FS.Mode | null): File {
+        return new File(this.path(path), flags, mode, this.driver);
     }
 
     public basename(...parts: string[]): string {
@@ -22,32 +54,35 @@ export class FileSystem {
     public exists(...parts: string[]): boolean {
         const fullPath = this.path(...parts);
 
-        return fs.existsSync(fullPath);
+        return this.driver.existsSync(fullPath);
     }
 
-    public stat(...parts: string[]): Stats {
+    public stat(...parts: string[]): FS.Stats {
         const fullPath = this.path(...parts);
 
-        return fs.statSync(fullPath);
+        return this.driver.statSync(fullPath);
     }
 
-    public mkdir(path: string = "", options?: MakeDirectoryOptions): void {
+    public mkdir(path: string = "", options?: FS.MakeDirectoryOptions): void {
         const fullPath = this.path(path);
 
-        fs.mkdirSync(fullPath, options as any);
+        this.driver.mkdirSync(fullPath, options as any);
     }
 
-    public readdir(path: string): string[] {
+    public readdir(path: string = "/", options?: {recursive?: boolean;}): string[] {
         const fullPath = this.path(path);
 
-        return fs.readdirSync(fullPath);
+        return this.driver.readdirSync(fullPath, options) as string[];
     }
 
+    /**
+     * @deprecated
+     */
     public async readdirFiles(path: string = "", options?: ReaddirOptions): Promise<string[]> {
         const fullPath = this.path(path);
 
         return new Promise<string[]>((resolve, reject) => {
-            fs.readdir(fullPath, options as any, (err, files) => {
+            this.driver.readdir(fullPath, options as any, (err, files) => {
                 if(err) {
                     reject(err);
                     return;
@@ -64,50 +99,91 @@ export class FileSystem {
         });
     }
 
-    public readFile(path: string): Buffer {
+    public readFile(path: string): string | Buffer {
         const filePath = this.path(path);
 
-        return fs.readFileSync(filePath);
+        return this.driver.readFileSync(filePath);
     }
 
     public readJSON(...paths: string[]): any {
         const filePath = this.path(...paths);
 
-        const res: Buffer = fs.readFileSync(filePath);
+        const res: string | Buffer = this.driver.readFileSync(filePath);
 
         return JSON.parse(res.toString());
     }
 
-    public writeFile(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: fs.WriteFileOptions): void {
+    public writeFile(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: FS.WriteFileOptions): void {
         const fullPath = this.path(path);
 
-        fs.writeFileSync(fullPath, data, options);
+        this.driver.writeFileSync(fullPath, data, options);
     }
 
-    public writeJSON(path: string, data: any, options?: WriteFileOptions): void {
+    public writeJSON(path: string, data: any, options?: FS.WriteFileOptions): void {
         const fullPath = this.path(path);
         const json = JSON.stringify(data, null, 4);
 
-        fs.writeFileSync(fullPath, json, options)
+        this.driver.writeFileSync(fullPath, json, options)
     }
 
-    public appendFile(path: string, data: string | Uint8Array, options?: WriteFileOptions): void {
+    public appendFile(path: string, data: string | Uint8Array, options?: FS.WriteFileOptions): void {
         const fullPath = this.path(path);
 
-        fs.appendFileSync(fullPath, data, options);
+        this.driver.appendFileSync(fullPath, data, options);
     }
 
-    public rm(path: string, options?: RmOptions): void {
+    public rm(path: string, options?: FS.RmOptions): void {
         const fullPath = this.path(path);
 
-        fs.rmSync(fullPath, options);
+        this.driver.rmSync(fullPath, options);
     }
 
-    public createWriteStream(path: string, options?: BufferEncoding): fs.WriteStream {
-        return fs.createWriteStream(this.path(path), options);
+    public createWriteStream(path: string, options?: WriteStreamOptions): FS.WriteStream {
+        return this.driver.createWriteStream(this.path(path), options);
     }
 
-    public createReadStream(path: string, options?: BufferEncoding): fs.ReadStream {
-        return fs.createReadStream(this.path(path), options);
+    public createReadStream(path: string, options?: ReadStreamOptions): FS.ReadStream {
+        return this.driver.createReadStream(this.path(path), options);
+    }
+
+    public createReadlineStream(path: string, options?: ReadlineOptions): Readable {
+        let {
+            encoding,
+            start,
+            end
+        } = options || {};
+
+        const file = this.open(path, "r");
+
+        const stream = file.createReadlineStream({
+            encoding,
+            start,
+            end
+        });
+
+        stream.on("end", (): void => {
+            file.close();
+        });
+
+        stream.on("error", (): void => {
+            file.close();
+        });
+
+        return stream;
+    }
+
+    public getLinePosition(path: string, line: number): number {
+        const file = this.open(path, "r");
+
+        try {
+            return file.getLinePosition(line);
+        }
+        finally {
+            file.close();
+        }
+    }
+
+    public watch(path: string, options: FS.WatchOptions = {}): FS.FSWatcher {
+        return this.driver.watch(this.path(path), options);
     }
 }

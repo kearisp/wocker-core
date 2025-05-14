@@ -4,8 +4,8 @@ import {Param} from "./Param";
 import {ARGS_METADATA} from "../env";
 
 
-describe("Param", () => {
-    it("should set parameter metadata for decorated method parameter", () => {
+describe("Param", (): void => {
+    it("should set parameter metadata for decorated method parameter", (): void => {
         class TestClass {
             public testMethod(
                 @Param("test")
@@ -22,7 +22,7 @@ describe("Param", () => {
         ]);
     });
 
-    it("should not throw when decorator is called with invalid parameters", () => {
+    it("should not throw when decorator is called with invalid parameters", (): void => {
         expect(() => Param("test2")({}, undefined, 1)).not.toThrow();
     });
 });

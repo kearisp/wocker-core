@@ -1,28 +1,11 @@
-import {describe, it, expect, beforeEach} from "@jest/globals";
-import {Logger} from "@kearisp/cli";
-
-import {AppConfig, AppConfigProperties} from "./AppConfig";
+import {describe, it, expect} from "@jest/globals";
+import {AppConfig} from "./AppConfig";
 import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL} from "./Preset";
 
 
-describe("Config", (): void => {
-    beforeEach((): void => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
-    class TestConfig extends AppConfig {
-        public constructor(data: AppConfigProperties) {
-            super(data);
-        }
-
-        public save() {
-            //
-        }
-    }
-
-    it("Project", (): void => {
-        const config = new TestConfig({});
+describe("AppConfig", (): void => {
+    it("should correctly manage project operations", (): void => {
+        const config = new AppConfig({});
 
         expect(config.getProject("test")).toBeUndefined();
 
@@ -30,21 +13,19 @@ describe("Config", (): void => {
         config.addProject("test", "Test-2", "/test-2");
 
         expect(config.projects).toEqual([
-            {id: "test", name: "Test-2", path: "/test-2"}
+            {name: "Test", path: "/test"},
+            {name: "Test-2", path: "/test-2"}
         ]);
-        expect(config.getProject("test")).toEqual({id: "test", name: "Test-2", path: "/test-2"});
+        expect(config.getProject("Test-2")).toEqual({name: "Test-2", path: "/test-2"});
 
-        config.removeProject("test");
-
-        expect(config.projects).toEqual([]);
-
-        config.removeProject("test-2");
+        config.removeProject("Test");
+        config.removeProject("Test-2");
 
         expect(config.projects).toEqual([]);
     });
 
-    it("Plugin", (): void => {
-        const config = new TestConfig({});
+    it("should handle plugin operations correctly", (): void => {
+        const config = new AppConfig({});
 
         const PLUGIN_1 = "test-1",
               PLUGIN_2 = "test-2";
@@ -72,8 +53,8 @@ describe("Config", (): void => {
         expect(config.plugins).toEqual([]);
     });
 
-    it("Preset", (): void => {
-        const config = new TestConfig({});
+    it("should manage preset registration and unregistration properly", (): void => {
+        const config = new AppConfig({});
 
         config.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/test");
 
@@ -95,8 +76,8 @@ describe("Config", (): void => {
         expect(config.presets).toEqual([]);
     });
 
-    it("Meta", (): void => {
-        const config = new TestConfig({});
+    it("should handle metadata operations correctly", (): void => {
+        const config = new AppConfig({});
 
         config.setMeta("TEST", "1");
         config.unsetMeta("TEST-2");
@@ -113,8 +94,8 @@ describe("Config", (): void => {
         expect(config.meta).toBeUndefined();
     });
 
-    it("Env", (): void => {
-        const config = new TestConfig({});
+    it("should manage environment variables properly", (): void => {
+        const config = new AppConfig({});
 
         config.setEnv("TEST", "value");
 
@@ -129,8 +110,8 @@ describe("Config", (): void => {
         expect(config.env).toBeUndefined();
     });
 
-    it("toObject", (): void => {
-        const config = new TestConfig({});
+    it("should serialize config to object correctly", (): void => {
+        const config = new AppConfig({});
 
         expect(config.toObject()).toEqual({
             logLevel: "off"

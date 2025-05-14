@@ -1,16 +1,9 @@
-import {describe, it, expect, beforeEach} from "@jest/globals";
-import {Logger} from "@kearisp/cli";
-
+import {describe, it, expect} from "@jest/globals";
 import {Project, ProjectProperties} from "./Project";
 import {volumeFormat} from "../utils/volumeFormat";
 
 
 describe("Project", (): void => {
-    beforeEach((): void => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
     class TestProject extends Project {
         public constructor(data: ProjectProperties) {
             super(data);

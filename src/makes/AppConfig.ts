@@ -1,48 +1,32 @@
 import {EnvConfig} from "../types";
+import {PluginRef} from "../types/PluginRef";
+import {PresetRef} from "../types/PresetRef";
+import {ProjectRef, ProjectOldRef} from "../types/ProjectRef";
 import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL, PresetSource} from "./Preset";
 
-
-type ProjectData = {
-    id: string;
-    name?: string;
-    path?: string;
-    /** @deprecated */
-    src?: string;
-};
-
-type PluginData = {
-    name: string;
-    env: "latest" | "beta";
-};
-
-type PresetData = {
-    name: string;
-    source: PresetSource;
-    path?: string;
-};
 
 export type AppConfigProperties = {
     debug?: boolean;
     keystore?: string;
     logLevel?: "off" | "info" | "warn" | "error";
-    plugins?: PluginData[];
-    presets?: PresetData[];
-    projects?: ProjectData[];
+    plugins?: PluginRef[];
+    presets?: PresetRef[];
+    projects?: ProjectOldRef[];
     meta?: EnvConfig;
     env?: EnvConfig;
 };
 
-export abstract class AppConfig {
+export class AppConfig {
     public debug?: boolean;
     public keystore?: string;
     public logLevel: "off" | "info" | "warn" | "error" = "off";
-    public plugins: PluginData[];
-    public presets: PresetData[];
-    public projects: ProjectData[];
+    public plugins: PluginRef[];
+    public presets: PresetRef[];
+    public projects: ProjectRef[];
     public meta?: EnvConfig;
     public env?: EnvConfig;
 
-    protected constructor(data: AppConfigProperties) {
+    public constructor(data: AppConfigProperties) {
         const {
             plugins = [],
             presets = [],
@@ -64,10 +48,22 @@ export abstract class AppConfig {
         });
 
         this.presets = presets;
-        this.projects = projects;
+        this.projects = projects.map((ref) => {
+            const {
+                id,
+                name,
+                path,
+                src
+            } = ref;
+
+            return {
+                name: (name || id) as string,
+                path: (path || src) as string
+            };
+        });
     }
 
-    public addPlugin(name: string, env: PluginData["env"] = "latest"): void {
+    public addPlugin(name: string, env: PluginRef["env"] = "latest"): void {
         const plugin = this.plugins.find((plugin) => plugin.name === name);
 
         if(plugin) {
@@ -90,50 +86,38 @@ export abstract class AppConfig {
         this.plugins = this.plugins.filter((plugin) => plugin.name !== name);
     }
 
-    public getProject(id: string): ProjectData|undefined {
+    public getProject(name: string): ProjectRef|undefined {
         if(!this.projects) {
             return;
         }
 
         return this.projects.find((projectData) => {
-            return projectData.id === id;
+            return projectData.name === name;
         });
     }
 
     public addProject(id: string, name: string, path: string): void {
-        if(!this.projects) {
-            this.projects = [];
-        }
+        let projectRef = this.getProject(name);
 
-        let projectData = this.projects.find((projectData) => {
-            return projectData.id === id;
-        });
-
-        if(!projectData) {
+        if(!projectRef) {
             this.projects.push({
-                id,
                 name,
-                path,
+                path
             });
             return;
         }
 
-        /* istanbul ignore next */
-        if(projectData.src) {
-            delete projectData.src;
-        }
-
-        projectData.name = name;
-        projectData.path = path;
+        projectRef.name = name;
+        projectRef.path = path;
     }
 
-    public removeProject(id: string): void {
+    public removeProject(name: string): void {
         if(this.projects.length === 0) {
             return;
         }
 
         this.projects = this.projects.filter((projectData): boolean => {
-            return projectData.id !== id;
+            return projectData.name !== name;
         });
     }
 
@@ -187,7 +171,7 @@ export abstract class AppConfig {
         return name in this.meta;
     }
 
-    public getMeta(name: string): string|undefined;
+    public getMeta(name: string, defaultValue?: string): string|undefined;
     public getMeta(name: string, defaultValue: string): string;
     public getMeta(name: string, defaultValue?: string): string|undefined {
         if(!this.meta || !(name in this.meta)) {
@@ -247,7 +231,10 @@ export abstract class AppConfig {
         }
     }
 
-    public abstract save(): void;
+    /**
+     * @deprecated
+     */
+    public save(): void {}
 
     /**
      * @deprecated

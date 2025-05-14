@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import {Module} from "./Module";
 import {Provider} from "../types/Provider";
 import {Type} from "../types/Type";

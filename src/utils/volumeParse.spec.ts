@@ -1,6 +1,5 @@
 import {describe, it, expect, beforeAll, afterEach} from "@jest/globals";
 import {Logger} from "@kearisp/cli";
-
 import {volumeParse} from "./volumeParse";
 
 
@@ -14,7 +13,7 @@ describe("volumeParse", (): void => {
         Logger.mute();
     });
 
-    it("Should be parsed", (): void => {
+    it("should parse volume", (): void => {
         expect(volumeParse("")).toEqual({});
         expect(volumeParse("./test:/test")).toEqual({
             source: "./test",

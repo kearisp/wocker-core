@@ -37,24 +37,6 @@ export class ControllerWrapper<TInput = any> extends InstanceWrapper {
         }
     }
 
-    public getRoutes(): Route[] {
-        const routes: Route[] = [];
-
-        if(!this.type) {
-            return [];
-        }
-
-        for(const method of Object.getOwnPropertyNames(this.type.prototype)) {
-            const route = new Route(this.type, method);
-
-            if(route.isCommand || route.isCompletion) {
-                routes.push(route);
-            }
-        }
-
-        return routes;
-    }
-
     public getCompletionCommands(name: string, command: string): Route[] {
         const completions = this.completions.filter((route) => {
             return route.completions.filter((completion) => {
@@ -69,7 +51,7 @@ export class ControllerWrapper<TInput = any> extends InstanceWrapper {
         return this.completions.filter((route) => {
             return route.completions.filter((completion) => {
                 return completion.name === name && !completion.command;
-            });
+            }).length > 0;
         });
     }
 

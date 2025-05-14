@@ -4,8 +4,8 @@ import {Global} from "./Global";
 import {IS_GLOBAL_METADATA} from "../env";
 
 
-describe("Global", () => {
-    it("should set global metadata flag on decorated class", () => {
+describe("Global", (): void => {
+    it("should set global metadata flag on decorated class", (): void => {
         @Global()
         class GlobalModule {}
 

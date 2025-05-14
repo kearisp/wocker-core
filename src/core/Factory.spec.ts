@@ -1,6 +1,5 @@
-import {Logger} from "@kearisp/cli";
-import {describe, it, expect, beforeAll, afterEach} from "@jest/globals";
-
+import {describe, it, expect} from "@jest/globals";
+import "reflect-metadata";
 import {
     Module,
     Controller,
@@ -38,15 +37,6 @@ class TestController {
 class TestModule {}
 
 describe("Factory", (): void => {
-    beforeAll((): void => {
-        Logger.mute();
-    });
-
-    afterEach((): void => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
     it("Factory.create", async (): Promise<void> => {
         const testModule = await Factory.create(TestModule);
         const res = await testModule.run(["node", "cli", "test"]);

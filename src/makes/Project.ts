@@ -2,7 +2,10 @@ import {PickProperties, EnvConfig} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 
 
-export type ProjectType = typeof PROJECT_TYPE_DOCKERFILE | typeof PROJECT_TYPE_IMAGE | typeof PROJECT_TYPE_PRESET;
+export type ProjectType = typeof PROJECT_TYPE_DOCKERFILE
+                        | typeof PROJECT_TYPE_IMAGE
+                        | typeof PROJECT_TYPE_PRESET
+                        | typeof PROJECT_TYPE_COMPOSE;
 export type ProjectProperties = Omit<PickProperties<Project>, "containerName" | "domains">;
 
 export abstract class Project {
@@ -14,13 +17,14 @@ export abstract class Project {
     public presetMode?: "global" | "project";
     public imageName?: string;
     public dockerfile?: string;
+    public composefile?: string;
     public scripts?: string[];
     public buildArgs?: EnvConfig;
     public env?: EnvConfig;
-    public ports?: string[];
-    public volumes?: string[];
     public extraHosts?: EnvConfig;
     public metadata?: EnvConfig;
+    public ports?: string[];
+    public volumes?: string[];
 
     protected constructor(data: ProjectProperties) {
         this.id = data.id
@@ -46,7 +50,7 @@ export abstract class Project {
         return `${this.name}.workspace`;
     }
 
-    get domains(): string[] {
+    public get domains(): string[] {
         const host = this.getEnv("VIRTUAL_HOST");
 
         if(!host) {
@@ -269,7 +273,14 @@ export abstract class Project {
     public abstract setSecret(key: string, value: string): Promise<void>;
     public abstract save(): void;
 
+    /**
+     * @deprecated
+     */
     public toJSON(): ProjectProperties {
+        return this.toObject();
+    }
+
+    public toObject(): ProjectProperties {
         return {
             id: this.id,
             name: this.name,
@@ -279,11 +290,12 @@ export abstract class Project {
             presetMode: this.presetMode,
             imageName: this.imageName,
             dockerfile: this.dockerfile,
+            composefile: this.composefile,
             scripts: this.scripts,
-            buildArgs: this.buildArgs,
-            env: this.env,
             ports: this.ports,
             volumes: this.volumes,
+            env: this.env,
+            buildArgs: this.buildArgs,
             extraHosts: this.extraHosts,
             metadata: this.metadata
         };
@@ -293,3 +305,4 @@ export abstract class Project {
 export const PROJECT_TYPE_DOCKERFILE = "dockerfile";
 export const PROJECT_TYPE_IMAGE = "image";
 export const PROJECT_TYPE_PRESET = "preset";
+export const PROJECT_TYPE_COMPOSE = "compose";

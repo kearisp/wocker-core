@@ -3,7 +3,7 @@ import {LogService} from "../services";
 import {Logger} from "./Logger";
 
 
-describe("Logger", () => {
+describe("Logger", (): void=> {
     class TestLogService extends LogService {
         public debug(): void {}
         public log(): void {}
@@ -12,7 +12,7 @@ describe("Logger", () => {
         public error(): void {}
     }
 
-    it("", () => {
+    it("should correctly call logging methods", (): void => {
         const testLogService = new TestLogService();
 
         testLogService.log = jest.fn();

@@ -1,10 +1,10 @@
 import {expect, it} from "@jest/globals";
-
-import {COMMAND_METADATA} from "../env";
+import "reflect-metadata";
 import {Command} from "./Command";
+import {COMMAND_METADATA} from "../env";
 
 
-it("Completion", () => {
+it("Completion", (): void => {
     const argName = "test";
 
     class TestClass {

@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import {IS_GLOBAL_METADATA} from "../env";
 
 
