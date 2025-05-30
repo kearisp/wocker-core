@@ -1,5 +1,4 @@
 import {Cli} from "@kearisp/cli";
-
 import {InstanceWrapper} from "./InstanceWrapper";
 import {Module} from "./Module";
 import {InjectionToken} from "../types/InjectionToken";
@@ -42,14 +41,4 @@ export class Container {
 
         this.providers.set(token, wrapper);
     }
-
-    // public addController(moduleType: any, type: any): void {
-    //     const module = this.getModule(moduleType);
-    //
-    //     if(!module) {
-    //         return;
-    //     }
-    //
-    //     module.addController(type);
-    // }
 }

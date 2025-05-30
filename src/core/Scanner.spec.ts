@@ -1,7 +1,7 @@
 import {describe, it, expect} from "@jest/globals";
 import "reflect-metadata";
-import {Scanner} from "./";
 import {Module, Injectable, Global, Controller, Command, Completion, Param, Inject} from "../decorators";
+import {Scanner} from "../";
 
 
 describe("Scanner", (): void => {
@@ -257,5 +257,57 @@ describe("Scanner", (): void => {
         expect(service2).toBeInstanceOf(Child2Service);
         expect(service2.triggerService1()).toBe(providedValue);
         expect(service2.getProviderValue()).toBe(providedValue);
+    });
+
+    it("should provide access from global module", async (): Promise<void> => {
+        const TEST_VALUE = "test-value";
+
+        @Injectable("GLOBAL_SERVICE")
+        abstract class BaseGlobalService {
+            public abstract getValue(): string;
+        }
+
+        @Injectable("GLOBAL_SERVICE")
+        class GlobalService extends BaseGlobalService {
+            public getValue(): string {
+                return TEST_VALUE;
+            }
+        }
+
+        @Injectable()
+        class ChildService {
+            public constructor(
+                protected readonly globalService: BaseGlobalService
+            ) {}
+        }
+
+        @Module({
+            providers: [
+                ChildService
+            ]
+        })
+        class ChildModule {}
+
+        @Global()
+        @Module({
+            imports: [ChildModule],
+            providers: [
+                GlobalService
+            ],
+            exports: [
+                GlobalService
+            ]
+        })
+        class ParentModule {}
+
+        const scanner = new Scanner();
+
+        await scanner.scan(ParentModule);
+
+        const childModule = scanner.container.getModule(ChildModule),
+              globalService = childModule.get(GlobalService);
+
+        expect(globalService).toBeInstanceOf(GlobalService);
+        expect(globalService.getValue()).toBe(TEST_VALUE);
     });
 });

@@ -234,11 +234,6 @@ export class AppConfig {
     /**
      * @deprecated
      */
-    public save(): void {}
-
-    /**
-     * @deprecated
-     */
     public toJson(): AppConfigProperties {
         return this.toObject();
     }

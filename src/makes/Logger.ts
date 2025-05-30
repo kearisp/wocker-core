@@ -1,4 +1,4 @@
-import {LogService} from "../services";
+import {LogService} from "../services/LogService";
 
 
 let loggerService: LogService;

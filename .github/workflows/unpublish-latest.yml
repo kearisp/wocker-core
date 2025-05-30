@@ -15,7 +15,7 @@ jobs:
           - name: Checkout code
             uses: actions/checkout@v4
 
-          - name: Set up Node.js
+          - name: Setup Node.js
             uses: actions/setup-node@v4
             with:
                 node-version: 22
@@ -28,4 +28,4 @@ jobs:
             run: |
                 PACKAGE_NAME=$(npm pkg get name | sed -e 's/^"//' -e 's/"$//')
                 PACKAGE_VERSION=$(npm pkg get version | sed -e 's/^"//' -e 's/"$//')
-                npm unpublish $PACKAGE_NAME@$PACKAGE_VERSION --force 2>/dev/null || npm deprecate $PACKAGE_NAME@$PACKAGE_VERSION "This is deprecated version. Why can't it be deleted?"
+                npm unpublish $PACKAGE_NAME@$PACKAGE_VERSION --force 2>/dev/null || npm deprecate $PACKAGE_NAME@$PACKAGE_VERSION "This version is deprecated. Could you explain why it cannot be deleted?"

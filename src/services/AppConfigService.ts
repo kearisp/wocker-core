@@ -36,7 +36,6 @@ export abstract class AppConfigService {
     public abstract setPWD(pwd: string): void;
 
     public abstract dataPath(...args: string[]): string;
-    public abstract pluginsPath(...args: string[]): string;
 
     /**
      * @deprecated

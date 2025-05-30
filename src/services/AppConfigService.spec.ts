@@ -3,7 +3,7 @@ import {AppConfigService} from "./AppConfigService";
 import {AppConfig, PRESET_SOURCE_EXTERNAL} from "../makes";
 
 
-describe("AppConfigService", () => {
+describe("AppConfigService", (): void => {
     class TestConfigService extends AppConfigService {
         protected _config?: AppConfig;
         protected _pwd: string;
@@ -23,10 +23,6 @@ describe("AppConfigService", () => {
         }
 
         public dataPath(): string {
-            return "";
-        }
-
-        public pluginsPath(): string {
             return "";
         }
 

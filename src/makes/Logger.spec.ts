@@ -1,5 +1,5 @@
 import {describe, it, expect} from "@jest/globals";
-import {LogService} from "../services";
+import {LogService} from "../services/LogService";
 import {Logger} from "./Logger";
 
 
