@@ -1,4 +1,5 @@
 import {describe, it, expect} from "@jest/globals";
+import "reflect-metadata";
 import {Route} from "./Route";
 import {
     Controller,
@@ -10,8 +11,8 @@ import {
 } from "../decorators";
 
 
-describe("Route", () => {
-    it("should correctly parse command parameters and options with descriptions", () => {
+describe("Route", (): void => {
+    it("should correctly parse command parameters and options with descriptions", (): void => {
         const COMMAND = "test [name]";
 
         @Controller()
@@ -74,7 +75,7 @@ describe("Route", () => {
         ]);
     });
 
-    it("should handle legacy option parameter format", () => {
+    it("should handle legacy option parameter format", (): void => {
         class TestController {
             @Command("test")
             public testRoute(
@@ -103,7 +104,7 @@ describe("Route", () => {
         ]);
     });
 
-    it("should return empty command names for non-existent method", () => {
+    it("should return empty command names for non-existent method", (): void => {
         class TestController {
             @Command("test-command")
             public testRoute() {}

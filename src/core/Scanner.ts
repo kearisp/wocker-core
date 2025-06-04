@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import {Cli, CommandInput} from "@kearisp/cli";
-
 import {Provider} from "../types/Provider";
 import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";

@@ -1,3 +1,7 @@
+import OS from "os";
+import Path from "path";
+
+
 export const IS_GLOBAL_METADATA = "IS_GLOBAL";
 export const IS_MODULE_METADATA = "isModule";
 export const INJECTABLE_WATERMARK = "__injectable__";
@@ -18,3 +22,4 @@ export enum MODULE_METADATA {
     CONTROLLERS = "controllers",
     PROVIDERS = "providers"
 }
+export const DATA_DIR: string = process.env.WS_DIR || Path.join(OS.homedir(), ".workspace");

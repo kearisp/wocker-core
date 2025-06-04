@@ -1,11 +1,10 @@
 import {describe, it, expect} from "@jest/globals";
-
 import {Container} from "./Container";
 import {Module} from "./Module";
 
 
-describe("Container.hasModule", () => {
-    it("ww", async () => {
+describe("Container", (): void => {
+    it("should add module", async (): Promise<void> => {
         class ModuleType {}
 
         const container = new Container();

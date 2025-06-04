@@ -4,8 +4,8 @@ import {Plugin} from "./Plugin";
 import {PLUGIN_NAME_METADATA} from "../env";
 
 
-describe("Plugin", () => {
-    it("should set plugin metadata for decorated class", () => {
+describe("Plugin", (): void => {
+    it("should set plugin metadata for decorated class", (): void => {
         const name = "test-plugin-name";
 
         @Plugin({

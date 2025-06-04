@@ -1,9 +1,10 @@
 import {describe, expect, it} from "@jest/globals";
+import "reflect-metadata";
 import {DESCRIPTION_METADATA} from "../env";
 import {Description} from "./Description";
 
 
-describe("Description", () => {
+describe("Description", (): void => {
     const getClassMetadata = (target: any, property?: string | symbol) => {
         if(property) {
             return Reflect.getMetadata(DESCRIPTION_METADATA, target.prototype, property);
@@ -26,7 +27,7 @@ describe("Description", () => {
         return Reflect.getMetadata(DESCRIPTION_METADATA, target, property);
     };
 
-    it("should apply to class", () => {
+    it("should apply to class", (): void => {
         const testDescription = "Test Class Description";
 
         @Description(testDescription)
@@ -35,7 +36,7 @@ describe("Description", () => {
         expect(getClassMetadata(TestClass)).toBe(testDescription);
     });
 
-    it("should apply to method", () => {
+    it("should apply to method", (): void => {
         const testDescription = "Test Method Description";
 
         class TestClass {
@@ -46,7 +47,7 @@ describe("Description", () => {
         expect(getMethodMetadata(TestClass, "testMethod")).toBe(testDescription);
     });
 
-    it("should apply to property", () => {
+    it("should apply to property", (): void => {
         const testDescription = "Test Property Description";
 
         class TestClass {
@@ -57,7 +58,7 @@ describe("Description", () => {
         expect(getClassMetadata(TestClass, "testProperty")).toBe(testDescription);
     });
 
-    it("should apply to method parameter", () => {
+    it("should apply to method parameter", (): void => {
         const testDescription = "Test Parameter Description",
               test2Description = "Test Second Parameter Description";
 
@@ -76,7 +77,7 @@ describe("Description", () => {
         });
     });
 
-    it("should work with all types in the same class", () => {
+    it("should work with all types in the same class", (): void => {
         const classDesc = "Class Description";
         const propDesc = "Property Description";
         const methodDesc = "Method Description";
@@ -109,7 +110,7 @@ describe("Description", () => {
         });
     });
 
-    it("should handle direct decorator function calls with invalid arguments", () => {
+    it("should handle direct decorator function calls with invalid arguments", (): void => {
         const decorator = Description(undefined as any);
         // @ts-expect-error
         expect(() => decorator({} as any, undefined, undefined)).not.toThrow();

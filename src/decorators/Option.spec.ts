@@ -1,7 +1,7 @@
 import {it, expect} from "@jest/globals";
-import {ARGS_METADATA} from "../env";
-
+import "reflect-metadata";
 import {Option} from "./Option";
+import {ARGS_METADATA} from "../env";
 
 
 it("Option", (): void => {

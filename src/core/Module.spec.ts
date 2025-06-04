@@ -1,22 +1,12 @@
-import {Logger} from "@kearisp/cli";
-import {describe, it, expect, beforeAll, afterEach} from "@jest/globals";
+import {describe, it, expect} from "@jest/globals";
+import "reflect-metadata";
 import {Container} from "./Container";
-
 import {Module} from "./Module";
 import {Provider} from "../types/Provider";
 import {Injectable, Inject} from "../decorators";
 
 
 describe("Module", (): void => {
-    beforeAll((): void => {
-        Logger.mute();
-    });
-
-    afterEach((): void => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
     class ModuleType {}
 
     it("Should be provider", (): void => {

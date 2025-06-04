@@ -1,18 +1,11 @@
-import {Logger} from "@kearisp/cli";
-import {describe, it, expect, beforeEach} from "@jest/globals";
+import {describe, it, expect} from "@jest/globals";
 import {Container} from "./Container";
-
 import {InstanceWrapper} from "./InstanceWrapper";
 import {Module} from "./Module";
 
 
-describe("InstanceWrapper", () => {
-    beforeEach(() => {
-        Logger.debug("-----------");
-        Logger.mute();
-    });
-
-    it("", () => {
+describe("InstanceWrapper", (): void => {
+    it("", (): void => {
         class ModuleType {}
         class Service {}
 
