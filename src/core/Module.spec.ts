@@ -1,16 +1,16 @@
 import {describe, it, expect} from "@jest/globals";
 import "reflect-metadata";
-import {Container} from "./Container";
-import {Module} from "./Module";
-import {Provider} from "../types/Provider";
+import {ProviderType} from "../types";
 import {Injectable, Inject} from "../decorators";
+import {Container} from "./Container";
+import {ModuleWrapper} from "./ModuleWrapper";
 
 
 describe("Module", (): void => {
     class ModuleType {}
 
     it("Should be provider", (): void => {
-        const TestValueProvider: Provider = {
+        const TestValueProvider: ProviderType = {
             provide: "TEST_PROVIDER",
             useValue: "Value"
         };
@@ -28,7 +28,7 @@ describe("Module", (): void => {
         class ExceptionTestService {}
 
         const container = new Container();
-        const module = new Module(container, ModuleType);
+        const module = new ModuleWrapper(container, ModuleType);
 
         module.addProvider(TestClassProvider);
         module.addProvider(TestValueProvider);

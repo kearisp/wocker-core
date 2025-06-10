@@ -3,26 +3,28 @@ import {Project} from "../makes/Project";
 
 
 type SearchParams = Partial<{
-    id: string;
     name: string;
     path: string;
 }>;
 
 @Injectable("PROJECT_SERVICE")
 export abstract class ProjectService {
-    public abstract cdProject(name: string): Promise<void>;
-    public abstract get(name?: string): Promise<Project>;
+    public abstract get(name?: string): Project;
+    public abstract save(project: Project): void;
+    public abstract search(params: SearchParams): Project[];
     public abstract start(project: Project): Promise<void>;
     public abstract stop(project: Project): Promise<void>;
-    public abstract save(project: Project): Promise<void>;
-    public abstract search(params: SearchParams): Promise<Project[]>;
 
-    public async searchOne(params: SearchParams = {}): Promise<Project | null> {
-        const [project] = await this.search(params);
+    public searchOne(params: SearchParams = {}): Project | null {
+        const [project] = this.search(params);
 
         return project || null;
     }
-}
 
+    /**
+     * @deprecated
+     */
+    public cdProject(name?: string): void {}
+}
 
 export {SearchParams as ProjectServiceSearchParams};

@@ -4,7 +4,7 @@ import {FileSystem} from "../makes";
 
 
 @Injectable()
-export class PluginFileSystem extends FileSystem {
+export class PluginFileSystemService extends FileSystem {
     public constructor(
         @Inject(PLUGIN_DIR_KEY)
         pluginDir: string

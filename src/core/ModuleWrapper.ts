@@ -1,4 +1,4 @@
-import {Provider} from "../types/Provider";
+import {InjectionToken, ProviderType} from "../types";
 import {Type} from "../types/Type";
 import {Container} from "./Container";
 import {InstanceWrapper} from "./InstanceWrapper";
@@ -6,7 +6,7 @@ import {ControllerWrapper} from "./ControllerWrapper";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
-export class Module<TInput = any> {
+export class ModuleWrapper<TInput = any> {
     public imports: Map<any, InstanceWrapper> = new Map();
     public controllers: Map<any, ControllerWrapper> = new Map();
     public providers: Map<any, InstanceWrapper> = new Map();
@@ -34,7 +34,7 @@ export class Module<TInput = any> {
         return wrapper.instance;
     }
 
-    public getWrapper(type: any): InstanceWrapper | undefined {
+    public getWrapper(type: InjectionToken): InstanceWrapper | undefined {
         const token = typeof type === "function"
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
             : type;
@@ -42,14 +42,14 @@ export class Module<TInput = any> {
         const wrapper = this.providers.get(token);
 
         if(!wrapper) {
-            return this.container.providers.get(token);
+            return this.container.globalProviders.get(token);
         }
 
         return wrapper;
     }
 
-    public addProvider(provider: Provider, instance?: any): void {
-        const wrapper = new InstanceWrapper(this, provider, instance);
+    public addProvider(provider: ProviderType): void {
+        const wrapper = new InstanceWrapper(this, provider);
 
         this.providers.set(wrapper.token, wrapper);
     }
@@ -66,5 +66,15 @@ export class Module<TInput = any> {
             : type;
 
         this.exports.add(token);
+    }
+
+    public replace(token: InjectionToken, provider: ProviderType): void {
+        const wrapper = this.getWrapper(token);
+
+        if(!wrapper) {
+            return;
+        }
+
+        wrapper.replace(provider);
     }
 }

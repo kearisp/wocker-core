@@ -48,7 +48,7 @@ export class AppConfig {
         });
 
         this.presets = presets;
-        this.projects = projects.map((ref) => {
+        this.projects = projects.map((ref): ProjectRef => {
             const {
                 id,
                 name,

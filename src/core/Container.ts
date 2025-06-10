@@ -1,22 +1,22 @@
 import {Cli} from "@kearisp/cli";
 import {InstanceWrapper} from "./InstanceWrapper";
-import {Module} from "./Module";
-import {InjectionToken} from "../types/InjectionToken";
+import {ModuleWrapper} from "./ModuleWrapper";
+import {InjectionToken, ProviderType} from "../types";
 import {Type} from "../types/Type";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
 export class Container {
-    public readonly modules: Map<Type, Module> = new Map();
-    public readonly providers: Map<InjectionToken, InstanceWrapper> = new Map();
+    public readonly modules: Map<Type, ModuleWrapper> = new Map();
+    public readonly globalProviders: Map<InjectionToken, InstanceWrapper> = new Map();
 
     public constructor() {
-        const cliWrapper = new InstanceWrapper(new Module(this, null), Cli);
+        const cliWrapper = new InstanceWrapper(new ModuleWrapper(this, null), Cli);
 
-        this.providers.set(Cli, cliWrapper);
+        this.globalProviders.set(Cli, cliWrapper);
     }
 
-    public addModule<TInput = any>(type: Type<TInput>, module: Module): void {
+    public addModule<TInput = any>(type: Type<TInput>, module: ModuleWrapper): void {
         this.modules.set(type, module);
     }
 
@@ -24,7 +24,7 @@ export class Container {
         return this.modules.has(type);
     }
 
-    public getModule<TInput = any>(type: Type<TInput>): Module<TInput> {
+    public getModule<TInput = any>(type: Type<TInput>): ModuleWrapper<TInput> {
         const module = this.modules.get(type);
 
         if(!module) {
@@ -34,11 +34,27 @@ export class Container {
         return module;
     }
 
-    public addProvider(type: Type, wrapper: InstanceWrapper): void {
+    public addProvider(type: InjectionToken, wrapper: InstanceWrapper): void {
         const token = typeof type !== "string"
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
             : type;
 
-        this.providers.set(token, wrapper);
+        this.globalProviders.set(token, wrapper);
+    }
+
+    public replace(type: InjectionToken, provider: ProviderType): void {
+        const token = typeof type !== "string"
+            ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
+            : type;
+
+        const wrapper: InstanceWrapper | undefined = this.globalProviders.get(token);
+
+        if(wrapper) {
+            wrapper.replace(provider);
+        }
+
+        this.modules.forEach((moduleRef): void => {
+            moduleRef.replace(token, provider);
+        });
     }
 }

@@ -2,21 +2,19 @@ import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
 import {FileSystem} from "./";
 import {FileSystemDriver} from "../types";
+import {DATA_DIR} from "../env";
 
 
 describe("FileSystem", (): void => {
-    const fs = new FileSystem("/home/wocker-test", vol as unknown as FileSystemDriver);
+    const fs = new FileSystem(DATA_DIR, vol as unknown as FileSystemDriver);
 
     beforeEach((): void => {
         vol.reset();
-        vol.mkdirSync("/home/wocker-test", {
-            recursive: true
-        });
     });
 
     it("should return correct path", (): void => {
-        expect(fs.path("file.txt")).toBe("/home/wocker-test/file.txt");
-        expect(fs.path("dir", "file.txt")).toBe("/home/wocker-test/dir/file.txt");
+        expect(fs.path("file.txt")).toBe(`${DATA_DIR}/file.txt`);
+        expect(fs.path("dir", "file.txt")).toBe(`${DATA_DIR}/dir/file.txt`);
     });
 
     it("should return basename", (): void => {
@@ -25,8 +23,8 @@ describe("FileSystem", (): void => {
 
     it("should check if file exists", (): void => {
         vol.fromJSON({
-            "/home/wocker-test/file.txt": "content"
-        });
+            "file.txt": "content"
+        }, DATA_DIR);
 
         expect(fs.exists("file.txt")).toBe(true);
         expect(fs.exists("missing.txt")).toBe(false);
@@ -34,8 +32,8 @@ describe("FileSystem", (): void => {
 
     it("should get file stats", (): void => {
         vol.fromJSON({
-            "/home/wocker-test/file.txt": "content"
-        });
+            "file.txt": "content"
+        }, DATA_DIR);
 
         const stats = fs.stat("file.txt");
 
@@ -50,11 +48,11 @@ describe("FileSystem", (): void => {
 
     it("should read directory content", (): void => {
         vol.fromJSON({
-            "/home/wocker-test/sub-dir/sub-file1.txt": "sub-content1",
-            "/home/wocker-test/sub-dir/sub-file2.txt": "sub-content2",
-            "/home/wocker-test/file1.txt": "content1",
-            "/home/wocker-test/file2.txt": "content2"
-        });
+            "sub-dir/sub-file1.txt": "sub-content1",
+            "sub-dir/sub-file2.txt": "sub-content2",
+            "file1.txt": "content1",
+            "file2.txt": "content2"
+        }, DATA_DIR);
 
         expect(fs.readdir()).toEqual([
             "file1.txt",
@@ -97,12 +95,12 @@ describe("FileSystem", (): void => {
               appendLine = "bar";
 
         vol.fromJSON({
-            "/home/wocker-test/file.txt": existingLine
-        });
+            "file.txt": existingLine
+        }, DATA_DIR);
 
         fs.appendFile("file.txt", appendLine);
 
-        expect(vol.readFileSync("/home/wocker-test/file.txt").toString()).toBe(`${existingLine}${appendLine}`);
+        expect(vol.readFileSync(`${DATA_DIR}/file.txt`).toString()).toBe(`${existingLine}${appendLine}`);
     });
 
     it("should read lines", async (): Promise<void> => {
@@ -111,8 +109,8 @@ describe("FileSystem", (): void => {
               line3 = "tor";
 
         vol.fromJSON({
-            "/home/wocker-test/file.txt": `${line1}\n${line2}\n${line3}\n`
-        });
+            "file.txt": `${line1}\n${line2}\n${line3}\n`
+        }, DATA_DIR);
 
         const stream = fs.createReadlineStream("file.txt");
 
@@ -178,7 +176,7 @@ describe("FileSystem", (): void => {
               lastLine = "last-bar";
 
         vol.fromJSON({
-            [`${fs.path(testFile)}`]: Array.from({length: 100})
+            [testFile]: Array.from({length: 100})
                 .map((_, index, arr) => {
                     if(index === 0) {
                         return firstLine;
@@ -201,9 +199,9 @@ describe("FileSystem", (): void => {
                     return `test-line-${num}`;
                 })
                 .join("\n"),
-            [`${fs.path(testOneLineFile)}`]: "One line file",
-            [`${fs.path(testEmptyFile)}`]: ""
-        });
+            [testOneLineFile]: "One line file",
+            [testEmptyFile]: ""
+        }, DATA_DIR);
 
         expect(() => fs.getLinePosition(testFile, 0)).toThrowError();
         expect(fs.getLinePosition(testFile, 1)).toBe(0);
@@ -218,8 +216,8 @@ describe("FileSystem", (): void => {
 
     it("should open and close file", (): void => {
         vol.fromJSON({
-            "/home/wocker-test/test.txt": '>>>'
-        });
+            "test.txt": '>>>'
+        }, DATA_DIR);
 
         const file = fs.open("test.txt", "r"),
               stat = file.stat();
