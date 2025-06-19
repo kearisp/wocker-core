@@ -1,4 +1,4 @@
-import dateFormat from "date-fns/format";
+import {format as dateFormat} from "date-fns/format";
 import {Injectable} from "../decorators";
 import {AppConfigService} from "./AppConfigService";
 import {AppFileSystemService} from "./AppFileSystemService";
