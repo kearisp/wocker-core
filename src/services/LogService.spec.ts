@@ -1,37 +1,45 @@
 import {describe, it, jest, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {Factory} from "../core";
+import {Factory, ApplicationContext} from "../core";
 import {Module} from "../decorators";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
-import {DATA_DIR, WOCKER_DATA_DIR_KEY} from "../env";
+import {AppConfigService} from "./AppConfigService";
+import {ProcessService} from "./ProcessService";
+import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
 
 
 describe("LogService", (): void => {
-    beforeEach((): void => {
-        vol.reset();
-    });
+    let context: ApplicationContext;
 
-    const getContext = async () => {
+    beforeEach(async (): Promise<void> => {
+        vol.reset();
+        vol.fromJSON({
+            "wocker.config.json": JSON.stringify({
+                debug: true
+            })
+        }, DATA_DIR);
+
         @Module({
             providers: [
+                {
+                    provide: WOCKER_VERSION_KEY,
+                    useValue: "1.0.0"
+                },
                 {
                     provide: WOCKER_DATA_DIR_KEY,
                     useValue: DATA_DIR
                 },
+                AppConfigService,
                 AppFileSystemService,
-                LogService
+                LogService,
+                ProcessService
             ]
         })
         class TestModule {}
 
-        const context = await Factory.create(TestModule);
-
-        return {
-            fs: context.get(AppFileSystemService),
-            logService: context.get(LogService)
-        };
-    };
+        context = await Factory.create(TestModule);
+    });
 
     it.each<{
         method: "log" | "info" | "warn" | "debug" | "error";
@@ -58,7 +66,8 @@ describe("LogService", (): void => {
             message: "Error"
         }
     ])("should write $method message to log file", async ({method, message}): Promise<void> => {
-        const {fs, logService} = await getContext();
+        const logService = context.get(LogService),
+              fs = context.get(AppFileSystemService);
 
         expect(fs.exists("ws.log")).toBeFalsy();
 
@@ -72,7 +81,8 @@ describe("LogService", (): void => {
     });
 
     it("should clear log file content", async (): Promise<void> => {
-        const {fs, logService} = await getContext();
+        const logService = context.get(LogService),
+              fs = context.get(AppFileSystemService);
 
         logService.info("Foo bar");
 

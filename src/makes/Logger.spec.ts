@@ -5,8 +5,8 @@ import {AppService} from "../services/AppService";
 import {AppFileSystemService} from "../services/AppFileSystemService";
 import {LogService} from "../services/LogService";
 import {Logger} from "./Logger";
-import {DATA_DIR, WOCKER_DATA_DIR_KEY} from "../env";
-import {AppConfigService} from "../services";
+import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
+import {AppConfigService, ProcessService} from "../services";
 
 
 describe("Logger", (): void=> {
@@ -14,13 +14,18 @@ describe("Logger", (): void=> {
         @Module({
             providers: [
                 {
+                    provide: WOCKER_VERSION_KEY,
+                    useValue: "1.0.0"
+                },
+                {
                     provide: WOCKER_DATA_DIR_KEY,
                     useValue: DATA_DIR
                 },
                 AppService,
                 AppConfigService,
                 AppFileSystemService,
-                LogService
+                LogService,
+                ProcessService
             ]
         })
         class TestModule {}
