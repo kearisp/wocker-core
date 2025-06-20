@@ -1,10 +1,10 @@
 import {MODULE_METADATA, IS_MODULE_METADATA} from "../env";
-import {Provider} from "../types/Provider";
+import {ProviderType} from "../types/ProviderType";
 
 
 export type ModuleMetadata = {
     [MODULE_METADATA.CONTROLLERS]?: any[];
-    [MODULE_METADATA.PROVIDERS]?: Provider[];
+    [MODULE_METADATA.PROVIDERS]?: ProviderType[];
     [MODULE_METADATA.IMPORTS]?: any[];
     [MODULE_METADATA.EXPORTS]?: any[];
 };

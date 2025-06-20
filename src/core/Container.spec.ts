@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {Container} from "./Container";
-import {Module} from "./Module";
+import {ModuleWrapper} from "./ModuleWrapper";
 
 
 describe("Container", (): void => {
@@ -8,7 +8,7 @@ describe("Container", (): void => {
         class ModuleType {}
 
         const container = new Container();
-        const module = new Module(container, ModuleType);
+        const module = new ModuleWrapper(container, ModuleType);
 
         container.addModule(ModuleType, module);
 

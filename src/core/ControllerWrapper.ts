@@ -1,29 +1,29 @@
 import "reflect-metadata";
 import {CommandInput} from "@kearisp/cli";
 import {InstanceWrapper} from "./InstanceWrapper";
-import {Module} from "./Module";
+import {ModuleWrapper} from "./ModuleWrapper";
 import {Type} from "../types/Type";
 import {Route} from "./Route";
 import {DESCRIPTION_METADATA} from "../env";
 
 
 export class ControllerWrapper<TInput = any> extends InstanceWrapper {
-    public readonly type!: Type<TInput>;
+    public readonly _type!: Type<TInput>;
     public description?: string;
     public commands: Route[] = [];
     public completions: Route[] = [];
 
-    public constructor(module: Module, type: Type<TInput>) {
+    public constructor(module: ModuleWrapper, type: Type<TInput>) {
         super(module, type);
 
-        if(!this.type) {
+        if(!this._type) {
             return;
         }
 
-        this.description = Reflect.getMetadata(DESCRIPTION_METADATA, this.type) || "";
+        this.description = Reflect.getMetadata(DESCRIPTION_METADATA, this._type) || "";
 
-        for(const method of Object.getOwnPropertyNames(this.type.prototype)) {
-            const route = new Route(this.type, method);
+        for(const method of Object.getOwnPropertyNames(this._type.prototype)) {
+            const route = new Route(this._type, method);
 
             if(route.isCommand) {
                 this.commands.push(route);

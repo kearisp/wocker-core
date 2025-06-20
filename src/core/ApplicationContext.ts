@@ -1,5 +1,4 @@
 import {Cli} from "@kearisp/cli";
-
 import {Container} from "./Container";
 import {Type} from "../types/Type";
 

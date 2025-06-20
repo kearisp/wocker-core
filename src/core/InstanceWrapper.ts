@@ -1,7 +1,6 @@
-import {Module} from "./Module";
-import {Provider} from "../types/Provider";
+import {ModuleWrapper} from "./ModuleWrapper";
+import {ProviderType, InjectionToken} from "../types";
 import {Type} from "../types/Type";
-import {InjectionToken} from "../types/InjectionToken";
 import {
     INJECT_TOKEN_METADATA,
     PARAMTYPES_METADATA,
@@ -10,38 +9,55 @@ import {
 
 
 export class InstanceWrapper<TInput = any> {
-    public readonly token: InjectionToken<TInput>;
-    public readonly type?: Type<TInput>;
+    protected _token: InjectionToken<TInput>;
+    protected _type?: Type<TInput>;
+    protected _instance?: TInput
 
     public constructor(
-        protected readonly module: Module,
-        protected readonly provider: Provider<TInput>,
-        protected _instance?: TInput
+        protected readonly module: ModuleWrapper,
+        protected readonly provider: ProviderType<TInput>,
     ) {
-        if("provide" in this.provider && "useValue" in this.provider) {
-            this.token = this.provider.provide;
-            this._instance = this.provider.useValue;
-            return;
+        const [token, type, instance] = this.normalizeProvider(provider);
+
+        this._token = token;
+        this._type = type;
+        this._instance = instance;
+    }
+
+    protected normalizeProvider(provider: ProviderType) {
+        if(provider && typeof provider === "object") {
+            if("provide" in provider && "useValue" in provider) {
+                return [provider.provide, null, provider.useValue];
+            }
+
+            if("provide" in provider && "useClass" in provider) {
+                return [provider.provide, provider.useClass, null];
+            }
         }
 
-        if("provide" in this.provider && "useClass" in this.provider) {
-            this.token = this.provider.provide;
-            this.type = this.provider.useClass;
-            return;
-        }
+        return [
+            Reflect.getMetadata(INJECT_TOKEN_METADATA, provider) || provider,
+            provider,
+            null
+        ];
+    }
 
-        this.token = Reflect.getMetadata(INJECT_TOKEN_METADATA, this.provider) || this.provider;
-        this.type = this.provider;
+    public get type() {
+        return this._type;
+    }
+
+    public get token() {
+        return this._token;
     }
 
     public get instance(): TInput {
         if(!this._instance) {
-            if(!this.type) {
+            if(!this._type) {
                 throw new Error("Type not defined");
             }
 
-            const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this.type) || [];
-            const selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this.type) || [];
+            const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this._type) || [];
+            const selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this._type) || [];
 
             if(selfTypes.length > 0) {
                 selfTypes.forEach(({index, token}): void => {
@@ -53,9 +69,17 @@ export class InstanceWrapper<TInput = any> {
                 return this.module.get(type);
             });
 
-            this._instance = new this.type(...params);
+            this._instance = new this._type(...params);
         }
 
         return this._instance;
+    }
+
+    public replace(provider: ProviderType<TInput>): void {
+        const [token, type, instance] = this.normalizeProvider(provider);
+
+        this._token = token;
+        this._type = type;
+        this._instance = instance;
     }
 }

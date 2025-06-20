@@ -6,11 +6,11 @@ import {
     Command,
     Injectable
 } from "../decorators";
-import {Provider} from "../types/Provider";
+import {ProviderType} from "../types/ProviderType";
 import {Factory} from "./Factory";
 
 
-const TestProvider: Provider = {
+const TestProvider: ProviderType = {
     provide: ">_<",
     useValue: "LALALA"
 };

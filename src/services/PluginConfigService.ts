@@ -5,7 +5,6 @@ import {
     WriteStream,
     ReadStream
 } from "fs";
-
 import {AppConfigService} from "./AppConfigService";
 import {FileSystem} from "../makes";
 import {Injectable, Inject} from "../decorators";
@@ -31,7 +30,9 @@ export class PluginConfigService {
             this._fs = new FileSystem(this.pluginDir);
 
             if(!this._fs.exists()) {
-                this._fs.mkdir();
+                this._fs.mkdir("", {
+                    recursive: true
+                });
             }
         }
 

@@ -1,6 +1,6 @@
 {
     "name": "@wocker/core",
-    "version": "1.0.23",
+    "version": "1.0.24",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of the Wocker",
     "license": "MIT",
@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "@kearisp/cli": "^2.0.8",
+        "date-fns": "^4.1.0",
         "fs": "^0.0.1-security",
         "os": "^0.1.2",
         "path": "^0.12.7",

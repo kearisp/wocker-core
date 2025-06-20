@@ -12,7 +12,7 @@ type ValueProvider<T = any> = {
     useValue: T;
 };
 
-export type Provider<T = any> =
+export type ProviderType<T = any> =
     | Type<T>
     | ClassProvider<T>
     | ValueProvider<T>;

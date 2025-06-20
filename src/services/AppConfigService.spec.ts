@@ -1,82 +1,312 @@
-import {describe, it, expect} from "@jest/globals";
+import {describe, it, expect, beforeEach} from "@jest/globals";
+import {vol} from "memfs";
+import {AppConfig, AppConfigProperties, PRESET_SOURCE_EXTERNAL} from "../makes";
+import {Factory} from "../core";
+import {Module} from "../decorators";
 import {AppConfigService} from "./AppConfigService";
-import {AppConfig, PRESET_SOURCE_EXTERNAL} from "../makes";
+import {AppService} from "./AppService";
+import {AppFileSystemService} from "./AppFileSystemService";
+import {LogService} from "./LogService";
+import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
+import {ProcessService} from "./ProcessService";
 
 
 describe("AppConfigService", (): void => {
-    class TestConfigService extends AppConfigService {
-        protected _config?: AppConfig;
-        protected _pwd: string;
+    beforeEach((): void => {
+        vol.reset();
+    });
 
-        public constructor() {
-            super();
+    const getContext = async (version = "1.0.0") => {
+        @Module({
+            providers: [
+                {
+                    provide: WOCKER_VERSION_KEY,
+                    useValue: version
+                },
+                {
+                    provide: WOCKER_DATA_DIR_KEY,
+                    useValue: DATA_DIR
+                },
+                AppConfigService,
+                AppService,
+                AppFileSystemService,
+                LogService,
+                ProcessService
+            ]
+        })
+        class TestModule {}
 
-            this._pwd = process.cwd();
-        }
+        const context = await Factory.create(TestModule);
 
-        public pwd(...parts: string[]): string {
-            return "";
-        }
+        return {
+            appConfigService: context.get(AppConfigService),
+            fs: context.get(AppFileSystemService)
+        };
+    };
 
-        public setPWD(pwd: string): void {
-            this._pwd = pwd;
-        }
+    it("should return instance of AppConfig when getting config", async (): Promise<void> => {
+        const {appConfigService} = await getContext();
 
-        public dataPath(): string {
-            return "";
-        }
+        expect(appConfigService.getConfig()).toBeInstanceOf(AppConfig);
+    });
 
-        public get config(): AppConfig {
-            if(!this._config) {
-                this._config = new AppConfig({});
+    it("should correctly compare versions using isVersionGTE", async (): Promise<void> => {
+        const {appConfigService} = await getContext("1.0.24");
+
+        expect(appConfigService.isVersionGTE("0.0.-1")).toBeTruthy();
+        expect(appConfigService.isVersionGTE("0.0.0")).toBeTruthy();
+        expect(appConfigService.isVersionGTE("1.0.23")).toBeTruthy();
+        expect(appConfigService.isVersionGTE("1.0.24")).toBeTruthy();
+        expect(appConfigService.isVersionGTE("1.0.25")).toBeFalsy();
+    });
+
+    it("should successfully parse projects configuration from wocker.config.js file", async (): Promise<void> => {
+        const config: AppConfigProperties = {
+            logLevel: "info",
+            projects: [
+                {
+                    name: "project1",
+                    path: "/home/wocker-test/projects/project1"
+                }
+            ]
+        };
+        const configString = JSON.stringify(config);
+
+        vol.fromJSON({
+            "wocker.config.js": `exports.config = ${configString};`
+        }, DATA_DIR);
+
+        const {appConfigService} = await getContext();
+
+        expect(appConfigService.config.logLevel).toBe("info");
+        expect(appConfigService.config.projects).toEqual([
+            {
+                name: "project1",
+                path: "/home/wocker-test/projects/project1"
             }
-
-            return this._config;
-        }
-
-        public save(): void {}
-    }
-
-    it("should return instance of AppConfig when getting config", (): void => {
-        const testConfigService = new TestConfigService();
-
-        expect(testConfigService.getConfig()).toBeInstanceOf(AppConfig);
+        ]);
     });
 
-    it("should correctly compare versions using isVersionGTE", (): void => {
-        const testConfigService = new TestConfigService();
+    it("should fallback to wocker.config.json when wocker.config.js throws an error", async (): Promise<void> => {
+        const config = {
+            projects: [
+                {
+                    name: "test-exception-project",
+                    path: "/home/wocker-test/projects/project1"
+                }
+            ]
+        };
+        const configString = JSON.stringify(config);
 
-        expect(testConfigService.isVersionGTE("0.0.-1")).toBeTruthy();
-        expect(testConfigService.isVersionGTE("0.0.0")).toBeTruthy();
-        expect(testConfigService.isVersionGTE("0.1.0")).toBeFalsy();
-        expect(testConfigService.isVersionGTE("1.0.0")).toBeFalsy();
+        vol.fromJSON({
+            "wocker.config.js": "throw new Error('Error')",
+            "wocker.config.json": JSON.stringify(configString)
+        }, DATA_DIR);
+
+        const {appConfigService} = await getContext();
+
+        expect(appConfigService.projects).toEqual([
+            {
+                name: "test-exception-project",
+                path: "/home/wocker-test/projects/project1"
+            }
+        ]);
     });
 
-    it("should properly manage project addition and removal", (): void => {
-        const testConfigService = new TestConfigService();
+    it("should successfully parse config from wocker.config.json file", async (): Promise<void> => {
+        vol.fromJSON({
+            "wocker.config.json": JSON.stringify({
+                logLevel: "info",
+                projects: [
+                    {
+                        name: "test",
+                        path: "/home/wocker-test/projects/project1"
+                    }
+                ]
+            })
+        }, DATA_DIR);
 
-        testConfigService.addProject("test", "test", "/home/test");
+        const {appConfigService} = await getContext();
 
-        expect(testConfigService.config.projects).toEqual([
+        expect(appConfigService.config.logLevel).toBe("info");
+        expect(appConfigService.config.projects).toEqual([
+            {
+                name: "test",
+                path: "/home/wocker-test/projects/project1"
+            }
+        ]);
+    });
+
+    it("should successfully parse config from wocker.json file", async (): Promise<void> => {
+        vol.fromJSON({
+            "wocker.json": JSON.stringify(
+                JSON.stringify({
+                    logLevel: "info",
+                    projects: [
+                        {
+                            name: "test",
+                            path: "/home/wocker-test/projects/project1"
+                        }
+                    ]
+                })
+            )
+        }, DATA_DIR);
+
+        const {appConfigService} = await getContext();
+
+        expect(appConfigService.config.logLevel).toBe("info");
+        expect(appConfigService.config.projects).toEqual([
+            {
+                name: "test",
+                path: "/home/wocker-test/projects/project1"
+            }
+        ]);
+    });
+
+    it("should successfully parse config from data.json file", async (): Promise<void> => {
+        vol.fromJSON({
+            "data.json": JSON.stringify({
+                logLevel: "info",
+                projects: [
+                    {
+                        id: "test",
+                        src: "/home/wocker-test/projects/project1"
+                    }
+                ]
+            })
+        }, DATA_DIR);
+
+        const {appConfigService} = await getContext();
+
+        expect(appConfigService.config.logLevel).toBe("info");
+        expect(appConfigService.config.projects).toEqual([
+            {
+                name: "test",
+                path: "/home/wocker-test/projects/project1"
+            }
+        ]);
+    });
+
+    // TODO
+    // it("should set and return correct working directory", async (): Promise<void> => {
+    //     const projectDir = "/home/wocker-test/projects/test-project";
+    //
+    //     const {appService} = await getContext();
+    //
+    //     appService.setPWD(projectDir);
+    //
+    //     expect(appService.pwd()).toBe(projectDir);
+    // });
+
+    it("should create wocker.config.js and save project configuration when adding new project", async (): Promise<void> => {
+        const {appConfigService, fs} = await getContext();
+
+        expect(fs.exists("wocker.config.js")).toBeFalsy();
+
+        appConfigService.addProject("project1", "project1", "/home/wocker-test/projects/project1");
+        appConfigService.save();
+
+        expect(fs.exists("wocker.config.js")).toBeTruthy();
+
+        const jsConfig = fs.readFile("wocker.config.js").toString();
+
+        expect(jsConfig).toContain(`"name": "project1"`);
+        expect(jsConfig).toContain(`"path": "/home/wocker-test/projects/project1"`);
+    });
+
+    it("should cleanup legacy config files (wocker.json and data.json) when saving new configuration", async (): Promise<void> => {
+        const config = {
+            projects: [
+                {
+                    name: "project1",
+                    path: "/home/wocker-test/projects/project1"
+                }
+            ]
+        };
+        const configString = JSON.stringify(config);
+
+        vol.fromJSON({
+            "wocker.config.js": `exports.config = ${configString};`,
+            "wocker.json": JSON.stringify(configString),
+            "data.json": configString
+        }, DATA_DIR);
+
+        const {appConfigService, fs} = await getContext();
+
+        appConfigService.addProject("project2", "project2", "/home/wocker-test/projects/project2");
+        appConfigService.save();
+
+        expect(fs.exists("wocker.config.js")).toBeTruthy();
+        expect(fs.exists("wocker.config.json")).toBeTruthy();
+        expect(fs.exists("wocker.json")).toBeFalsy();
+        expect(fs.exists("data.json")).toBeFalsy();
+    });
+
+    it("should recreate config directory on saving", async (): Promise<void> => {
+        const config = {
+            projects: [
+                {
+                    name: "project1",
+                    path: "/home/wocker-test/projects/project1"
+                }
+            ]
+        };
+        const configString = JSON.stringify(config);
+
+        vol.fromJSON({
+            "wocker.config.js": `exports.config = ${configString};`
+        }, DATA_DIR);
+
+        const {appConfigService, fs} = await getContext();
+
+        expect(appConfigService.projects).toEqual([
+            {
+                name: "project1",
+                path: "/home/wocker-test/projects/project1"
+            }
+        ]);
+
+        vol.reset();
+
+        expect(fs.exists("wocker.config.js")).toBeFalsy();
+        expect(fs.exists("wocker.config.json")).toBeFalsy();
+
+        appConfigService.save();
+
+        expect(fs.exists("wocker.config.js")).toBeTruthy();
+        expect(fs.exists("wocker.config.json")).toBeTruthy();
+
+        const jsConfig = fs.readFile("wocker.config.js").toString();
+
+        expect(jsConfig).toContain(`"name": "project1"`);
+        expect(jsConfig).toContain(`"path": "/home/wocker-test/projects/project1"`);
+    });
+
+    it("should properly manage project addition and removal", async (): Promise<void> => {
+        const {appConfigService} = await getContext();
+
+        appConfigService.addProject("test", "test", "/home/test");
+
+        expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
                 path: "/home/test"
             }
         ]);
 
-        testConfigService.removeProject("test");
+        appConfigService.removeProject("test");
 
-        expect(testConfigService.config.projects).toEqual([]);
+        expect(appConfigService.config.projects).toEqual([]);
 
-        testConfigService.save();
+        appConfigService.save();
     });
 
-    it("should properly manage preset registration and unregistration", (): void => {
-        const testConfigService = new TestConfigService();
+    it("should properly manage preset registration and unregistration", async (): Promise<void> => {
+        const {appConfigService} = await getContext();
 
-        testConfigService.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/home/test");
+        appConfigService.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/home/test");
 
-        expect(testConfigService.config.presets).toEqual([
+        expect(appConfigService.config.presets).toEqual([
             {
                 name: "test",
                 source: PRESET_SOURCE_EXTERNAL,
@@ -84,10 +314,10 @@ describe("AppConfigService", (): void => {
             }
         ]);
 
-        testConfigService.unregisterPreset("test");
+        appConfigService.unregisterPreset("test");
 
-        expect(testConfigService.config.presets).toEqual([]);
+        expect(appConfigService.config.presets).toEqual([]);
 
-        testConfigService.save();
+        appConfigService.save();
     });
 });

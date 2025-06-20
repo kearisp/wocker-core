@@ -1,9 +1,9 @@
 import "reflect-metadata";
 import {Cli, CommandInput} from "@kearisp/cli";
-import {Provider} from "../types/Provider";
+import {ProviderType} from "../types";
 import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";
-import {Module} from "./Module";
+import {ModuleWrapper} from "./ModuleWrapper";
 import {
     IS_GLOBAL_METADATA,
     MODULE_METADATA
@@ -23,13 +23,13 @@ export class Scanner {
         this.scanRoutes();
     }
 
-    protected scanModule(moduleType: any): Module {
+    protected scanModule(moduleType: any): ModuleWrapper {
         let module = this.container.hasModule(moduleType)
             ? this.container.getModule(moduleType)
             : null;
 
         if(!module) {
-            module = new Module(this.container, moduleType);
+            module = new ModuleWrapper(this.container, moduleType);
 
             this.container.addModule(moduleType, module);
 
@@ -42,7 +42,7 @@ export class Scanner {
         return module;
     }
 
-    protected scanControllers(module: Module): void {
+    protected scanControllers(module: ModuleWrapper): void {
         const controllers = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, module.type) || [];
 
         controllers.forEach((controller: any): void => {
@@ -50,15 +50,15 @@ export class Scanner {
         });
     }
 
-    protected scanProviders(module: Module): void {
-        const providers: Provider[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
+    protected scanProviders(module: ModuleWrapper): void {
+        const providers: ProviderType[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
 
-        providers.forEach((provider: Provider): void => {
+        providers.forEach((provider: ProviderType): void => {
             module.addProvider(provider);
         });
     }
 
-    protected scanImports(module: Module): void {
+    protected scanImports(module: ModuleWrapper): void {
         const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, module.type) || [];
 
         imports.forEach((importType: any): void => {
@@ -76,7 +76,7 @@ export class Scanner {
         });
     }
 
-    protected scanExports(module: Module): void {
+    protected scanExports(module: ModuleWrapper): void {
         const exports = Reflect.getMetadata(MODULE_METADATA.EXPORTS, module.type) || [];
         const isGlobal = Reflect.getMetadata(IS_GLOBAL_METADATA, module.type) || false;
 
@@ -94,7 +94,7 @@ export class Scanner {
     }
 
     protected scanRoutes(): void {
-        const cliWrapper = this.container.providers.get(Cli);
+        const cliWrapper = this.container.globalProviders.get(Cli);
 
         if(!cliWrapper) {
             return;
