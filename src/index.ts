@@ -6,7 +6,11 @@ export * from "./exceptions";
 export * from "./makes";
 export * from "./services";
 export {
-    // @deprecated
+    /**
+     * @deprecated since v1.0.24. Use EventService instead.
+     * This export is maintained for backward compatibility.
+     * The AppEventsService class has been renamed to EventService.
+     */
     EventService as AppEventsService
 } from "./services";
 export * from "./types";

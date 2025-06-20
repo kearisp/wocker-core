@@ -6,7 +6,7 @@ import {Container} from "./Container";
 import {ModuleWrapper} from "./ModuleWrapper";
 
 
-describe("Module", (): void => {
+describe("ModuleWrapper", (): void => {
     class ModuleType {}
 
     it("Should be provider", (): void => {
