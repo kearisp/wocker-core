@@ -1,6 +1,7 @@
 import FS from "fs";
 import Path from "path";
 import {Readable} from "stream";
+import YAML from "yaml";
 import {FileSystemDriver, ReadStreamOptions, WriteStreamOptions} from "../types";
 import {File} from "./File";
 
@@ -111,6 +112,12 @@ export class FileSystem {
         const res: string | Buffer = this.driver.readFileSync(filePath);
 
         return JSON.parse(res.toString());
+    }
+
+    public readYAML(path: string): any {
+        const content = this.readFile(path).toString();
+
+        return YAML.parse(content);
     }
 
     public writeFile(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: FS.WriteFileOptions): void {
