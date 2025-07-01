@@ -43,6 +43,7 @@ export namespace DockerServiceParams {
     };
 
     export type BuildImage = {
+        version?: "1" | "2";
         tag: string;
         buildArgs?: {
             [key: string]: string;
@@ -51,8 +52,12 @@ export namespace DockerServiceParams {
             [key: string]: string;
         };
         context: string;
+    } & ({
+        /** @deprecated */
         src: string;
-    };
+    } | {
+        dockerfile: string;
+    });
 
     export type Exec = {
         cmd: string[];

@@ -42,6 +42,14 @@ export class Container {
         this.globalProviders.set(token, wrapper);
     }
 
+    public getProvider(type: InjectionToken): InstanceWrapper | undefined {
+        const token = typeof type !== "string"
+            ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
+            : type;
+
+        return this.globalProviders.get(token);
+    }
+
     public replace(type: InjectionToken, provider: ProviderType): void {
         const token = typeof type !== "string"
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type

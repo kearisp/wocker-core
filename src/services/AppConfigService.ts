@@ -1,14 +1,8 @@
 import Path from "path";
 import {Inject, Injectable} from "../decorators";
-import {
-    AppConfig,
-    AppConfigProperties,
-    PresetSource,
-    PROJECT_TYPE_PRESET,
-    PROJECT_TYPE_IMAGE,
-    PROJECT_TYPE_DOCKERFILE,
-    PROJECT_TYPE_COMPOSE
-} from "../makes";
+import {AppConfig, AppConfigProperties} from "../makes/AppConfig";
+import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../makes/Project";
+import {PresetSource} from "../makes/Preset";
 import {ProjectRef} from "../types/ProjectRef";
 import {PluginRef} from "../types/PluginRef";
 import {AppFileSystemService} from "./AppFileSystemService";
@@ -41,7 +35,8 @@ export class AppConfigService {
 
     public get experimentalFeatures(): string[] {
         return [
-            "projectComposeType"
+            "projectComposeType",
+            "buildKit"
         ];
     }
 
@@ -201,8 +196,12 @@ export class AppConfigService {
         this.config.unsetMeta(name);
     }
 
+    public isExperimentalEnabled(key: string): boolean {
+        return this.config.getMeta(`experimental.${key}`) === "enabled";
+    }
+
     public getProjectTypes() {
-        if(this.config.getMeta("experimental.projectComposeType")) {
+        if(this.isExperimentalEnabled("projectComposeType")) {
             return {
                 ...this.mapTypes,
                 [PROJECT_TYPE_COMPOSE]: "Docker compose"

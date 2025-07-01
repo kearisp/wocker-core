@@ -1,42 +1,31 @@
-import {LogService} from "../services/LogService";
+import {AsyncStorage} from "../core";
+import {LogService} from "../services";
 
-
-let loggerService: LogService;
 
 export class Logger {
-    public static install(ls: LogService): void {
-        loggerService = ls;
+    protected static getLogService(): any | undefined {
+        const container = AsyncStorage.getStore();
+
+        if(!container) {
+            return;
+        }
+
+        return container.getProvider(LogService)?.instance;
     }
 
     public static log(...data: any[]): void {
-        if(!loggerService) {
-            return;
-        }
-
-        loggerService.log(...data);
+        Logger.getLogService()?.log(...data);
     }
 
     public static info(...data: any[]): void {
-        if(!loggerService) {
-            return;
-        }
-
-        loggerService.info(...data);
+        Logger.getLogService()?.info(...data);
     }
 
     public static warn(...data: any[]): void {
-        if(!loggerService) {
-            return;
-        }
-
-        loggerService.warn(...data);
+        Logger.getLogService()?.warn(...data);
     }
 
     public static error(...data: any[]): void {
-        if(!loggerService) {
-            return;
-        }
-
-        loggerService.error(...data);
+        Logger.getLogService()?.error(...data);
     }
 }

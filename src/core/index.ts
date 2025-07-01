@@ -1,3 +1,4 @@
+export * from "./AsyncStorage";
 export * from "./ApplicationContext";
 export * from "./Container";
 export * from "./Factory";

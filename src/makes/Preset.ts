@@ -1,4 +1,4 @@
-import {PickProperties} from "../types";
+import {PickProperties} from "../types/PickProperties";
 
 
 type TextOption = {
