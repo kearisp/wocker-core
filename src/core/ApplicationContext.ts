@@ -1,6 +1,7 @@
 import {Cli} from "@kearisp/cli";
 import {Container} from "./Container";
 import {Type} from "../types/Type";
+import {AsyncStorage} from "./AsyncStorage";
 
 
 export class ApplicationContext {
@@ -26,40 +27,44 @@ export class ApplicationContext {
     }
 
     public async run(args: string[]): Promise<string> {
-        const cli = this.get(Cli);
+        return new Promise((resolve) => {
+            AsyncStorage.run(this.container, () => {
+                const cli = this.get(Cli);
 
-        cli.command("").action(() => {
-            for(const [, module] of this.container.modules) {
-                for(const [, container] of module.controllers) {
-                    if(!container.description) {
-                        continue;
-                    }
+                cli.command("").action(() => {
+                    for(const [, module] of this.container.modules) {
+                        for(const [, container] of module.controllers) {
+                            if(!container.description) {
+                                continue;
+                            }
 
-                    console.info(`${container.description}:`);
+                            console.info(`${container.description}:`);
 
-                    const spaceLength = container.commands.reduce((space, route) => {
-                        return route.commandNames.reduce((space, command) => {
-                            return Math.max(space, command.length + 2);
-                        }, space);
-                    }, 0);
+                            const spaceLength = container.commands.reduce((space, route) => {
+                                return route.commandNames.reduce((space, command) => {
+                                    return Math.max(space, command.length + 2);
+                                }, space);
+                            }, 0);
 
-                    for(const route of container.commands) {
-                        if(!route.description) {
-                            continue;
+                            for(const route of container.commands) {
+                                if(!route.description) {
+                                    continue;
+                                }
+
+                                for(const commandName of route.commandNames) {
+                                    const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
+
+                                    console.info(`  ${commandName} ${space} ${route.description}`);
+                                }
+                            }
+
+                            console.info("");
                         }
-
-                        for(const commandName of route.commandNames) {
-                            const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
-
-                            console.info(`  ${commandName} ${space} ${route.description}`);
-                        }
                     }
+                });
 
-                    console.info("");
-                }
-            }
+                return resolve(cli.run(args));
+            });
         });
-
-        return cli.run(args);
     }
 }

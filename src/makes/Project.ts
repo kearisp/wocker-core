@@ -8,11 +8,16 @@ export type ProjectType = typeof PROJECT_TYPE_DOCKERFILE
                         | typeof PROJECT_TYPE_COMPOSE;
 export type ProjectProperties = Omit<PickProperties<Project>, "containerName" | "domains">;
 
+type Service = {
+    type: "plugin" | "compose";
+    name: string;
+};
+
 export abstract class Project {
-    public id: string;
-    public name: string
-    public type: string;
-    public path: string;
+    public id!: string;
+    public name!: string
+    public type!: ProjectType;
+    public path!: string;
     public preset?: string;
     public presetMode?: "global" | "project";
     public imageName?: string;
@@ -26,23 +31,7 @@ export abstract class Project {
     public ports?: string[];
     public volumes?: string[];
 
-    protected constructor(data: ProjectProperties) {
-        this.id = data.id
-        this.name = data.name;
-        this.type = data.type;
-        this.path = data.path;
-        this.preset = data.preset;
-        this.presetMode = data.presetMode;
-        this.imageName = data.imageName;
-        this.dockerfile = data.dockerfile;
-        this.scripts = data.scripts;
-        this.buildArgs = data.buildArgs;
-        this.env = data.env;
-        this.ports = data.ports;
-        this.volumes = data.volumes;
-        this.extraHosts = data.extraHosts;
-        this.metadata = data.metadata;
-
+    public constructor(data: ProjectProperties) {
         Object.assign(this, data);
     }
 
@@ -272,13 +261,6 @@ export abstract class Project {
     public abstract getSecret(key: string, byDefault?: string): Promise<string | undefined>;
     public abstract setSecret(key: string, value: string): Promise<void>;
     public abstract save(): void;
-
-    /**
-     * @deprecated
-     */
-    public toJSON(): ProjectProperties {
-        return this.toObject();
-    }
 
     public toObject(): ProjectProperties {
         return {

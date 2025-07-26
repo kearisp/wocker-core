@@ -1,5 +1,5 @@
 import {Injectable, Inject} from "../decorators";
-import {FileSystem} from "../makes";
+import {FileSystem} from "../makes/FileSystem";
 import {WOCKER_DATA_DIR_KEY} from "../env";
 
 
