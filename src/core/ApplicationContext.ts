@@ -1,6 +1,6 @@
 import {Cli} from "@kearisp/cli";
+import {Type} from "../types";
 import {Container} from "./Container";
-import {Type} from "../types/Type";
 import {AsyncStorage} from "./AsyncStorage";
 
 

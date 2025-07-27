@@ -203,7 +203,7 @@ describe("AppConfigService", (): void => {
 
         expect(fs.exists("wocker.config.js")).toBeFalsy();
 
-        appConfigService.addProject("project1", "project1", "/home/wocker-test/projects/project1");
+        appConfigService.addProject("project1", "/home/wocker-test/projects/project1");
         appConfigService.save();
 
         expect(fs.exists("wocker.config.js")).toBeTruthy();
@@ -233,7 +233,7 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService, fs} = await getContext();
 
-        appConfigService.addProject("project2", "project2", "/home/wocker-test/projects/project2");
+        appConfigService.addProject("project2", "/home/wocker-test/projects/project2");
         appConfigService.save();
 
         expect(fs.exists("wocker.config.js")).toBeTruthy();
@@ -285,7 +285,7 @@ describe("AppConfigService", (): void => {
     it("should properly manage project addition and removal", async (): Promise<void> => {
         const {appConfigService} = await getContext();
 
-        appConfigService.addProject("test", "test", "/home/test");
+        appConfigService.addProject("test", "/home/test");
 
         expect(appConfigService.config.projects).toEqual([
             {

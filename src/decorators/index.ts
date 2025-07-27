@@ -7,12 +7,6 @@ export * from "./Inject";
 export * from "./Injectable";
 export * from "./Module";
 export * from "./Option";
+export * from "./Optional";
 export * from "./Param";
 export * from "./Plugin";
-
-export type {
-    /**
-     * @deprecated
-     */
-    ModuleMetadata as ModuleConfig
-} from "./Module";

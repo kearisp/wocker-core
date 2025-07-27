@@ -1,9 +1,9 @@
+import {Type} from "../types";
 import {ArgMeta} from "../types/ArgMeta";
-import {Type} from "../types/Type";
 import {
+    ARGS_METADATA,
     COMMAND_METADATA,
     COMPLETION_METADATA,
-    ARGS_METADATA,
     PARAMTYPES_METADATA,
     ALIAS_METADATA,
     DESCRIPTION_METADATA
@@ -17,7 +17,6 @@ export class Route {
         name: string;
         params: any;
     }[] = [];
-    public argsMeta: ArgMeta[] = [];
     public designTypes: any[] = [];
     public commandNames: string[] = [];
     public completions: {
@@ -38,24 +37,20 @@ export class Route {
         this.description = Reflect.getMetadata(DESCRIPTION_METADATA, descriptor.value) || "";
         this.commandNames = Reflect.getMetadata(COMMAND_METADATA, descriptor.value) || [];
         this.completions = Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [];
+        this.designTypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.type.prototype, this.method) || [];
 
-        const argsMeta = Reflect.getMetadata(ARGS_METADATA, this.type, this.method) || [],
-              argsAliases = Reflect.getMetadata(ALIAS_METADATA, this.type, this.method) || {},
-              argsDescription = Reflect.getMetadata(DESCRIPTION_METADATA, this.type, method) || {},
-              designTypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.type.prototype, this.method) || [];
+        const argsMetadata = Reflect.getMetadata(ARGS_METADATA, this.type, this.method) || [],
+              argsAliases = Reflect.getMetadata(ALIAS_METADATA, this.type, this.method) || {};
 
-        this.argsMeta = argsMeta;
-        this.designTypes = designTypes;
-
-        for(let i = 0; i < argsMeta.length; i++) {
-            const argMeta: ArgMeta = argsMeta[i];
+        for(const index in argsMetadata) {
+            const argMeta: ArgMeta = argsMetadata[index];
 
             if(argMeta.type === "param") {
                 this.args[argMeta.index] = {
                     type: argMeta.type,
                     name: argMeta.name,
                     params: {
-                        description: argsDescription[argMeta.index] || ""
+                        description: argMeta.description,
                     }
                 };
             }
@@ -74,7 +69,7 @@ export class Route {
                         ...argMeta.params,
                         type: this.getArgType(argMeta.index) || type,
                         alias: argsAliases[argMeta.index] || alias,
-                        description: argsDescription[argMeta.index] || description
+                        description: argMeta.description || description
                     }
                 };
             }

@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {Cli, CommandInput} from "@kearisp/cli";
-import {ProviderType} from "../types";
+import {Type, DynamicModule, ProviderType} from "../types";
 import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
@@ -11,79 +11,123 @@ import {
 
 
 export class Scanner {
-    public readonly container: Container
+    public readonly container: Container;
 
-    public constructor() {
-        this.container = new Container();
+    public constructor(
+        container?: Container
+    ) {
+        this.container = container || new Container();
     }
 
-    public async scan(moduleType: any): Promise<void> {
-        this.scanModule(moduleType);
+    public async scan(moduleDefinition: Type | DynamicModule): Promise<void> {
+        this.scanModule(moduleDefinition);
         await this.scanDynamicModules();
         this.scanRoutes();
     }
 
-    protected scanModule(moduleType: any): ModuleWrapper {
+    protected getMetadata(moduleDefinition: Type | DynamicModule): DynamicModule {
+        if(this.isDynamicModule(moduleDefinition)) {
+            const module = moduleDefinition.module;
+
+            return {
+                module: moduleDefinition.module,
+                global: moduleDefinition.global || Reflect.getMetadata(IS_GLOBAL_METADATA, module),
+                inject: moduleDefinition.inject,
+                useFactory: moduleDefinition.useFactory,
+                imports: [
+                    ...Reflect.getMetadata(MODULE_METADATA.IMPORTS, module) || [],
+                    ...moduleDefinition.imports || []
+                ],
+                controllers: [
+                    ...Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, module) || [],
+                    ...moduleDefinition.controllers || []
+                ],
+                providers: [
+                    ...Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module) || [],
+                    ...moduleDefinition.providers || []
+                ],
+                exports: [
+                    ...Reflect.getMetadata(MODULE_METADATA.EXPORTS, module) || [],
+                    ...moduleDefinition.exports || []
+                ]
+            };
+        }
+
+        return {
+            module: moduleDefinition,
+            global: Reflect.getMetadata(IS_GLOBAL_METADATA, moduleDefinition) || false,
+            imports: Reflect.getMetadata(MODULE_METADATA.IMPORTS, moduleDefinition) || [],
+            controllers: Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, moduleDefinition) || [],
+            providers: Reflect.getMetadata(MODULE_METADATA.PROVIDERS, moduleDefinition) || [],
+            exports: Reflect.getMetadata(MODULE_METADATA.EXPORTS, moduleDefinition) || []
+        };
+    }
+
+    protected scanModule(moduleDefinition: Type | DynamicModule): ModuleWrapper {
+        const {
+            module: moduleType,
+            global = false,
+            inject,
+            useFactory,
+            imports = [],
+            controllers = [],
+            providers = [],
+            exports = []
+        } = this.getMetadata(moduleDefinition);
+
         let module = this.container.hasModule(moduleType)
             ? this.container.getModule(moduleType)
             : null;
 
         if(!module) {
             module = new ModuleWrapper(this.container, moduleType);
+            module.global = global;
+
+            if(useFactory) {
+                module.factory = useFactory;
+                module.factoryInject = inject;
+            }
 
             this.container.addModule(moduleType, module);
 
-            this.scanImports(module);
-            this.scanControllers(module);
-            this.scanProviders(module);
-            this.scanExports(module);
+            this.scanImports(module, imports);
+            this.scanControllers(module, controllers);
+            this.scanProviders(module, providers);
+            this.scanExports(module, exports);
         }
 
         return module;
     }
 
-    protected scanControllers(module: ModuleWrapper): void {
-        const controllers = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, module.type) || [];
+    protected scanControllers(module: ModuleWrapper, controllers: Type[]): void {
+        // const controllers = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, module.type) || [];
 
         controllers.forEach((controller: any): void => {
             module.addController(controller);
         });
     }
 
-    protected scanProviders(module: ModuleWrapper): void {
-        const providers: ProviderType[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
+    protected scanProviders(module: ModuleWrapper, providers: ProviderType[]): void {
+        // const providers: ProviderType[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
 
         providers.forEach((provider: ProviderType): void => {
             module.addProvider(provider);
         });
     }
 
-    protected scanImports(module: ModuleWrapper): void {
-        const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, module.type) || [];
-
+    protected scanImports(module: ModuleWrapper, imports: any[]): void {
         imports.forEach((importType: any): void => {
             const subModule = this.scanModule(importType);
 
-            subModule.exports.forEach((type): void => {
-                const provider = subModule.providers.get(type);
-
-                if(!provider) {
-                    return;
-                }
-
-                module.providers.set(type, provider);
-            });
+            module.addImport(subModule);
         });
     }
 
-    protected scanExports(module: ModuleWrapper): void {
-        const exports = Reflect.getMetadata(MODULE_METADATA.EXPORTS, module.type) || [];
-        const isGlobal = Reflect.getMetadata(IS_GLOBAL_METADATA, module.type) || false;
-
+    protected scanExports(module: ModuleWrapper, exports: any[]): void {
         exports.forEach((type: any): void => {
             module.addExport(type);
 
-            if(isGlobal) {
+            if(module.global) {
                 const wrapper = module.getWrapper(type);
 
                 if(wrapper) {
@@ -149,32 +193,35 @@ export class Scanner {
 
     protected async scanDynamicModules(): Promise<void> {
         const promises = ([...this.container.modules.keys()]).map(async (type): Promise<void> => {
-            if(!type.prototype.load) {
+            const wrapper = this.container.modules.get(type);
+
+            if(!wrapper) {
                 return;
             }
 
-            const parentModule = this.container.modules.get(type);
+            if(wrapper.factory) {
+                const {
+                    imports = [],
+                    controllers = [],
+                    providers = [],
+                    exports = []
+                } = await wrapper.factory(
+                    ...(wrapper.factoryInject || []).map((token) => {
+                        return wrapper.get(token);
+                    })
+                );
 
-            const {
-                [MODULE_METADATA.IMPORTS]: imports = []
-            } = await type.prototype.load(this.container);
-
-            for(const subModuleType of imports) {
-                const module = this.scanModule(subModuleType);
-
-                module.exports.forEach((type) => {
-                    const provider = module.getWrapper(type);
-
-                    if(!provider) {
-                        return;
-                    }
-
-                    // @ts-ignore
-                    parentModule.providers.set(type, provider);
-                });
+                this.scanImports(wrapper, imports);
+                this.scanControllers(wrapper, controllers);
+                this.scanProviders(wrapper, providers);
+                this.scanExports(wrapper, exports);
             }
         });
 
         await Promise.all(promises);
+    }
+
+    public isDynamicModule(moduleDefinition: Type | DynamicModule): moduleDefinition is DynamicModule {
+        return moduleDefinition && !!(moduleDefinition as DynamicModule).module;
     }
 }

@@ -1,13 +1,6 @@
 import {MODULE_METADATA, IS_MODULE_METADATA} from "../env";
-import {ProviderType} from "../types/ProviderType";
+import {ModuleMetadata} from "../types";
 
-
-export type ModuleMetadata = {
-    [MODULE_METADATA.CONTROLLERS]?: any[];
-    [MODULE_METADATA.PROVIDERS]?: ProviderType[];
-    [MODULE_METADATA.IMPORTS]?: any[];
-    [MODULE_METADATA.EXPORTS]?: any[];
-};
 
 export const Module = (config: ModuleMetadata): ClassDecorator => {
     const {

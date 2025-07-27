@@ -14,19 +14,20 @@ describe("ControllerWrapper", (): void => {
             public testCommand(
                 @Param("test-param")
                 @Description("Test param description")
-                testParam?: string,
+                _testParam?: string,
                 @Option("test-option", "t")
                 @Description("Test option description")
-                stringValue?: string,
+                _stringValue?: string,
                 @Option("test-option2", "T")
                 @Description("Test2 description")
-                boolValue?: boolean
+                _boolValue?: boolean
             ): void {}
 
             @Completion("test-option")
             public testCompletion(
                 @Param("test-param")
-                testParam?: string
+                @Description("Test param description")
+                _testParam?: string
             ): string[] {
                 return [];
             }
@@ -74,7 +75,7 @@ describe("ControllerWrapper", (): void => {
                 type: "param",
                 name: "test-param",
                 params: {
-                    description: ""
+                    description: "Test param description"
                 }
             }
         ]);
@@ -116,11 +117,11 @@ describe("ControllerWrapper", (): void => {
             @Command("test-command [test-param]")
             public testCommand(
                 @Param("test-param")
-                testParam?: string,
+                _testParam?: string,
                 @Option("test-option", "o")
-                testOption?: string,
+                _testOption?: string,
                 @Option("test-options", "0")
-                testOptions?: string[]
+                _testOptions?: string[]
             ): string {
                 return "Command result";
             }

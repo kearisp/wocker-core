@@ -1,14 +1,12 @@
-import {Module, ModuleMetadata} from "./Module";
+import {Global} from "./Global";
+import {Module} from "./Module";
+import {PluginMetadata} from "../types";
 import {PLUGIN_NAME_METADATA} from "../env";
 
 
-type PluginConfig = ModuleMetadata & {
-    [PLUGIN_NAME_METADATA]: string;
-};
-
-export const Plugin = (config: PluginConfig): ClassDecorator => {
+export const Plugin = (config: PluginMetadata): ClassDecorator => {
     const {
-        name,
+        [PLUGIN_NAME_METADATA]: name,
         ...rest
     } = config;
 
@@ -16,6 +14,7 @@ export const Plugin = (config: PluginConfig): ClassDecorator => {
         Reflect.defineMetadata("isPlugin", true, target);
         Reflect.defineMetadata(PLUGIN_NAME_METADATA, name, target);
 
+        Global()(target);
         Module(rest)(target);
     };
 };

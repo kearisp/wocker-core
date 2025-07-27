@@ -4,6 +4,7 @@ export * from "./core";
 export * from "./decorators";
 export * from "./exceptions";
 export * from "./makes";
+export * from "./modules";
 export * from "./services";
 export {
     /**

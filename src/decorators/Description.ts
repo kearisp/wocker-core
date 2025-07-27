@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import {DESCRIPTION_METADATA} from "../env";
+import {DESCRIPTION_METADATA, ARGS_METADATA} from "../env";
 
 
 type UniversalDecorator = ClassDecorator & MethodDecorator & PropertyDecorator & ParameterDecorator
@@ -33,6 +33,19 @@ export const Description = (description: string): UniversalDecorator => {
         }
 
         // Parameter
+        const {
+            [descriptorOrIndex]: options,
+            ...rest
+        } = Reflect.getMetadata(ARGS_METADATA, target.constructor, propertyKey) || {};
+
+        Reflect.defineMetadata(ARGS_METADATA, {
+            ...rest,
+            [descriptorOrIndex]: {
+                ...options || {},
+                description
+            }
+        }, target.constructor, propertyKey);
+
         Reflect.defineMetadata(DESCRIPTION_METADATA, {
             ...Reflect.getMetadata(DESCRIPTION_METADATA, target.constructor, propertyKey) || {},
             [descriptorOrIndex]: description

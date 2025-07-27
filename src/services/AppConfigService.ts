@@ -1,7 +1,7 @@
 import Path from "path";
 import {Inject, Injectable} from "../decorators";
 import {AppConfig, AppConfigProperties} from "../makes/AppConfig";
-import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../makes/Project";
+import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../modules";
 import {PresetSource} from "../makes/Preset";
 import {ProjectRef} from "../types/ProjectRef";
 import {PluginRef} from "../types/PluginRef";
@@ -36,7 +36,8 @@ export class AppConfigService {
     public get experimentalFeatures(): string[] {
         return [
             "projectComposeType",
-            "buildKit"
+            "buildKit",
+            "dns"
         ];
     }
 
@@ -155,12 +156,12 @@ export class AppConfigService {
         return this.config;
     }
 
-    public addProject(id: string, name: string, path: string): void {
-        this.config.addProject(id, name, path);
+    public addProject(name: string, path: string): void {
+        this.config.addProject(name, path);
     }
 
-    public removeProject(id: string): void {
-        this.config.removeProject(id);
+    public removeProject(name: string): void {
+        this.config.removeProject(name);
         this.save();
     }
 
@@ -180,6 +181,14 @@ export class AppConfigService {
 
     public removePlugin(name: string): void {
         this.config.removePlugin(name);
+    }
+
+    public setEnv(name: string, value: string): void {
+        this.config.setEnv(name, value);
+    }
+
+    public unsetEnv(name: string): void {
+        this.config.unsetEnv(name);
     }
 
     public getMeta(name: string, byDefault?: string): string|undefined;
@@ -221,7 +230,7 @@ export class AppConfigService {
         }
 
         fs.writeFile("wocker.config.js", this.config.toJsString());
-        fs.writeFile("wocker.config.json", this.config.toString()); // Backup file
+        fs.writeJSON("wocker.config.json", this.config.toObject()); // Backup file
 
         if(fs.exists("data.json")) {
             fs.rm("data.json");

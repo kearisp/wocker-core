@@ -10,5 +10,4 @@ export * from "./PluginConfigService";
 export * from "./PluginFileSystemService";
 export * from "./PresetService";
 export * from "./ProcessService";
-export * from "./ProjectService";
 export * from "./ProxyService";

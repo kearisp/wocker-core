@@ -96,7 +96,7 @@ export class AppConfig {
         });
     }
 
-    public addProject(id: string, name: string, path: string): void {
+    public addProject(name: string, path: string): void {
         let projectRef = this.getProject(name);
 
         if(!projectRef) {
@@ -231,13 +231,6 @@ export class AppConfig {
         }
     }
 
-    /**
-     * @deprecated
-     */
-    public toJson(): AppConfigProperties {
-        return this.toObject();
-    }
-
     public toObject(): AppConfigProperties {
         return {
             debug: this.debug,
@@ -255,9 +248,5 @@ export class AppConfig {
         const json = JSON.stringify(this.toObject(), null, 4);
 
         return `// Wocker config\nexports.config = ${json};`;
-    }
-
-    public toString(): string {
-        return JSON.stringify(this.toObject(), null, 4);
     }
 }

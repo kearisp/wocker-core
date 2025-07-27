@@ -9,17 +9,20 @@ describe("AppConfig", (): void => {
 
         expect(config.getProject("test")).toBeUndefined();
 
-        config.addProject("test", "Test", "/test");
-        config.addProject("test", "Test-2", "/test-2");
+        config.addProject("test", "/test");
+        config.addProject("test-2", "/test-2");
 
         expect(config.projects).toEqual([
-            {name: "Test", path: "/test"},
-            {name: "Test-2", path: "/test-2"}
+            {name: "test", path: "/test"},
+            {name: "test-2", path: "/test-2"}
         ]);
-        expect(config.getProject("Test-2")).toEqual({name: "Test-2", path: "/test-2"});
+        expect(config.getProject("test-2")).toEqual({
+            name: "test-2",
+            path: "/test-2"
+        });
 
-        config.removeProject("Test");
-        config.removeProject("Test-2");
+        config.removeProject("test");
+        config.removeProject("test-2");
 
         expect(config.projects).toEqual([]);
     });

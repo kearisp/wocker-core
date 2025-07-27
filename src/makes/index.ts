@@ -6,4 +6,3 @@ export * from "./FileSystemManager";
 export * from "./KeystoreProvider";
 export * from "./Logger";
 export * from "./Preset";
-export * from "./Project";
