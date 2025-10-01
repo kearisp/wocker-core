@@ -203,7 +203,7 @@ describe("FileSystem", (): void => {
             [testEmptyFile]: ""
         }, DATA_DIR);
 
-        expect(() => fs.getLinePosition(testFile, 0)).toThrowError();
+        expect(() => fs.getLinePosition(testFile, 0)).toThrow();
         expect(fs.getLinePosition(testFile, 1)).toBe(0);
         expect(fs.readBytes(testFile, fs.getLinePosition(testFile, 2), secondList.length).toString()).toBe(secondList);
         expect(fs.readBytes(testFile, fs.getLinePosition(testFile, -2), preLastLine.length).toString()).toBe(preLastLine);
@@ -226,7 +226,7 @@ describe("FileSystem", (): void => {
 
         file.close();
 
-        expect(() => file.stat()).toThrowError();
+        expect(() => file.stat()).toThrow();
     });
 
     it("should watch file", async (): Promise<void> => {

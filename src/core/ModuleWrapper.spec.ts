@@ -45,6 +45,6 @@ describe("ModuleWrapper", (): void => {
 
         expect(() => {
             module.get(ExceptionTestService);
-        }).toThrowError();
+        }).toThrow();
     });
 });

@@ -82,7 +82,7 @@ describe("InstanceWrapper", (): void => {
             useClass: null as any
         });
 
-        expect(() => wrapper.instance).toThrowError();
+        expect(() => wrapper.instance).toThrow();
     });
 
     it("should replace existing provider with new one", (): void => {
