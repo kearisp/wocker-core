@@ -3,6 +3,7 @@ export * from "./EnvConfig";
 export * from "./FileSystemDriver";
 export * from "./InjectionToken";
 export * from "./ModuleMetadata";
+export * from "./PackageManagerType";
 export * from "./PickProperties";
 export * from "./PluginMetadata";
 export * from "./Type";

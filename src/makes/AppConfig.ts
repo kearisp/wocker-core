@@ -1,4 +1,4 @@
-import {EnvConfig} from "../types";
+import {EnvConfig, PackageManagerType} from "../types";
 import {PluginRef} from "../types/PluginRef";
 import {PresetRef} from "../types/PresetRef";
 import {ProjectRef, ProjectOldRef} from "../types/ProjectRef";
@@ -7,6 +7,7 @@ import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL, PresetSource} from "./Pr
 
 export type AppConfigProperties = {
     debug?: boolean;
+    pm?: PackageManagerType;
     keystore?: string;
     logLevel?: "off" | "info" | "warn" | "error";
     plugins?: PluginRef[];
@@ -18,6 +19,7 @@ export type AppConfigProperties = {
 
 export class AppConfig {
     public debug?: boolean;
+    public pm?: PackageManagerType;
     public keystore?: string;
     public logLevel: "off" | "info" | "warn" | "error" = "off";
     public plugins: PluginRef[];
@@ -234,6 +236,7 @@ export class AppConfig {
     public toObject(): AppConfigProperties {
         return {
             debug: this.debug,
+            pm: this.pm,
             logLevel: this.logLevel,
             keystore: this.keystore,
             plugins: this.plugins.length > 0 ? this.plugins : undefined,
