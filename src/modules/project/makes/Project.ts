@@ -12,15 +12,18 @@ import {
 export class Project {
     /** @deprecated */
     public id?: string;
-    public name!: string
+    public name!: string;
     public type!: ProjectType;
     public path!: string;
+    public cmd?: string[];
     public imageName?: string;
     public dockerfile?: string;
     public composefile?: string;
     public preset?: string;
     public presetMode?: "global" | "project";
-    public scripts?: string[];
+    public scripts?: {
+        [script: string]: string;
+    };
     public services: {
         [name: string]: ServiceProperties;
     };
@@ -361,6 +364,7 @@ export class Project {
             composefile: this.composefile,
             preset: this.preset,
             presetMode: this.presetMode,
+            cmd: this.cmd,
             scripts: this.scripts,
             services: Object.keys(this.services).length > 0 ? this.services : undefined,
             buildArgs: Object.keys(this.buildArgs).length > 0 ? this.buildArgs : undefined,

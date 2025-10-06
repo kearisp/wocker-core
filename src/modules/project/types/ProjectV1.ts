@@ -12,7 +12,10 @@ export type ProjectV1 = {
     composefile?: string;
     preset?: string;
     presetMode?: "global" | "project";
-    scripts?: string[];
+    cmd?: string[];
+    scripts?: {
+        [script: string]: string;
+    };
     services?: {
         [service: string]: ServiceProperties;
     };
