@@ -2,9 +2,10 @@ import Path from "path";
 import {Inject, Injectable} from "../decorators";
 import {AppConfig, AppConfigProperties} from "../makes/AppConfig";
 import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../modules";
-import {PresetSource} from "../makes/Preset";
+import {PresetRef} from "../types/PresetRef";
 import {ProjectRef} from "../types/ProjectRef";
 import {PluginRef} from "../types/PluginRef";
+import {PresetSource} from "../types/PresetSource";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {ProcessService} from "./ProcessService";
 import {WOCKER_VERSION_KEY} from "../env";
@@ -99,6 +100,10 @@ export class AppConfigService {
         }
 
         return this._config;
+    }
+
+    public get presets(): PresetRef[] {
+        return this.config.presets;
     }
 
     public get projects(): ProjectRef[] {

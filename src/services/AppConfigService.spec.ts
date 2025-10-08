@@ -1,6 +1,7 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {AppConfig, AppConfigProperties, PRESET_SOURCE_EXTERNAL} from "../makes";
+import {AppConfig, AppConfigProperties} from "../makes";
+import {PRESET_SOURCE_EXTERNAL} from "../types/PresetSource";
 import {Factory} from "../core";
 import {Module} from "../decorators";
 import {AppConfigService} from "./AppConfigService";

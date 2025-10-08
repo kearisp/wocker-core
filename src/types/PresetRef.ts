@@ -1,4 +1,4 @@
-import {PresetSource} from "../makes/Preset";
+import {PresetSource} from "./PresetSource";
 
 
 export type PresetRef = {

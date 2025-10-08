@@ -6,6 +6,8 @@ export * from "./ModuleMetadata";
 export * from "./PackageManagerType";
 export * from "./PickProperties";
 export * from "./PluginMetadata";
+export * from "./PresetRef";
+export * from "./PresetSource";
 export * from "./Type";
 export * from "./Volume";
 export * from "./ProviderType";
