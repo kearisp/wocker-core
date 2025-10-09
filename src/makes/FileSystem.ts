@@ -145,6 +145,41 @@ export class FileSystem {
         this.driver.rmSync(fullPath, options);
     }
 
+    public mv(src: string, dest: string): void {
+        const srcPath = this.path(src),
+              destPath = this.path(dest),
+              destDir = this.path(dest, ".."),
+              srcStat = this.stat(src);
+
+        if(!this.driver.existsSync(destDir)) {
+            this.driver.mkdirSync(destDir, {
+                recursive: true
+            });
+        }
+
+        let sameFs = false;
+
+        try {
+            const destStat = this.driver.statSync(destDir);
+
+            sameFs = srcStat.dev === destStat.dev;
+        }
+        catch {}
+
+        if(sameFs) {
+            this.driver.renameSync(srcPath, destPath);
+        }
+        else {
+            this.driver.cpSync(srcPath, destPath, {
+                recursive: true
+            });
+            this.driver.rmSync(srcPath, {
+                recursive: true,
+                force: true
+            });
+        }
+    }
+
     public createWriteStream(path: string, options?: WriteStreamOptions): FS.WriteStream {
         return this.driver.createWriteStream(this.path(path), options);
     }

@@ -251,4 +251,23 @@ describe("FileSystem", (): void => {
         expect(handleChange).toHaveBeenNthCalledWith(1, "change", testFile);
         expect(handleChange).toHaveBeenNthCalledWith(2, "change", testFile);
     });
+
+    it("should move directory to a new location", (): void => {
+        vol.fromJSON({
+            "old-dir/file1.txt": "hello",
+            "old-dir/file2.txt": "world",
+        }, DATA_DIR);
+
+        fs.mv("old-dir", "new-dir");
+
+        expect(fs.exists("old-dir")).toBe(false);
+
+        expect(fs.exists("new-dir")).toBe(true);
+
+        expect(fs.readFile("new-dir/file1.txt").toString()).toBe("hello");
+        expect(fs.readFile("new-dir/file2.txt").toString()).toBe("world");
+
+        expect(fs.readdir()).toEqual(["new-dir"]);
+        expect(fs.readdir("new-dir")).toEqual(["file1.txt", "file2.txt"]);
+    });
 });

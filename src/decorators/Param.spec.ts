@@ -1,7 +1,7 @@
 import {describe, it, expect} from "@jest/globals";
 import "reflect-metadata";
 import {Param} from "./Param";
-import {ARGS_METADATA, ARGS_METADATA_OLD} from "../env";
+import {ARGS_METADATA, ARGS_OLD_METADATA} from "../env";
 
 
 describe("Param", (): void => {
@@ -21,7 +21,7 @@ describe("Param", (): void => {
             }
         });
 
-        expect(Reflect.getMetadata(ARGS_METADATA_OLD, TestClass, "testMethod")).toEqual([
+        expect(Reflect.getMetadata(ARGS_OLD_METADATA, TestClass, "testMethod")).toEqual([
             {
                 type: "param",
                 name: "test",

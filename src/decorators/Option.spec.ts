@@ -3,7 +3,7 @@ import "reflect-metadata";
 import {Option} from "./Option";
 import {
     ARGS_METADATA,
-    ARGS_METADATA_OLD
+    ARGS_OLD_METADATA
 } from "../env";
 
 
@@ -30,11 +30,10 @@ describe("Option", (): void => {
             name: "value",
             params: {
                 alias: "v",
-            },
-            index: 0
+            }
         });
 
-        const argsMetaOld = Reflect.getMetadata(ARGS_METADATA_OLD, TestClass, "testMethod") || [];
+        const argsMetaOld = Reflect.getMetadata(ARGS_OLD_METADATA, TestClass, "testMethod") || [];
 
         const argMetaOld = argsMetaOld.find((argMeta: any) => {
             return argMeta.name === "value";

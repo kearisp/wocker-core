@@ -1,7 +1,16 @@
+import {Option} from "@kearisp/cli";
+
+
 export type ArgMeta = {
-    index: number;
-    type: "param" | "option";
     name: string;
+    type: "param" | "option";
     description?: string;
-    params: any;
+    params: Omit<Option, "name">;
+};
+
+export type ArgOldMeta = {
+    name: string;
+    type: "param" | "option";
+    index: number;
+    params: Omit<Option, "name">;
 };

@@ -1,7 +1,8 @@
 import {Type} from "../types";
-import {ArgMeta} from "../types/ArgMeta";
+import {ArgMeta, ArgOldMeta} from "../types/ArgMeta";
 import {
     ARGS_METADATA,
+    ARGS_OLD_METADATA,
     COMMAND_METADATA,
     COMPLETION_METADATA,
     PARAMTYPES_METADATA,
@@ -40,22 +41,56 @@ export class Route {
         this.designTypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.type.prototype, this.method) || [];
 
         const argsMetadata = Reflect.getMetadata(ARGS_METADATA, this.type, this.method) || [],
+              argsOldMetadata = Reflect.getMetadata(ARGS_OLD_METADATA, this.type, this.method) || [],
+              argsDescription = Reflect.getMetadata(DESCRIPTION_METADATA, this.type, method) || {},
               argsAliases = Reflect.getMetadata(ALIAS_METADATA, this.type, this.method) || {};
 
-        for(const index in argsMetadata) {
-            const argMeta: ArgMeta = argsMetadata[index];
+        for(const key in argsMetadata) {
+            const index = key as unknown as number,
+                  argMeta: ArgMeta = argsMetadata[index];
+
+            if(argMeta.type === "param") {
+                this.args[index] = {
+                    type: argMeta.type,
+                    name: argMeta.name,
+                    params: {
+                        description: argMeta.description
+                    }
+                };
+            }
+            else if(argMeta.type === "option") {
+                const {
+                    type,
+                    alias,
+                    description
+                } = argMeta.params || {};
+
+                this.args[index] = {
+                    type: argMeta.type,
+                    name: argMeta.name,
+                    params: {
+                        ...argMeta.params,
+                        type: this.getArgType(index) || type,
+                        alias: argsAliases[index] || alias,
+                        description: argMeta.description || description
+                    }
+                };
+            }
+        }
+
+        for(let i = 0; i < argsOldMetadata.length; i++) {
+            const argMeta: ArgOldMeta = argsOldMetadata[i];
 
             if(argMeta.type === "param") {
                 this.args[argMeta.index] = {
                     type: argMeta.type,
                     name: argMeta.name,
                     params: {
-                        description: argMeta.description,
+                        description: argsDescription[argMeta.index] || ""
                     }
                 };
             }
-
-            if(argMeta.type === "option") {
+            else if(argMeta.type === "option") {
                 const {
                     type,
                     alias,
@@ -69,7 +104,7 @@ export class Route {
                         ...argMeta.params,
                         type: this.getArgType(argMeta.index) || type,
                         alias: argsAliases[argMeta.index] || alias,
-                        description: argMeta.description || description
+                        description: argsDescription[argMeta.index] || description
                     }
                 };
             }

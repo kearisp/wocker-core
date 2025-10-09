@@ -39,4 +39,6 @@ export interface FileSystemDriver {
     createReadStream(path: string, options?: ReadStreamOptions): FS.ReadStream;
     watch(file: string, options: FS.WatchOptions, listener?: FS.WatchListener<string | Buffer>): FS.FSWatcher;
     watchFile(path: string, listener: FS.StatsListener): FS.StatWatcher;
+    cpSync(source: string, destination: string, opts?: FS.CopySyncOptions): void
+    renameSync(oldPath: string, newPath: string): void;
 }

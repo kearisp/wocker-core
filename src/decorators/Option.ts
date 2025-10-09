@@ -2,7 +2,7 @@ import "reflect-metadata";
 import {Option as O} from "@kearisp/cli";
 import {
     ARGS_METADATA,
-    ARGS_METADATA_OLD
+    ARGS_OLD_METADATA
 } from "../env";
 
 
@@ -23,21 +23,22 @@ export const Option = (name: string, aliasOrParams?: AliasOrParams): ParameterDe
             ...rest,
             [parameterIndex]: {
                 ...options || {},
-                type: "option",
                 name,
-                params: typeof aliasOrParams === "string" ? {alias: aliasOrParams} : aliasOrParams,
-                index: parameterIndex
+                type: "option",
+                params: typeof aliasOrParams === "string"
+                    ? {alias: aliasOrParams}
+                    : aliasOrParams
             },
         }, target.constructor, propertyKey);
 
-        Reflect.defineMetadata(ARGS_METADATA_OLD, [
+        Reflect.defineMetadata(ARGS_OLD_METADATA, [
             {
                 type: "option",
                 name,
                 params: typeof aliasOrParams === "string" ? {alias: aliasOrParams} : aliasOrParams,
                 index: parameterIndex
             },
-            ...Reflect.getMetadata(ARGS_METADATA_OLD, target.constructor, propertyKey) || []
+            ...Reflect.getMetadata(ARGS_OLD_METADATA, target.constructor, propertyKey) || []
         ], target.constructor, propertyKey);
     };
 };
