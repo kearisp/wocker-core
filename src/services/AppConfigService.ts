@@ -181,7 +181,7 @@ export class AppConfigService {
     }
 
     public addPlugin(name: string, env?: PluginRef["env"]): void {
-        this.config.addPlugin(name);
+        this.config.addPlugin(name, env);
     }
 
     public removePlugin(name: string): void {
