@@ -1,8 +1,14 @@
-import {EnvConfig, PackageManagerType} from "../types";
-import {PluginRef} from "../types/PluginRef";
-import {PresetRef} from "../types/PresetRef";
-import {ProjectRef, ProjectOldRef} from "../types/ProjectRef";
-import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL, PresetSource} from "../types/PresetSource";
+import {
+    EnvConfig,
+    PackageManagerType,
+    PluginRef,
+    PresetRef,
+    ProjectRef,
+    ProjectOldRef,
+    PresetSource,
+    PRESET_SOURCE_EXTERNAL,
+    PRESET_SOURCE_INTERNAL
+} from "../types";
 
 
 export type AppConfigProperties = {

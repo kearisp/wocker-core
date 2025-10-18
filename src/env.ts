@@ -2,6 +2,7 @@ import OS from "os";
 import Path from "path";
 
 
+export const WOCKER_VERSION = "1.0.26";
 export const IS_GLOBAL_METADATA = "IS_GLOBAL";
 export const IS_MODULE_METADATA = "isModule";
 export const INJECTABLE_WATERMARK = "__injectable__";

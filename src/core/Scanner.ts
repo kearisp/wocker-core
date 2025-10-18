@@ -1,9 +1,9 @@
-import "reflect-metadata";
 import {Cli, CommandInput} from "@kearisp/cli";
 import {Type, DynamicModule, ProviderType} from "../types";
 import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
+import {CoreModule} from "./CoreModule";
 import {
     IS_GLOBAL_METADATA,
     MODULE_METADATA
@@ -13,13 +13,12 @@ import {
 export class Scanner {
     public readonly container: Container;
 
-    public constructor(
-        container?: Container
-    ) {
+    public constructor(container?: Container) {
         this.container = container || new Container();
     }
 
     public async scan(moduleDefinition: Type | DynamicModule): Promise<void> {
+        this.scanModule(CoreModule);
         this.scanModule(moduleDefinition);
         await this.scanDynamicModules();
         this.scanRoutes();
@@ -100,16 +99,12 @@ export class Scanner {
     }
 
     protected scanControllers(module: ModuleWrapper, controllers: Type[]): void {
-        // const controllers = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, module.type) || [];
-
         controllers.forEach((controller: any): void => {
             module.addController(controller);
         });
     }
 
     protected scanProviders(module: ModuleWrapper, providers: ProviderType[]): void {
-        // const providers: ProviderType[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, module.type) || [];
-
         providers.forEach((provider: ProviderType): void => {
             module.addProvider(provider);
         });

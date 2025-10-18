@@ -1,7 +1,6 @@
-import {Cli} from "@kearisp/cli";
+import {Type, InjectionToken, ProviderType} from "../types";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
-import {Type, InjectionToken, ProviderType} from "../types";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
@@ -9,12 +8,6 @@ export class Container {
     public readonly modules: Map<Type, ModuleWrapper> = new Map();
     public readonly moduleExportIndex: Map<InjectionToken, Set<ModuleWrapper>> = new Map();
     public readonly globalProviders: Map<InjectionToken, InstanceWrapper> = new Map();
-
-    public constructor() {
-        const cliWrapper = new InstanceWrapper(new ModuleWrapper(this, null), Cli);
-
-        this.globalProviders.set(Cli, cliWrapper);
-    }
 
     public addModule<TInput = any>(type: Type<TInput>, module: ModuleWrapper): void {
         this.modules.set(type, module);
