@@ -1,4 +1,5 @@
 import {Cli} from "@kearisp/cli";
+import fs from "fs";
 import {
     Global,
     Module
@@ -13,7 +14,8 @@ import {
     WOCKER_VERSION_KEY,
     WOCKER_VERSION,
     WOCKER_DATA_DIR_KEY,
-    DATA_DIR
+    WOCKER_DATA_DIR,
+    FILE_SYSTEM_DRIVER_KEY
 } from "../env";
 
 
@@ -27,7 +29,11 @@ import {
         },
         {
             provide: WOCKER_DATA_DIR_KEY,
-            useValue: DATA_DIR
+            useValue: WOCKER_DATA_DIR
+        },
+        {
+            provide: FILE_SYSTEM_DRIVER_KEY,
+            useValue: fs
         },
         AppService,
         AppConfigService,
@@ -40,6 +46,7 @@ import {
         Cli,
         WOCKER_VERSION_KEY,
         WOCKER_DATA_DIR_KEY,
+        FILE_SYSTEM_DRIVER_KEY,
         AppService,
         AppConfigService,
         AppFileSystemService,

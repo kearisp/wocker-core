@@ -1,14 +1,21 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {Module} from "../decorators";
+import {Module} from "../../../decorators";
+import {Factory} from "../../../core";
+import {
+    AppService,
+    AppConfigService,
+    AppFileSystemService,
+    ProcessService,
+    LogService
+} from "../../../services";
 import {PluginConfigService} from "./PluginConfigService";
-import {Factory} from "../core";
-import {PLUGIN_DIR_KEY, DATA_DIR, WOCKER_VERSION_KEY, WOCKER_DATA_DIR_KEY} from "../env";
-import {AppConfigService} from "./AppConfigService";
-import {AppService} from "./AppService";
-import {AppFileSystemService} from "./AppFileSystemService";
-import {LogService} from "./LogService";
-import {ProcessService} from "./ProcessService";
+import {
+    WOCKER_VERSION_KEY,
+    WOCKER_DATA_DIR_KEY, WOCKER_DATA_DIR,
+    FILE_SYSTEM_DRIVER_KEY,
+    PLUGIN_DIR_KEY
+} from "../../../env";
 
 
 describe("PluginConfigService", (): void => {
@@ -25,11 +32,15 @@ describe("PluginConfigService", (): void => {
                 },
                 {
                     provide: WOCKER_DATA_DIR_KEY,
-                    useValue: DATA_DIR
+                    useValue: WOCKER_DATA_DIR
                 },
                 {
                     provide: PLUGIN_DIR_KEY,
-                    useValue: `${DATA_DIR}/plugins/test`
+                    useValue: `${WOCKER_DATA_DIR}/plugins/test`
+                },
+                {
+                    provide: FILE_SYSTEM_DRIVER_KEY,
+                    useValue: vol
                 },
                 AppService,
                 AppFileSystemService,
@@ -48,9 +59,9 @@ describe("PluginConfigService", (): void => {
         };
     };
 
-    it("should", async (): Promise<void> => {
+    it("should return plugin dir", async (): Promise<void> => {
         const {pluginConfigService} = await getContext();
 
-        expect(pluginConfigService.fs.path()).toBe(`${DATA_DIR}/plugins/test`);
+        expect(pluginConfigService.fs.path()).toBe(`${WOCKER_DATA_DIR}/plugins/test`);
     });
 });

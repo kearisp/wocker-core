@@ -1,5 +1,4 @@
-import {PickProperties} from "../types/PickProperties";
-import {PresetSource} from "../types/PresetSource";
+import {PickProperties, PresetSource} from "../../../types";
 
 
 type TextOption = {

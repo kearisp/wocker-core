@@ -1,14 +1,14 @@
 import {describe, it, expect} from "@jest/globals";
 import {volumeFormat} from "../../../utils/volumeFormat";
 import {
+    Injectable,
+    Module
+} from "../../../decorators";
+import {
     AsyncStorage,
     Container,
     Scanner
 } from "../../../core";
-import {
-    Injectable,
-    Module
-} from "../../../decorators";
 import {Project} from "./Project";
 import {ProjectRepository, ProjectRepositorySearchParams} from "../repositories/ProjectRepository";
 

@@ -1,7 +1,7 @@
 import {Injectable, Inject} from "../decorators";
 import {AppConfigService} from "./AppConfigService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {ProjectRef} from "../types/ProjectRef";
+import {ProjectRef} from "../types";
 import {WOCKER_VERSION_KEY} from "../env";
 
 

@@ -1,6 +1,6 @@
 import Path from "path";
 import {Inject, Injectable} from "../decorators";
-import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../modules";
+import {PROJECT_TYPE_PRESET, PROJECT_TYPE_IMAGE, PROJECT_TYPE_DOCKERFILE, PROJECT_TYPE_COMPOSE} from "../modules/project";
 import {AppConfig, AppConfigProperties} from "../makes/AppConfig";
 import {PresetSource, PresetRef, ProjectRef, PluginRef} from "../types";
 import {AppFileSystemService} from "./AppFileSystemService";

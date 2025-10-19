@@ -1,7 +1,7 @@
 import type Docker from "dockerode";
 import type {Container, ImageInfo, VolumeCreateResponse} from "dockerode";
 import {Duplex} from "node:stream";
-import {Injectable} from "../decorators";
+import {Injectable} from "../../../decorators";
 
 
 export namespace DockerServiceParams {

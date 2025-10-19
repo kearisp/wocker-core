@@ -1,12 +1,12 @@
 import {describe, it, jest, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
+import {Global, Module} from "../decorators";
 import {Factory, ApplicationContext} from "../core";
-import {Module} from "../decorators";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
 import {AppConfigService} from "./AppConfigService";
 import {ProcessService} from "./ProcessService";
-import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
+import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
 describe("LogService", (): void => {
@@ -18,8 +18,9 @@ describe("LogService", (): void => {
             "wocker.config.json": JSON.stringify({
                 debug: true
             })
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
+        @Global()
         @Module({
             providers: [
                 {
@@ -28,7 +29,11 @@ describe("LogService", (): void => {
                 },
                 {
                     provide: WOCKER_DATA_DIR_KEY,
-                    useValue: DATA_DIR
+                    useValue: WOCKER_DATA_DIR
+                },
+                {
+                    provide: FILE_SYSTEM_DRIVER_KEY,
+                    useValue: vol
                 },
                 AppConfigService,
                 AppFileSystemService,

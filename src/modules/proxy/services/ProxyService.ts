@@ -1,4 +1,4 @@
-import {Injectable} from "../decorators";
+import {Injectable} from "../../../decorators";
 
 
 @Injectable("PROXY_SERVICE")

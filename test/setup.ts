@@ -4,7 +4,7 @@ import {vol} from "memfs";
 import {Union} from "unionfs";
 
 
-const DATA_DIR = "/home/wocker-test/.workspace";
+const WOCKER_DATA_DIR = "/home/wocker-test/.workspace";
 
 const ufs = (new Union()).use(vol as any).use(fs),
       reset = vol.reset.bind(vol);
@@ -12,7 +12,7 @@ const ufs = (new Union()).use(vol as any).use(fs),
 jest.spyOn(vol, "reset").mockImplementation(() => {
     reset();
 
-    vol.mkdirSync(DATA_DIR, {
+    vol.mkdirSync(WOCKER_DATA_DIR, {
         recursive: true
     });
 });
@@ -25,14 +25,14 @@ jest.mock("../src/env", () => {
 
     return {
         ...env,
-        DATA_DIR
+        WOCKER_DATA_DIR
     };
 });
 
-jest.doMock(`${DATA_DIR}/wocker.config.js`, () => {
+jest.doMock(`${WOCKER_DATA_DIR}/wocker.config.js`, () => {
     return {
         get config() {
-            const file = vol.readFileSync(`${DATA_DIR}/wocker.config.js`).toString();
+            const file = vol.readFileSync(`${WOCKER_DATA_DIR}/wocker.config.js`).toString();
 
             return eval(file);
         }

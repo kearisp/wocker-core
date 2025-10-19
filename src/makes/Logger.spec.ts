@@ -7,7 +7,7 @@ import {AppFileSystemService} from "../services/AppFileSystemService";
 import {ProcessService} from "../services/ProcessService";
 import {LogService} from "../services/LogService";
 import {Logger} from "./Logger";
-import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
+import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
 describe("Logger", (): void => {
@@ -21,7 +21,11 @@ describe("Logger", (): void => {
                 },
                 {
                     provide: WOCKER_DATA_DIR_KEY,
-                    useValue: DATA_DIR
+                    useValue: WOCKER_DATA_DIR
+                },
+                {
+                    provide: FILE_SYSTEM_DRIVER_KEY,
+                    useValue: () => undefined
                 },
                 AppService,
                 AppConfigService,

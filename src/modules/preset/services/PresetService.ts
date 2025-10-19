@@ -1,4 +1,4 @@
-import {EnvConfig} from "../types";
+import {EnvConfig} from "../../../types";
 import {Preset} from "../makes/Preset";
 
 

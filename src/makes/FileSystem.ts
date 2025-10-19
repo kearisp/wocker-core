@@ -225,7 +225,7 @@ export class FileSystem {
         }
     }
 
-    public watch(path: string, options: FS.WatchOptions = {}): FS.FSWatcher {
+    public watch(path: string, options: FS.WatchOptionsWithStringEncoding = {}): FS.FSWatcher {
         return this.driver.watch(this.path(path), options);
     }
 }

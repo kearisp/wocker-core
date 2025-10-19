@@ -1,5 +1,5 @@
 import type Modem from "docker-modem";
-import {Injectable} from "../decorators";
+import {Injectable} from "../../../decorators";
 
 
 @Injectable("DOCKER_MODEM_SERVICE")
