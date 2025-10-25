@@ -2,7 +2,7 @@ import Path from "path";
 import {Injectable} from "../decorators";
 
 
-@Injectable()
+@Injectable("CORE_PROCESS_SERVICE")
 export class ProcessService {
     public pwd(path: string = ""): string {
         return Path.join(process.cwd(), path);
@@ -14,5 +14,9 @@ export class ProcessService {
 
     public chdir(path: string): void {
         process.chdir(path);
+    }
+
+    public write(buffer: Buffer): void {
+        process.stdout.write(buffer);
     }
 }

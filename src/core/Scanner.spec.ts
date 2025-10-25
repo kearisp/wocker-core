@@ -1,7 +1,8 @@
 import {describe, it, expect} from "@jest/globals";
 import "reflect-metadata";
-import {Module, Injectable, Global, Controller, Command, Completion, Param, Inject} from "../decorators";
-import {Scanner} from "../";
+import {Module, Injectable, Global, Controller, Command, Completion, Param, Inject, Optional} from "../decorators";
+import {DynamicModule} from "../types";
+import {Scanner} from "./Scanner";
 
 
 describe("Scanner", (): void => {
@@ -84,8 +85,9 @@ describe("Scanner", (): void => {
             exports: [ParentProvider]
         })
         class ParentModule {
-            async load() {
+            public static register(): DynamicModule {
                 return {
+                    module: ParentModule,
                     imports: [ChildModule]
                 };
             }
@@ -93,7 +95,7 @@ describe("Scanner", (): void => {
 
         const scanner = new Scanner();
 
-        await scanner.scan(ParentModule);
+        await scanner.scan(ParentModule.register());
 
         const value = scanner.container
             .getModule(ChildModule)
@@ -109,7 +111,7 @@ describe("Scanner", (): void => {
             @Command("test-command [name]")
             public testCommand(
                 @Param("name")
-                name?: string
+                _name?: string
             ): string {
                 return "";
             }
@@ -157,9 +159,10 @@ describe("Scanner", (): void => {
         const scanner = new Scanner();
         await scanner.scan(ParentModule);
 
-        const parentModule = scanner.container.getModule(ParentModule);
+        const parentModule = scanner.container.getModule(ParentModule),
+              childService = parentModule.get(ChildService);
 
-        expect(parentModule.providers.has(ChildService)).toBeTruthy();
+        expect(childService).toBeInstanceOf(ChildService);
     });
 
     it("should initialize empty module without any components", async (): Promise<void> => {
@@ -309,5 +312,124 @@ describe("Scanner", (): void => {
 
         expect(globalService).toBeInstanceOf(GlobalService);
         expect(globalService.getValue()).toBe(TEST_VALUE);
+    });
+
+    it("should process optional service", async (): Promise<void> => {
+        class TestRequiredService {}
+
+        class TestOptionalService {}
+
+        @Injectable()
+        class Test1Service {
+            public constructor(
+                public readonly testRequiredService: TestRequiredService,
+                @Optional()
+                public readonly testOptionalService?: TestOptionalService,
+            ) {}
+        }
+
+        @Module({
+            providers: [
+                Test1Service,
+                TestRequiredService
+            ]
+        })
+        class TestModule {}
+
+        const scanner = new Scanner();
+
+        await scanner.scan(TestModule);
+
+        const test1Service = scanner.container.getModule(TestModule).get(Test1Service, true);
+
+        expect(test1Service).toBeInstanceOf(Test1Service);
+        expect(test1Service?.testRequiredService).toBeInstanceOf(TestRequiredService);
+        expect(test1Service?.testOptionalService).toBeUndefined();
+    });
+
+    it("should scan async module", async (): Promise<void> => {
+        @Module({
+            providers: [
+                {
+                    provide: "TEST_1",
+                    useValue: "Value 1"
+                }
+            ],
+            exports: [
+                "TEST_1"
+            ]
+        })
+        class TestModule {
+            public static registerAsync(): DynamicModule {
+                return {
+                    module: TestModule,
+                    providers: [
+                        {
+                            provide: "TEST_2",
+                            useValue: "Value 2"
+                        }
+                    ],
+                    exports: ["TEST_2"],
+                    inject: [ParentConfigService],
+                    useFactory: (parentService: ParentConfigService) => {
+                        return {
+                            providers: [
+                                {
+                                    provide: "TEST_3",
+                                    useValue: parentService.getTest3()
+                                }
+                            ],
+                            exports: ["TEST_3"]
+                        };
+                    }
+                };
+            }
+        }
+
+        class ParentConfigService {
+            public getTest3(): string {
+                return "Value 3";
+            }
+        }
+
+        @Injectable()
+        class ParentService {
+            public constructor(
+                @Inject("TEST_1")
+                public readonly test1: string,
+                @Inject("TEST_2")
+                public readonly test2: string,
+                @Inject("TEST_3")
+                public readonly test3: string
+            ) {
+            }
+        }
+
+        @Global()
+        @Module({
+            imports: [
+                TestModule.registerAsync()
+            ],
+            providers: [
+                ParentService,
+                ParentConfigService
+            ],
+            exports: [
+                ParentConfigService
+            ]
+        })
+        class TestParentModule {}
+
+        const scanner = new Scanner();
+
+        await scanner.scan(TestParentModule);
+
+        const testParentModule = scanner.container.getModule(TestParentModule),
+              parentService = testParentModule.get(ParentService);
+
+        expect(parentService).toBeInstanceOf(ParentService);
+        expect(parentService.test1).toBe("Value 1");
+        expect(parentService.test2).toBe("Value 2");
+        expect(parentService.test3).toBe("Value 3");
     });
 });

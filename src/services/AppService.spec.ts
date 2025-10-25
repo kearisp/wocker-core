@@ -5,7 +5,7 @@ import {Factory} from "../core";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
-import {DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY} from "../env";
+import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 import {ProcessService} from "./ProcessService";
 import {AppConfigService} from "./AppConfigService";
 
@@ -24,7 +24,11 @@ describe("AppService", (): void => {
                 },
                 {
                     provide: WOCKER_DATA_DIR_KEY,
-                    useValue: DATA_DIR
+                    useValue: WOCKER_DATA_DIR
+                },
+                {
+                    provide: FILE_SYSTEM_DRIVER_KEY,
+                    useValue: vol
                 },
                 AppService,
                 AppConfigService,

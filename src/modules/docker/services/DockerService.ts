@@ -1,7 +1,7 @@
 import type Docker from "dockerode";
 import type {Container, ImageInfo, VolumeCreateResponse} from "dockerode";
 import {Duplex} from "node:stream";
-import {Injectable} from "../decorators";
+import {Injectable} from "../../../decorators";
 
 
 export namespace DockerServiceParams {
@@ -80,8 +80,8 @@ export abstract class DockerService {
     public abstract imageLs(options?: DockerServiceParams.ImageList): Promise<ImageInfo[]>;
     public abstract imageRm(tag: string, force?: boolean): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
-    public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream>;
+    public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream|null|undefined>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<NodeJS.ReadWriteStream>;
-    public abstract exec(name: string, command?: DockerServiceParams.Exec|string[], tty?: boolean): Promise<Duplex>;
-    public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream>;
+    public abstract exec(name: string, command?: DockerServiceParams.Exec|string[], tty?: boolean): Promise<Duplex|null>;
+    public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream|null|undefined>;
 }

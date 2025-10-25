@@ -1,28 +1,56 @@
 import {describe, it, expect} from "@jest/globals";
-import {Project, ProjectProperties} from "./Project";
-import {volumeFormat} from "../utils/volumeFormat";
+import {volumeFormat} from "../../../utils/volumeFormat";
+import {
+    Injectable,
+    Module
+} from "../../../decorators";
+import {
+    AsyncStorage,
+    Container,
+    Scanner
+} from "../../../core";
+import {Project} from "./Project";
+import {ProjectRepository, ProjectRepositorySearchParams} from "../repositories/ProjectRepository";
 
 
 describe("Project", (): void => {
-    class TestProject extends Project {
-        public constructor(data: ProjectProperties) {
-            super(data);
+    const getContext = async () => {
+        @Injectable("PROJECT_REPOSITORY")
+        class TestProjectRepository extends ProjectRepository {
+            public getByName(name: string): Project {
+                throw new Error("Method not implemented.");
+            }
+
+            public searchOne(params: ProjectRepositorySearchParams): Project {
+                throw new Error("Method not implemented.");
+            }
+
+            public search(params: ProjectRepositorySearchParams): Project[] {
+                throw new Error("Method not implemented.");
+            }
+
+            public save(project: Project) {
+
+            }
         }
 
-        public async getSecret(key: string, byDefault: string) {
-            return byDefault;
-        }
+        @Module({
+            providers: [TestProjectRepository]
+        })
+        class TestModule {}
 
-        public async setSecret() {}
+        const container = new Container(),
+              scanner = new Scanner(container);
 
-        public async save() {
-            //
-        }
+        await scanner.scan(TestModule);
+
+        AsyncStorage.enterWith(container);
+
+        return container;
     }
 
-    it("Env", (): void => {
-        const project = new TestProject({
-            id: "123",
+    it("should process env vars", (): void => {
+        const project = new Project({
             name: "project",
             type: "dockerfile",
             path: "/path/to/project",
@@ -44,11 +72,10 @@ describe("Project", (): void => {
     });
 
     it("Domains", (): void => {
-        const project = new TestProject({
-            id: "1",
+        const project = new Project({
+            name: "Test",
             type: "image",
             imageName: "test",
-            name: "Test",
             path: "/test/path"
         });
 
@@ -75,8 +102,7 @@ describe("Project", (): void => {
     });
 
     it("Ports", (): void => {
-        const project = new TestProject({
-            id: "1",
+        const project = new Project({
             name: "test",
             type: "dockerfile",
             path: "/path/to/test/project"
@@ -91,12 +117,11 @@ describe("Project", (): void => {
 
         project.unlinkPort(hostPort, containerPort);
 
-        expect(project.ports).toBeUndefined();
+        expect(project.ports).toEqual([]);
     });
 
     it("Volumes", (): void => {
-        const project = new TestProject({
-            id: "1",
+        const project = new Project({
             name: "test",
             type: "dockerfile",
             path: "/path/to/test/project"
@@ -123,12 +148,11 @@ describe("Project", (): void => {
             destination: "/var/www"
         }));
 
-        expect(project.volumes).toEqual(undefined);
+        expect(project.volumes).toEqual([]);
     });
 
     it("Meta", (): void => {
-        const project = new TestProject({
-            id: "123",
+        const project = new Project({
             name: "project",
             type: "dockerfile",
             path: "/path/to/project"
@@ -137,11 +161,7 @@ describe("Project", (): void => {
         const VALUE_KEY = "value";
         const MISSING_KEY = "missing";
 
-        project.metadata = {};
-
         expect(project.hasMeta(MISSING_KEY)).toBe(false);
-
-        delete project.metadata;
 
         expect(project.getMeta(MISSING_KEY, "defaultValue")).toBe("defaultValue");
 
@@ -164,8 +184,7 @@ describe("Project", (): void => {
     });
 
     it("Extra host", (): void => {
-        const project = new TestProject({
-            id: "123",
+        const project = new Project({
             name: "project",
             type: "dockerfile",
             path: "/path/to/project"
@@ -175,8 +194,6 @@ describe("Project", (): void => {
         const EXTRA_DOMAIN_1 = 'test.host';
         const EXTRA_DOMAIN_2 = 'test-2.host';
 
-        expect(project.extraHosts).toBeUndefined();
-
         project.addExtraHost(EXTRA_HOST_1, EXTRA_DOMAIN_1);
 
         expect(project.extraHosts).toEqual({
@@ -185,7 +202,7 @@ describe("Project", (): void => {
 
         project.removeExtraHost(EXTRA_HOST_1);
 
-        expect(project.extraHosts).toBeUndefined();
+        expect(project.extraHosts).toEqual({});
 
         project.addExtraHost(EXTRA_HOST_1, EXTRA_DOMAIN_1);
         project.addExtraHost(EXTRA_HOST_2, EXTRA_DOMAIN_2);

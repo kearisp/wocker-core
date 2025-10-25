@@ -5,10 +5,11 @@ import {
     WriteStream,
     ReadStream
 } from "fs";
-import {AppConfigService} from "./AppConfigService";
-import {FileSystem} from "../makes";
-import {Injectable, Inject} from "../decorators";
-import {PLUGIN_DIR_KEY} from "../env";
+import {FileSystemDriver} from "../../../types";
+import {AppConfigService} from "../../../services/AppConfigService";
+import {FileSystem} from "../../../makes";
+import {Injectable, Inject} from "../../../decorators";
+import {PLUGIN_DIR_KEY, FILE_SYSTEM_DRIVER_KEY} from "../../../env";
 
 
 @Injectable()
@@ -18,7 +19,9 @@ export class PluginConfigService {
     public constructor(
         protected readonly appConfigService: AppConfigService,
         @Inject(PLUGIN_DIR_KEY)
-        protected readonly pluginDir: string
+        protected readonly pluginDir: string,
+        @Inject(FILE_SYSTEM_DRIVER_KEY)
+        protected readonly driver: FileSystemDriver
     ) {}
 
     public get fs(): FileSystem {
@@ -27,7 +30,7 @@ export class PluginConfigService {
                 throw new Error("Plugin dir missed");
             }
 
-            this._fs = new FileSystem(this.pluginDir);
+            this._fs = new FileSystem(this.pluginDir, this.driver);
 
             if(!this._fs.exists()) {
                 this._fs.mkdir("", {
@@ -59,7 +62,7 @@ export class PluginConfigService {
 
     /** @deprecated */
     public async writeFile(path: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): Promise<void> {
-        await this.fs.writeFile(path, data, options);
+        this.fs.writeFile(path, data, options);
     }
 
     /** @deprecated */

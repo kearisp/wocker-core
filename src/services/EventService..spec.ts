@@ -29,7 +29,7 @@ describe("EventService", (): void => {
         await eventService.emit("test", 1, 2, 3);
 
         expect(listener).toHaveBeenCalled();
-        expect(listener).toBeCalledWith(1, 2, 3);
+        expect(listener).toHaveBeenCalledWith(1, 2, 3);
     });
 
     it("", async () => {
@@ -46,7 +46,7 @@ describe("EventService", (): void => {
 
         await eventService.emit("test");
 
-        expect(listener1).not.toBeCalled();
-        expect(listener2).not.toBeCalled();
+        expect(listener1).not.toHaveBeenCalled();
+        expect(listener2).not.toHaveBeenCalled();
     });
 });

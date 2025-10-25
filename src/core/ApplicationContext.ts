@@ -1,12 +1,12 @@
 import {Cli} from "@kearisp/cli";
+import {Type} from "../types";
 import {Container} from "./Container";
-import {Type} from "../types/Type";
 import {AsyncStorage} from "./AsyncStorage";
 
 
 export class ApplicationContext {
     public constructor(
-        protected readonly module: any,
+        protected readonly module: Type,
         protected readonly container: Container
     ) {}
 
@@ -28,7 +28,7 @@ export class ApplicationContext {
 
     public async run(args: string[]): Promise<string> {
         return new Promise((resolve) => {
-            AsyncStorage.run(this.container, () => {
+            AsyncStorage.run(this.container, (): void => {
                 const cli = this.get(Cli);
 
                 cli.command("").action(() => {

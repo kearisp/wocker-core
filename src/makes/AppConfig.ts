@@ -1,12 +1,19 @@
-import {EnvConfig} from "../types";
-import {PluginRef} from "../types/PluginRef";
-import {PresetRef} from "../types/PresetRef";
-import {ProjectRef, ProjectOldRef} from "../types/ProjectRef";
-import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL, PresetSource} from "./Preset";
+import {
+    EnvConfig,
+    PackageManagerType,
+    PluginRef,
+    PresetRef,
+    ProjectRef,
+    ProjectOldRef,
+    PresetSource,
+    PRESET_SOURCE_EXTERNAL,
+    PRESET_SOURCE_INTERNAL
+} from "../types";
 
 
 export type AppConfigProperties = {
     debug?: boolean;
+    pm?: PackageManagerType;
     keystore?: string;
     logLevel?: "off" | "info" | "warn" | "error";
     plugins?: PluginRef[];
@@ -18,6 +25,7 @@ export type AppConfigProperties = {
 
 export class AppConfig {
     public debug?: boolean;
+    public pm?: PackageManagerType;
     public keystore?: string;
     public logLevel: "off" | "info" | "warn" | "error" = "off";
     public plugins: PluginRef[];
@@ -96,7 +104,7 @@ export class AppConfig {
         });
     }
 
-    public addProject(id: string, name: string, path: string): void {
+    public addProject(name: string, path: string): void {
         let projectRef = this.getProject(name);
 
         if(!projectRef) {
@@ -231,16 +239,10 @@ export class AppConfig {
         }
     }
 
-    /**
-     * @deprecated
-     */
-    public toJson(): AppConfigProperties {
-        return this.toObject();
-    }
-
     public toObject(): AppConfigProperties {
         return {
             debug: this.debug,
+            pm: this.pm,
             logLevel: this.logLevel,
             keystore: this.keystore,
             plugins: this.plugins.length > 0 ? this.plugins : undefined,
@@ -255,9 +257,5 @@ export class AppConfig {
         const json = JSON.stringify(this.toObject(), null, 4);
 
         return `// Wocker config\nexports.config = ${json};`;
-    }
-
-    public toString(): string {
-        return JSON.stringify(this.toObject(), null, 4);
     }
 }

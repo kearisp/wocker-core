@@ -35,8 +35,13 @@ const config: Config.InitialOptionsWithRootDir = {
     // An array of regexp pattern strings used to skip coverage collection
     coveragePathIgnorePatterns: [
         // "/node_modules/",
-        "src/index.ts",
-        "src/types/index.ts"
+        "src/index\\.ts",
+        "src/types/index\\.ts",
+        "src/modules/index\\.ts",
+        "src/modules/[a-z]+/index\\.ts",
+        "src/modules/docker/.*",
+        "src/modules/keystore/.*",
+        "src/modules/proxy/.*"
     ],
 
     // Indicates which provider should be used to instrument code for coverage

@@ -1,4 +1,4 @@
-import FS from "fs";
+import FS, {type Dirent} from "fs";
 
 
 type StreamOptions = {
@@ -30,13 +30,15 @@ export interface FileSystemDriver {
     fstatSync(fd: number): FS.Stats;
     mkdirSync(path: string, options?: FS.MakeDirectoryOptions): void;
     readdir(path: string, options: any, callback: (err: NodeJS.ErrnoException | null, files: string[]) => void): void;
-    readdirSync(path: string, options?: any): string[];
+    readdirSync(path: string, options?: any): (string | Buffer)[] | Dirent[] | Dirent<Buffer>[];
     readFileSync(path: string): string | Buffer;
     writeFileSync(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: FS.WriteFileOptions): void;
     appendFileSync(path: FS.PathOrFileDescriptor, data: string | Uint8Array, options?: FS.WriteFileOptions): void;
     rmSync(path: string, options?: FS.RmOptions): void;
     createWriteStream(path: string, options?: WriteStreamOptions): FS.WriteStream;
     createReadStream(path: string, options?: ReadStreamOptions): FS.ReadStream;
-    watch(file: string, options: FS.WatchOptions, listener?: FS.WatchListener<string | Buffer>): FS.FSWatcher;
+    watch(file: string, options: FS.WatchOptionsWithStringEncoding, listener?: FS.WatchListener<string | Buffer>): FS.FSWatcher;
     watchFile(path: string, listener: FS.StatsListener): FS.StatWatcher;
+    cpSync(source: string, destination: string, opts?: FS.CopySyncOptions): void
+    renameSync(oldPath: string, newPath: string): void;
 }

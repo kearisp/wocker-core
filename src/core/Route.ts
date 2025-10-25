@@ -1,9 +1,10 @@
-import {ArgMeta} from "../types/ArgMeta";
-import {Type} from "../types/Type";
+import {Type} from "../types";
+import {ArgMeta, ArgOldMeta} from "../types/ArgMeta";
 import {
+    ARGS_METADATA,
+    ARGS_OLD_METADATA,
     COMMAND_METADATA,
     COMPLETION_METADATA,
-    ARGS_METADATA,
     PARAMTYPES_METADATA,
     ALIAS_METADATA,
     DESCRIPTION_METADATA
@@ -17,7 +18,6 @@ export class Route {
         name: string;
         params: any;
     }[] = [];
-    public argsMeta: ArgMeta[] = [];
     public designTypes: any[] = [];
     public commandNames: string[] = [];
     public completions: {
@@ -38,17 +38,48 @@ export class Route {
         this.description = Reflect.getMetadata(DESCRIPTION_METADATA, descriptor.value) || "";
         this.commandNames = Reflect.getMetadata(COMMAND_METADATA, descriptor.value) || [];
         this.completions = Reflect.getMetadata(COMPLETION_METADATA, descriptor.value) || [];
+        this.designTypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.type.prototype, this.method) || [];
 
-        const argsMeta = Reflect.getMetadata(ARGS_METADATA, this.type, this.method) || [],
-              argsAliases = Reflect.getMetadata(ALIAS_METADATA, this.type, this.method) || {},
+        const argsMetadata = Reflect.getMetadata(ARGS_METADATA, this.type, this.method) || [],
+              argsOldMetadata = Reflect.getMetadata(ARGS_OLD_METADATA, this.type, this.method) || [],
               argsDescription = Reflect.getMetadata(DESCRIPTION_METADATA, this.type, method) || {},
-              designTypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.type.prototype, this.method) || [];
+              argsAliases = Reflect.getMetadata(ALIAS_METADATA, this.type, this.method) || {};
 
-        this.argsMeta = argsMeta;
-        this.designTypes = designTypes;
+        for(const key in argsMetadata) {
+            const index = key as unknown as number,
+                  argMeta: ArgMeta = argsMetadata[index];
 
-        for(let i = 0; i < argsMeta.length; i++) {
-            const argMeta: ArgMeta = argsMeta[i];
+            if(argMeta.type === "param") {
+                this.args[index] = {
+                    type: argMeta.type,
+                    name: argMeta.name,
+                    params: {
+                        description: argMeta.description
+                    }
+                };
+            }
+            else if(argMeta.type === "option") {
+                const {
+                    type,
+                    alias,
+                    description
+                } = argMeta.params || {};
+
+                this.args[index] = {
+                    type: argMeta.type,
+                    name: argMeta.name,
+                    params: {
+                        ...argMeta.params,
+                        type: this.getArgType(index) || type,
+                        alias: argsAliases[index] || alias,
+                        description: argMeta.description || description
+                    }
+                };
+            }
+        }
+
+        for(let i = 0; i < argsOldMetadata.length; i++) {
+            const argMeta: ArgOldMeta = argsOldMetadata[i];
 
             if(argMeta.type === "param") {
                 this.args[argMeta.index] = {
@@ -59,8 +90,7 @@ export class Route {
                     }
                 };
             }
-
-            if(argMeta.type === "option") {
+            else if(argMeta.type === "option") {
                 const {
                     type,
                     alias,

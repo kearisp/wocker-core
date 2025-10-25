@@ -12,6 +12,11 @@ type ValueProvider<T = any> = {
     useValue: T;
 };
 
+type FactoryProvider<T = any> = {
+    provide: InjectionToken;
+    useFactory: T | Promise<T>;
+};
+
 export type ProviderType<T = any> =
     | Type<T>
     | ClassProvider<T>

@@ -1,10 +1,9 @@
-import "reflect-metadata";
 import {CommandInput} from "@kearisp/cli";
+import {Type} from "../types";
+import {DESCRIPTION_METADATA} from "../env";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
-import {Type} from "../types/Type";
 import {Route} from "./Route";
-import {DESCRIPTION_METADATA} from "../env";
 
 
 export class ControllerWrapper<TInput = any> extends InstanceWrapper {

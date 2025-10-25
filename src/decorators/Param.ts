@@ -1,4 +1,7 @@
-import {ARGS_METADATA} from "../env";
+import {
+    ARGS_METADATA,
+    ARGS_OLD_METADATA
+} from "../env";
 
 
 export const Param = (name: string): ParameterDecorator => {
@@ -7,8 +10,23 @@ export const Param = (name: string): ParameterDecorator => {
             return;
         }
 
-        Reflect.defineMetadata(ARGS_METADATA, [
-            ...Reflect.getMetadata(ARGS_METADATA, target.constructor, propertyKey) || [],
+        const {
+            [parameterIndex]: options,
+            ...rest
+        } = Reflect.getMetadata(ARGS_METADATA, target.constructor, propertyKey) || {};
+
+        Reflect.defineMetadata(ARGS_METADATA, {
+            ...rest,
+            [parameterIndex]: {
+                ...options || {},
+                type: "param",
+                name,
+                index: parameterIndex
+            },
+        }, target.constructor, propertyKey);
+
+        Reflect.defineMetadata(ARGS_OLD_METADATA, [
+            ...Reflect.getMetadata(ARGS_OLD_METADATA, target.constructor, propertyKey) || [],
             {
                 type: "param",
                 name,

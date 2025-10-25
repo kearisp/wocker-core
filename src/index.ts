@@ -4,6 +4,7 @@ export * from "./core";
 export * from "./decorators";
 export * from "./exceptions";
 export * from "./makes";
+export * from "./modules";
 export * from "./services";
 export {
     /**
@@ -17,8 +18,10 @@ export * from "./types";
 export {
     IS_MODULE_METADATA,
     MODULE_METADATA,
+    FILE_SYSTEM_DRIVER_KEY,
     PLUGIN_NAME_METADATA,
     PLUGIN_DIR_KEY,
     WOCKER_VERSION_KEY,
+    WOCKER_VERSION,
     WOCKER_DATA_DIR_KEY
 } from "./env";

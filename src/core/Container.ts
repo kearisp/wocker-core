@@ -1,20 +1,13 @@
-import {Cli} from "@kearisp/cli";
+import {Type, InjectionToken, ProviderType} from "../types";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
-import {InjectionToken, ProviderType} from "../types";
-import {Type} from "../types/Type";
 import {INJECT_TOKEN_METADATA} from "../env";
 
 
 export class Container {
     public readonly modules: Map<Type, ModuleWrapper> = new Map();
+    public readonly moduleExportIndex: Map<InjectionToken, Set<ModuleWrapper>> = new Map();
     public readonly globalProviders: Map<InjectionToken, InstanceWrapper> = new Map();
-
-    public constructor() {
-        const cliWrapper = new InstanceWrapper(new ModuleWrapper(this, null), Cli);
-
-        this.globalProviders.set(Cli, cliWrapper);
-    }
 
     public addModule<TInput = any>(type: Type<TInput>, module: ModuleWrapper): void {
         this.modules.set(type, module);
@@ -48,6 +41,16 @@ export class Container {
             : type;
 
         return this.globalProviders.get(token);
+    }
+
+    public get<TInput = any, TReturn = TInput>(type: InjectionToken<TInput>): TReturn {
+        const wrapper = this.getProvider(type);
+
+        if(!wrapper) {
+            throw new Error("Couldn't find provider wrapper");
+        }
+
+        return wrapper.instance;
     }
 
     public replace(type: InjectionToken, provider: ProviderType): void {

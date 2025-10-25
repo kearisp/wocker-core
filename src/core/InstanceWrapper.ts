@@ -1,7 +1,7 @@
 import {ModuleWrapper} from "./ModuleWrapper";
-import {ProviderType, InjectionToken} from "../types";
-import {Type} from "../types/Type";
+import {Type, ProviderType, InjectionToken} from "../types";
 import {
+    ARGS_METADATA,
     INJECT_TOKEN_METADATA,
     PARAMTYPES_METADATA,
     SELF_DECLARED_DEPS_METADATA
@@ -56,8 +56,9 @@ export class InstanceWrapper<TInput = any> {
                 throw new Error("Type not defined");
             }
 
-            const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this._type) || [];
-            const selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this._type) || [];
+            const types: any[] = Reflect.getMetadata(PARAMTYPES_METADATA, this._type) || [],
+                  selfTypes: any[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, this._type) || [],
+                  argsMeta: any[] = Reflect.getMetadata(ARGS_METADATA, this._type) || [];
 
             if(selfTypes.length > 0) {
                 selfTypes.forEach(({index, token}): void => {
@@ -65,8 +66,10 @@ export class InstanceWrapper<TInput = any> {
                 });
             }
 
-            const params: any[] = types.map((type: any) => {
-                return this.module.get(type);
+            const params: any[] = types.map((type: any, index) => {
+                const optional: boolean = (argsMeta[index] || {}).optional || false;
+
+                return this.module.get(type, optional);
             });
 
             this._instance = new this._type(...params);

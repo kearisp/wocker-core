@@ -1,7 +1,7 @@
 import {Injectable, Inject} from "../decorators";
 import {AppConfigService} from "./AppConfigService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {ProjectRef} from "../types/ProjectRef";
+import {ProjectRef} from "../types";
 import {WOCKER_VERSION_KEY} from "../env";
 
 
@@ -46,8 +46,8 @@ export class AppService {
         return this.appConfigService.getProjectTypes();
     }
 
-    public addProject(id: string, name: string, path: string): void {
-        this.appConfigService.addProject(id, name, path);
+    public addProject(name: string, path: string): void {
+        this.appConfigService.addProject(name, path);
         this.appConfigService.save();
     }
 

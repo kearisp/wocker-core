@@ -2,19 +2,19 @@ import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
 import {FileSystem} from "./";
 import {FileSystemDriver} from "../types";
-import {DATA_DIR} from "../env";
+import {WOCKER_DATA_DIR} from "../env";
 
 
 describe("FileSystem", (): void => {
-    const fs = new FileSystem(DATA_DIR, vol as unknown as FileSystemDriver);
+    const fs = new FileSystem(WOCKER_DATA_DIR, vol as unknown as FileSystemDriver);
 
     beforeEach((): void => {
         vol.reset();
     });
 
     it("should return correct path", (): void => {
-        expect(fs.path("file.txt")).toBe(`${DATA_DIR}/file.txt`);
-        expect(fs.path("dir", "file.txt")).toBe(`${DATA_DIR}/dir/file.txt`);
+        expect(fs.path("file.txt")).toBe(`${WOCKER_DATA_DIR}/file.txt`);
+        expect(fs.path("dir", "file.txt")).toBe(`${WOCKER_DATA_DIR}/dir/file.txt`);
     });
 
     it("should return basename", (): void => {
@@ -24,7 +24,7 @@ describe("FileSystem", (): void => {
     it("should check if file exists", (): void => {
         vol.fromJSON({
             "file.txt": "content"
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         expect(fs.exists("file.txt")).toBe(true);
         expect(fs.exists("missing.txt")).toBe(false);
@@ -33,7 +33,7 @@ describe("FileSystem", (): void => {
     it("should get file stats", (): void => {
         vol.fromJSON({
             "file.txt": "content"
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         const stats = fs.stat("file.txt");
 
@@ -52,7 +52,7 @@ describe("FileSystem", (): void => {
             "sub-dir/sub-file2.txt": "sub-content2",
             "file1.txt": "content1",
             "file2.txt": "content2"
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         expect(fs.readdir()).toEqual([
             "file1.txt",
@@ -96,11 +96,11 @@ describe("FileSystem", (): void => {
 
         vol.fromJSON({
             "file.txt": existingLine
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         fs.appendFile("file.txt", appendLine);
 
-        expect(vol.readFileSync(`${DATA_DIR}/file.txt`).toString()).toBe(`${existingLine}${appendLine}`);
+        expect(vol.readFileSync(`${WOCKER_DATA_DIR}/file.txt`).toString()).toBe(`${existingLine}${appendLine}`);
     });
 
     it("should read lines", async (): Promise<void> => {
@@ -110,7 +110,7 @@ describe("FileSystem", (): void => {
 
         vol.fromJSON({
             "file.txt": `${line1}\n${line2}\n${line3}\n`
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         const stream = fs.createReadlineStream("file.txt");
 
@@ -201,9 +201,9 @@ describe("FileSystem", (): void => {
                 .join("\n"),
             [testOneLineFile]: "One line file",
             [testEmptyFile]: ""
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
-        expect(() => fs.getLinePosition(testFile, 0)).toThrowError();
+        expect(() => fs.getLinePosition(testFile, 0)).toThrow();
         expect(fs.getLinePosition(testFile, 1)).toBe(0);
         expect(fs.readBytes(testFile, fs.getLinePosition(testFile, 2), secondList.length).toString()).toBe(secondList);
         expect(fs.readBytes(testFile, fs.getLinePosition(testFile, -2), preLastLine.length).toString()).toBe(preLastLine);
@@ -217,7 +217,7 @@ describe("FileSystem", (): void => {
     it("should open and close file", (): void => {
         vol.fromJSON({
             "test.txt": '>>>'
-        }, DATA_DIR);
+        }, WOCKER_DATA_DIR);
 
         const file = fs.open("test.txt", "r"),
               stat = file.stat();
@@ -226,7 +226,7 @@ describe("FileSystem", (): void => {
 
         file.close();
 
-        expect(() => file.stat()).toThrowError();
+        expect(() => file.stat()).toThrow();
     });
 
     it("should watch file", async (): Promise<void> => {
@@ -250,5 +250,24 @@ describe("FileSystem", (): void => {
         expect(handleChange).toHaveBeenCalledTimes(2);
         expect(handleChange).toHaveBeenNthCalledWith(1, "change", testFile);
         expect(handleChange).toHaveBeenNthCalledWith(2, "change", testFile);
+    });
+
+    it("should move directory to a new location", (): void => {
+        vol.fromJSON({
+            "old-dir/file1.txt": "hello",
+            "old-dir/file2.txt": "world",
+        }, WOCKER_DATA_DIR);
+
+        fs.mv("old-dir", "new-dir");
+
+        expect(fs.exists("old-dir")).toBe(false);
+
+        expect(fs.exists("new-dir")).toBe(true);
+
+        expect(fs.readFile("new-dir/file1.txt").toString()).toBe("hello");
+        expect(fs.readFile("new-dir/file2.txt").toString()).toBe("world");
+
+        expect(fs.readdir()).toEqual(["new-dir"]);
+        expect(fs.readdir("new-dir")).toEqual(["file1.txt", "file2.txt"]);
     });
 });

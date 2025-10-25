@@ -4,7 +4,6 @@ import {Route} from "./Route";
 import {
     Controller,
     Command,
-    Completion,
     Param,
     Option,
     Description
@@ -21,17 +20,17 @@ describe("Route", (): void => {
             public testCommand(
                 @Param("name")
                 @Description("Param description")
-                param1?: string,
+                _param1?: string,
                 @Option("string-option", "s")
                 @Description("String option description")
-                stringOption?: string,
+                _stringOption?: string,
                 @Option("bool-option", "b")
                 @Description("Bool option description")
-                boolOption?: boolean,
+                _boolOption?: boolean,
                 @Option("number-option", "n")
                 @Description("Number option description")
-                numberOption?: number
-            ) {}
+                _numberOption?: number
+            ): void {}
         }
 
         const route = new Route(TestController, "testCommand");
@@ -84,8 +83,8 @@ describe("Route", (): void => {
                     alias: "n",
                     description: "Number option description"
                 })
-                numberOption?: any
-            ) {}
+                _numberOption?: any
+            ): void {}
         }
 
         const route = new Route(TestController, "testRoute");

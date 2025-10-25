@@ -1,5 +1,5 @@
-import {Injectable} from "../decorators";
-import {KeystoreProvider} from "../makes";
+import {Injectable} from "../../../decorators";
+import {KeystoreProvider} from "../makes/KeystoreProvider";
 
 
 @Injectable("KEYSTORE_SERVICE")
