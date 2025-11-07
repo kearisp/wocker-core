@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
+import {Injectable, Optional} from "../decorators";
 import {Container} from "./Container";
-import {Injectable} from "../decorators";
 import {ModuleWrapper} from "./ModuleWrapper";
 import {InstanceWrapper} from "./InstanceWrapper";
 
@@ -131,5 +131,27 @@ describe("InstanceWrapper", (): void => {
 
         expect(testParentProvider).toBeInstanceOf(TestParentProvider);
         expect(testParentProvider.testProvider).toBeInstanceOf(Test2Provider);
+    });
+
+    it("should resolve optional dependency as undefined when not provided", (): void => {
+        @Injectable()
+        class MissingDependency {}
+
+        @Injectable()
+        class ServiceWithOptionalDep {
+            public constructor(
+                @Optional()
+                public readonly missing?: MissingDependency
+            ) {}
+        }
+
+        const {module} = getContext();
+
+        module.addProvider(ServiceWithOptionalDep);
+
+        const instance = module.get(ServiceWithOptionalDep);
+
+        expect(instance).toBeInstanceOf(ServiceWithOptionalDep);
+        expect(instance.missing).toBeUndefined();
     });
 });

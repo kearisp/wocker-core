@@ -270,4 +270,20 @@ describe("FileSystem", (): void => {
         expect(fs.readdir()).toEqual(["new-dir"]);
         expect(fs.readdir("new-dir")).toEqual(["file1.txt", "file2.txt"]);
     });
+
+    it("should read symlink target (readlink)", (): void => {
+        vol.fromJSON({
+            "file.txt": "hello"
+        }, WOCKER_DATA_DIR);
+
+        vol.symlinkSync(fs.path("file.txt"), fs.path("link.txt"));
+
+        expect(fs.readlink("link.txt")).toBe("file.txt");
+
+        const buf = fs.readlink("link.txt", {
+            encoding: "buffer"
+        });
+        expect(Buffer.isBuffer(buf)).toBe(true);
+        expect(buf.toString()).toBe(fs.path("file.txt"));
+    });
 });

@@ -17,8 +17,8 @@ export class AppConfigService {
     protected _pwd: string;
     protected _config?: AppConfig;
     protected readonly mapTypes: TypeMap = {
-        [PROJECT_TYPE_PRESET]: "Preset",
         [PROJECT_TYPE_IMAGE]: "Image",
+        [PROJECT_TYPE_PRESET]: "Preset",
         [PROJECT_TYPE_DOCKERFILE]: "Dockerfile"
     };
 

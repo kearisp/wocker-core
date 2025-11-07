@@ -51,7 +51,7 @@ export namespace DockerServiceParams {
         labels?: {
             [key: string]: string;
         };
-        context: string;
+        context: string | string[];
     } & ({
         /** @deprecated */
         src: string;

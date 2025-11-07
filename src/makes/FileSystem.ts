@@ -1,4 +1,4 @@
-import FS from "fs";
+import FS, {EncodingOption, BufferEncodingOption} from "fs";
 import Path from "path";
 import {Readable} from "stream";
 import YAML from "yaml";
@@ -227,5 +227,19 @@ export class FileSystem {
 
     public watch(path: string, options: FS.WatchOptionsWithStringEncoding = {}): FS.FSWatcher {
         return this.driver.watch(this.path(path), options);
+    }
+
+    public readlink(path: string, options?: EncodingOption): string;
+    public readlink(path: string, options: BufferEncodingOption): Buffer<ArrayBuffer>;
+    public readlink(path: string, options?: EncodingOption | BufferEncodingOption): string | Buffer<ArrayBuffer> {
+        const link = this.driver.readlinkSync(this.path(path), options);
+
+        if(typeof link === "string") {
+            return Path.isAbsolute(link)
+                ? Path.relative(this.source, link)
+                : link;
+        }
+
+        return link;
     }
 }
