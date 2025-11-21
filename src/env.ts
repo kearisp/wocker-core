@@ -2,7 +2,7 @@ import OS from "os";
 import Path from "path";
 
 
-export const WOCKER_VERSION = "1.0.26";
+export const WOCKER_VERSION = "1.0.27";
 export const WOCKER_VERSION_KEY = "__WOCKER_VERSION__";
 export const WOCKER_DATA_DIR: string = process.env.WS_DIR || Path.join(OS.homedir(), ".workspace");
 export const WOCKER_DATA_DIR_KEY = "__WOCKER_DATA_DIR__";
@@ -17,7 +17,6 @@ export const COMPLETION_METADATA = "completion";
 export const ARGS_METADATA = "__ARGS_METADATA__";
 export const ARGS_OLD_METADATA = "__ARGS__";
 export const ALIAS_METADATA = "__ALIAS_METADATA__";
-export const OPTION_META = "__OPTION_META__";
 export const PARAMTYPES_METADATA = "design:paramtypes";
 export const SELF_DECLARED_DEPS_METADATA = "self:paramtypes";
 export const INJECT_TOKEN_METADATA = "INJECT_TOKEN";

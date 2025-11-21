@@ -28,7 +28,7 @@ export class FileSystem {
 
     public cd(path: string): FileSystem {
         return new FileSystem(
-            this.path(path),
+            Path.isAbsolute(path) ? path : this.path(path),
             this.driver
         );
     }

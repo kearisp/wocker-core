@@ -47,9 +47,7 @@ export class ModuleWrapper<TInput = any> {
             ? Reflect.getMetadata(INJECT_TOKEN_METADATA, type) || type
             : type;
 
-        const wrapper = this.providers.get(token);
-
-        if(!wrapper) {
+        if(!this.providers.has(token)) {
             for(const im of this.imports) {
                 if(!im.exports.has(token)) {
                     continue;
@@ -65,7 +63,7 @@ export class ModuleWrapper<TInput = any> {
             return this.container.globalProviders.get(token);
         }
 
-        return wrapper;
+        return this.providers.get(token);
     }
 
     public addProvider(provider: ProviderType): void {

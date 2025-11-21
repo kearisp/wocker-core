@@ -3,6 +3,7 @@ import "reflect-metadata";
 import {Module, Injectable, Global, Controller, Command, Completion, Param, Inject, Optional} from "../decorators";
 import {DynamicModule} from "../types";
 import {Scanner} from "./Scanner";
+import {Container} from "./Container";
 
 
 describe("Scanner", (): void => {
@@ -431,5 +432,49 @@ describe("Scanner", (): void => {
         expect(parentService.test1).toBe("Value 1");
         expect(parentService.test2).toBe("Value 2");
         expect(parentService.test3).toBe("Value 3");
+    });
+
+    it("should scan submodules", async (): Promise<void> => {
+        @Injectable("TEST_SUBMODULE_PROVIDER")
+        class TestSubModuleService {
+            public getValue(): string {
+                return "TestValue";
+            }
+        }
+
+        @Module({
+            providers: [TestSubModuleService],
+            exports: [TestSubModuleService]
+        })
+        class TestSubModule {}
+
+        @Injectable("TEST_MODULE_SERVICE")
+        class TestTopModuleService {
+            public constructor(
+                protected readonly testSubmoduleService: TestSubModuleService
+            ) {}
+
+            public getValue() {
+                return this.testSubmoduleService.getValue();
+            }
+        }
+
+        @Module({
+            imports: [TestSubModule],
+            providers: [TestTopModuleService],
+            exports: [TestTopModuleService]
+        })
+        class TestTopModule {}
+
+        const container = new Container(),
+              scanner = new Scanner(container);
+
+        await scanner.scan(TestTopModule);
+
+        const testTopModule = container.getModule(TestTopModule),
+              testTopModuleService = testTopModule.get(TestTopModuleService);
+
+        expect(testTopModuleService).toBeInstanceOf(TestTopModuleService);
+        expect(testTopModuleService.getValue()).toBe("TestValue");
     });
 });

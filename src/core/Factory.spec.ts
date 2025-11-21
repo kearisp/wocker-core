@@ -6,7 +6,7 @@ import {
     Command,
     Injectable
 } from "../decorators";
-import {ProviderType} from "../types/ProviderType";
+import {ProviderType} from "../types";
 import {Factory} from "./Factory";
 
 
@@ -38,8 +38,8 @@ class TestModule {}
 
 describe("Factory", (): void => {
     it("Factory.create", async (): Promise<void> => {
-        const testModule = await Factory.create(TestModule);
-        const res = await testModule.run(["node", "cli", "test"]);
+        const testModule = await Factory.create(TestModule),
+              res = await testModule.run(["node", "cli", "test"]);
 
         expect(res).toBe("response");
     });

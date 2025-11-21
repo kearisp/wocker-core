@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {Global, Module} from "../decorators";
-import {AsyncStorage, Scanner} from "../core";
+import {AsyncStorage, Scanner, Container} from "../core";
 import {AppConfigService} from "../services/AppConfigService";
 import {AppService} from "../services/AppService";
 import {AppFileSystemService} from "../services/AppFileSystemService";
@@ -39,13 +39,14 @@ describe("Logger", (): void => {
         })
         class TestModule {}
 
-        const scanner = new Scanner()
+        const container = new Container(),
+              scanner = new Scanner(container);
 
-        AsyncStorage.enterWith(scanner.container);
+        AsyncStorage.enterWith(container);
 
         await scanner.scan(TestModule);
 
-        const testModule = scanner.container.getModule(TestModule),
+        const testModule = container.getModule(TestModule),
               logService = testModule.get<LogService>(LogService);
 
         logService.log = jest.fn();
