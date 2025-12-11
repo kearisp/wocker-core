@@ -24,24 +24,6 @@ export class InstanceWrapper<TInput = any> {
         this._instance = instance;
     }
 
-    protected normalizeProvider(provider: ProviderType) {
-        if(provider && typeof provider === "object") {
-            if("provide" in provider && "useValue" in provider) {
-                return [provider.provide, null, provider.useValue];
-            }
-
-            if("provide" in provider && "useClass" in provider) {
-                return [provider.provide, provider.useClass, null];
-            }
-        }
-
-        return [
-            Reflect.getMetadata(INJECT_TOKEN_METADATA, provider) || provider,
-            provider,
-            null
-        ];
-    }
-
     public get type() {
         return this._type;
     }
@@ -84,5 +66,23 @@ export class InstanceWrapper<TInput = any> {
         this._token = token;
         this._type = type;
         this._instance = instance;
+    }
+
+    protected normalizeProvider(provider: ProviderType) {
+        if(typeof provider === "object") {
+            if("provide" in provider && "useValue" in provider) {
+                return [provider.provide, null, provider.useValue];
+            }
+
+            if("provide" in provider && "useClass" in provider) {
+                return [provider.provide, provider.useClass, null];
+            }
+        }
+
+        return [
+            Reflect.getMetadata(INJECT_TOKEN_METADATA, provider) || provider,
+            provider,
+            null
+        ];
     }
 }

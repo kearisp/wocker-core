@@ -1,5 +1,5 @@
 import {Cli} from "@kearisp/cli";
-import {Type} from "../types";
+import {Type, InjectionToken} from "../types";
 import {Container} from "./Container";
 import {AsyncStorage} from "./AsyncStorage";
 
@@ -10,7 +10,7 @@ export class ApplicationContext {
         protected readonly container: Container
     ) {}
 
-    public get<TInput = any, TResult = TInput>(typeOrToken: Type<TInput> | Function | string | symbol): TResult {
+    public get<TInput = any, TResult = TInput>(typeOrToken: InjectionToken<TInput>): TResult {
         const module = this.container.getModule(this.module);
 
         if(!module) {

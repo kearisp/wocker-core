@@ -1,5 +1,8 @@
-import FS, {type Dirent} from "fs";
-
+import FS, {
+    type Dirent,
+    type EncodingOption,
+    type BufferEncodingOption
+} from "fs";
 
 type StreamOptions = {
     flags?: string;
@@ -41,4 +44,5 @@ export interface FileSystemDriver {
     watchFile(path: string, listener: FS.StatsListener): FS.StatWatcher;
     cpSync(source: string, destination: string, opts?: FS.CopySyncOptions): void
     renameSync(oldPath: string, newPath: string): void;
+    readlinkSync(path: string, options?: EncodingOption | BufferEncodingOption): string | Buffer<ArrayBuffer>;
 }

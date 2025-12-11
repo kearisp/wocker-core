@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {AppConfig} from "./AppConfig";
-import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL} from "../types/PresetSource";
+import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL} from "../types";
 
 
 describe("AppConfig", (): void => {
