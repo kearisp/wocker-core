@@ -171,6 +171,8 @@ export class Project {
         return this.env.hasOwnProperty(name);
     }
 
+    public getEnv(key: string): string | undefined;
+    public getEnv(key: string, byDefault: string): string;
     public getEnv(name: string, defaultValue?: string): string|undefined {
         const {
             [name]: value = defaultValue

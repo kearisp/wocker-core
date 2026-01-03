@@ -16,7 +16,7 @@ export class ProcessService {
         process.chdir(path);
     }
 
-    public write(buffer: Buffer): void {
-        process.stdout.write(buffer);
+    public write(chunk: string | Buffer): boolean {
+        return process.stdout.write(chunk);
     }
 }
