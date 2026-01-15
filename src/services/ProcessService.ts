@@ -9,7 +9,7 @@ export class ProcessService {
     }
 
     public cd(path: string): void {
-        this.chdir(this.pwd(path));
+        this.chdir(Path.isAbsolute(path) ? path : this.pwd(path));
     }
 
     public chdir(path: string): void {
