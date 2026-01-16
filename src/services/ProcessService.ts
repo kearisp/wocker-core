@@ -9,14 +9,14 @@ export class ProcessService {
     }
 
     public cd(path: string): void {
-        this.chdir(this.pwd(path));
+        this.chdir(Path.isAbsolute(path) ? path : this.pwd(path));
     }
 
     public chdir(path: string): void {
         process.chdir(path);
     }
 
-    public write(buffer: Buffer): void {
-        process.stdout.write(buffer);
+    public write(chunk: string | Buffer): boolean {
+        return process.stdout.write(chunk);
     }
 }
