@@ -1,5 +1,8 @@
+import {IS_CONTROLLER_METADATA} from "../env";
+
+
 export const Controller = (): ClassDecorator => {
     return (target) => {
-        Reflect.defineMetadata("IS_CONTROLLER", true, target);
+        Reflect.defineMetadata(IS_CONTROLLER_METADATA, true, target);
     };
 };

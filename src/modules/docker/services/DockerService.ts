@@ -4,6 +4,16 @@ import {Duplex} from "node:stream";
 import {Injectable} from "../../../decorators";
 
 
+export namespace DockerService {
+    export type ImageLSOptions = {
+        tag?: string;
+        reference?: string[];
+        labels?: {
+            [key: string]: string;
+        };
+    };
+}
+
 export namespace DockerServiceParams {
     export type CreateContainer = {
         name: string;
@@ -34,13 +44,8 @@ export namespace DockerServiceParams {
         aliases?: string[];
     };
 
-    export type ImageList = {
-        tag?: string;
-        reference?: string[];
-        labels?: {
-            [key: string]: string;
-        };
-    };
+    /** @deprecated */
+    export type ImageList = DockerService.ImageLSOptions;
 
     export type BuildImage = {
         version?: "1" | "2";
@@ -76,8 +81,8 @@ export abstract class DockerService {
     public abstract hasVolume(name: string): Promise<boolean>;
     public abstract rmVolume(name: string): Promise<void>;
     public abstract buildImage(params: DockerServiceParams.BuildImage): Promise<any>;
+    public abstract imageLs(options?: DockerService.ImageLSOptions): Promise<ImageInfo[]>;
     public abstract imageExists(tag: string): Promise<boolean>;
-    public abstract imageLs(options?: DockerServiceParams.ImageList): Promise<ImageInfo[]>;
     public abstract imageRm(tag: string, force?: boolean): Promise<void>;
     public abstract pullImage(tag: string): Promise<void>;
     public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream|null|undefined>;

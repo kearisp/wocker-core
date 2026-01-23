@@ -1,5 +1,4 @@
 import "reflect-metadata";
-
 import {COMMAND_METADATA} from "../env";
 
 
