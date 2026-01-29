@@ -1,13 +1,52 @@
 import {Injectable} from "../decorators";
+// noinspection ES6PreferShortImport
+import {Container} from "../core/Container";
+import {LISTENER_METADATA} from "../env";
 
 
 export type EventHandle = (...args: any[]) => Promise<void>|void;
 
 @Injectable("APP_EVENTS_SERVICE")
 export class EventService {
+    protected scanned = false;
     protected handles: {
         [event: string]: Set<EventHandle>;
     } = {};
+
+    public constructor(
+        protected readonly container: Container
+    ) {}
+
+    protected scanListeners() {
+        if(this.scanned) {
+            return;
+        }
+
+        for(const [, moduleWrapper] of this.container.modules) {
+            for(const [, controllerWrapper] of moduleWrapper.controllers) {
+                if(!controllerWrapper.instance) continue;
+
+                const instance = controllerWrapper.instance;
+                const prototype = Object.getPrototypeOf(instance);
+
+                const methodNames = Object.getOwnPropertyNames(prototype).filter(
+                    name => typeof prototype[name] === "function" && name !== "constructor"
+                );
+
+                for(const methodName of methodNames) {
+                    const eventNames: string[] = Reflect.getMetadata(LISTENER_METADATA, prototype[methodName]);
+
+                    if(eventNames) {
+                        for(const eventName of eventNames) {
+                            this.on(eventName, instance[methodName].bind(instance));
+                        }
+                    }
+                }
+            }
+        }
+
+        this.scanned = true;
+    }
 
     public on(event: string, handle: EventHandle): (() => void) {
         if(!this.handles[event]) {
@@ -30,6 +69,8 @@ export class EventService {
     }
 
     public async emit(event: string, ...args: any[]): Promise<void> {
+        this.scanListeners();
+
         if(!this.handles[event]) {
             return;
         }

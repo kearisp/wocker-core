@@ -8,6 +8,7 @@ import {
     IS_GLOBAL_METADATA,
     MODULE_METADATA
 } from "../env";
+import {InstanceWrapper} from "./InstanceWrapper";
 
 
 export class Scanner {
@@ -15,6 +16,13 @@ export class Scanner {
 
     public constructor(container?: Container) {
         this.container = container || new Container();
+        this.container.globalProviders.set(
+            "CORE_CONTAINER",
+            new InstanceWrapper(new ModuleWrapper(this.container, null), {
+                provide: "CORE_CONTAINER",
+                useValue: this.container
+            })
+        );
     }
 
     public async scan(moduleDefinition: Type | DynamicModule): Promise<void> {

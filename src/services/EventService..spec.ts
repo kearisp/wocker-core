@@ -1,5 +1,5 @@
 import {describe, it, expect, jest} from "@jest/globals";
-import {Module} from "../decorators";
+import {Module, Controller, Event} from "../decorators";
 import {EventService, EventHandle} from "./EventService";
 import {Factory} from "../core";
 
@@ -32,7 +32,7 @@ describe("EventService", (): void => {
         expect(listener).toHaveBeenCalledWith(1, 2, 3);
     });
 
-    it("", async () => {
+    it("should unsubscribe from event", async () => {
         const {eventService} = await getContext();
 
         const listener1 = jest.fn(),
@@ -48,5 +48,30 @@ describe("EventService", (): void => {
 
         expect(listener1).not.toHaveBeenCalled();
         expect(listener2).not.toHaveBeenCalled();
+    });
+
+    it("should emit decorated method", async () => {
+        const onTest = jest.fn();
+
+        @Controller()
+        class TestListener {
+            @Event("test")
+            public onTest(a: string, b: string) {
+                onTest(a, b);
+            }
+        }
+
+        @Module({
+            controllers: [TestListener]
+        })
+        class TestModule {}
+
+        const context = await Factory.create(TestModule);
+
+        const eventService = context.get(EventService);
+
+        await eventService.emit("test", "foo", "bar");
+
+        expect(onTest).toHaveBeenCalledWith("foo", "bar");
     });
 });
