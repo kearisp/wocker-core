@@ -2,8 +2,10 @@ import {Type, InjectionToken, ProviderType} from "../types";
 import {InstanceWrapper} from "./InstanceWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
 import {INJECT_TOKEN_METADATA} from "../env";
+import {Injectable} from "../decorators";
 
 
+@Injectable("CORE_CONTAINER")
 export class Container {
     public readonly modules: Map<Type, ModuleWrapper> = new Map();
     public readonly moduleExportIndex: Map<InjectionToken, Set<ModuleWrapper>> = new Map();

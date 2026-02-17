@@ -1,0 +1,32 @@
+import {describe, it, expect} from "@jest/globals";
+import "reflect-metadata";
+import {Event} from "./Event";
+import {Controller} from "./Controller";
+import {LISTENER_METADATA} from "../env";
+
+
+describe("Event", (): void => {
+    it("should add metadata when used with @Controller", (): void => {
+        @Controller()
+        class TestController {
+            @Event("test.event")
+            public testMethod() {}
+        }
+
+        const controller = new TestController();
+
+        expect(Reflect.getMetadata(LISTENER_METADATA, controller.testMethod)).toEqual(["test.event"]);
+    });
+
+    it("should support multiple @Event decorators on the same method", (): void => {
+        @Controller()
+        class TestController {
+            @Event("event.one")
+            @Event("event.two")
+            public testMethod() {}
+        }
+
+        const controller = new TestController();
+        expect(Reflect.getMetadata(LISTENER_METADATA, controller.testMethod)).toEqual(["event.two", "event.one"]);
+    });
+});

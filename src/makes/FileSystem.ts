@@ -133,6 +133,13 @@ export class FileSystem {
         this.driver.writeFileSync(fullPath, json, options)
     }
 
+    public writeYAML(path: string, data: any, options?: FS.WriteFileOptions): void {
+        const fullPath = this.path(path),
+              yaml = YAML.stringify(data);
+
+        this.driver.writeFileSync(fullPath, yaml, options);
+    }
+
     public appendFile(path: string, data: string | Uint8Array, options?: FS.WriteFileOptions): void {
         const fullPath = this.path(path);
 
