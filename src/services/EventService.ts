@@ -5,19 +5,18 @@ import {LISTENER_METADATA} from "../env";
 
 
 export type EventHandle = (...args: any[]) => Promise<void>|void;
+export type EventOff = () => void;
 
 @Injectable("APP_EVENTS_SERVICE")
 export class EventService {
     protected scanned = false;
-    protected handles: {
-        [event: string]: Set<EventHandle>;
-    } = {};
+    protected handles: Record<string, Set<EventHandle>> = {};
 
     public constructor(
         protected readonly container: Container
     ) {}
 
-    protected scanListeners() {
+    protected scanListeners(): void {
         if(this.scanned) {
             return;
         }
@@ -38,7 +37,7 @@ export class EventService {
 
                     if(eventNames) {
                         for(const eventName of eventNames) {
-                            this.on(eventName, instance[methodName].bind(instance));
+                            this.preOn(eventName, instance[methodName].bind(instance));
                         }
                     }
                 }
@@ -48,7 +47,7 @@ export class EventService {
         this.scanned = true;
     }
 
-    public on(event: string, handle: EventHandle): (() => void) {
+    public on(event: string, handle: EventHandle): EventOff {
         if(!this.handles[event]) {
             this.handles[event] = new Set();
         }
@@ -56,6 +55,21 @@ export class EventService {
         this.handles[event].add(handle);
 
         return (): void => {
+            this.off(event, handle);
+        };
+    }
+
+    protected preOn(event: string, handle: EventHandle): EventOff {
+        if(!this.handles[event]) {
+            this.handles[event] = new Set();
+        }
+
+        this.handles[event] = new Set([
+            handle,
+            ...Array.from(this.handles[event])
+        ]);
+
+        return () => {
             this.off(event, handle);
         };
     }
