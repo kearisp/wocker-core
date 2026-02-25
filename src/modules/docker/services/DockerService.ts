@@ -1,53 +1,37 @@
 import type Docker from "dockerode";
-import type {Container, ImageInfo, VolumeCreateResponse} from "dockerode";
+import type {Container, ContainerInfo, ImageInfo, VolumeCreateResponse} from "dockerode";
 import {Duplex} from "node:stream";
 import {Injectable} from "../../../decorators";
+import {ContainerService} from "./ContainerService";
 
 
-export namespace DockerService {
-    export type ImageLSOptions = {
-        tag?: string;
-        reference?: string[];
-        labels?: {
-            [key: string]: string;
-        };
-    };
+@Injectable("DOCKER_SERVICE")
+export abstract class DockerService {
+    public abstract get docker(): Docker;
+    public abstract createContainer(params: DockerService.CreateContainerParams): Promise<Container>;
+    public abstract getContainer(name: string | string[]): Promise<Container | null>;
+    public abstract listContainer(params: ContainerService.ListParams): Promise<ContainerInfo[]>;
+    public abstract removeContainer(name: string): Promise<void>;
+    public abstract createVolume(name: string): Promise<VolumeCreateResponse>;
+    public abstract hasVolume(name: string): Promise<boolean>;
+    public abstract rmVolume(name: string): Promise<void>;
+    public abstract buildImage(params: DockerService.BuildImageParams): Promise<any>;
+    public abstract imageLs(options?: DockerService.ImageLSOptions): Promise<ImageInfo[]>;
+    public abstract imageExists(tag: string): Promise<boolean>;
+    public abstract imageRm(tag: string, force?: boolean): Promise<void>;
+    public abstract pullImage(tag: string): Promise<void>;
+    public abstract attach(name: string | Container): Promise<NodeJS.ReadWriteStream | null | undefined>;
+    public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<NodeJS.ReadWriteStream>;
+    public abstract exec(name: string, command?: DockerService.ExecParams, tty?: boolean): Promise<Duplex | null>;
+    public abstract logs(containerOrName: string | Container): Promise<NodeJS.ReadableStream | null| undefined>;
 }
 
-export namespace DockerServiceParams {
-    export type CreateContainer = {
-        name: string;
-        image: string;
-        user?: string;
-        restart?: "always";
-        entrypoint?: string | string[];
-        projectId?: string;
-        tty?: boolean;
-        memory?: number;
-        memorySwap?: number;
-        ulimits?: {
-            [key: string]: {
-                hard?: number;
-                soft?: number;
-            };
-        };
-        links?: string[];
-        env?: {
-            [key: string]: string;
-        };
-        networkMode?: string;
-        extraHosts?: any;
-        volumes?: string[];
-        ports?: string[];
-        cmd?: string[];
-        network?: string;
-        aliases?: string[];
-    };
+export namespace DockerService {
+    export type CreateContainerParams = ContainerService.CreateParams;
 
-    /** @deprecated */
-    export type ImageList = DockerService.ImageLSOptions;
+    export type ListContainerParams = ContainerService.ListParams;
 
-    export type BuildImage = {
+    export type BuildImageParams = {
         version?: "1" | "2";
         tag: string;
         buildArgs?: {
@@ -64,29 +48,26 @@ export namespace DockerServiceParams {
         dockerfile: string;
     });
 
-    export type Exec = {
-        cmd: string[];
-        tty?: boolean;
-        user?: string;
+    export type ExecParams = ContainerService.ExecParams;
+
+    export type ImageLSOptions = {
+        tag?: string;
+        reference?: string[];
+        labels?: {
+            [key: string]: string;
+        };
     };
 }
 
-@Injectable("DOCKER_SERVICE")
-export abstract class DockerService {
-    public abstract get docker(): Docker;
-    public abstract createContainer(params: DockerServiceParams.CreateContainer): Promise<Container>;
-    public abstract getContainer(name: string): Promise<Container|null>;
-    public abstract removeContainer(name: string): Promise<void>;
-    public abstract createVolume(name: string): Promise<VolumeCreateResponse>;
-    public abstract hasVolume(name: string): Promise<boolean>;
-    public abstract rmVolume(name: string): Promise<void>;
-    public abstract buildImage(params: DockerServiceParams.BuildImage): Promise<any>;
-    public abstract imageLs(options?: DockerService.ImageLSOptions): Promise<ImageInfo[]>;
-    public abstract imageExists(tag: string): Promise<boolean>;
-    public abstract imageRm(tag: string, force?: boolean): Promise<void>;
-    public abstract pullImage(tag: string): Promise<void>;
-    public abstract attach(name: string|Container): Promise<NodeJS.ReadWriteStream|null|undefined>;
-    public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<NodeJS.ReadWriteStream>;
-    public abstract exec(name: string, command?: DockerServiceParams.Exec|string[], tty?: boolean): Promise<Duplex|null>;
-    public abstract logs(containerOrName: string|Container): Promise<NodeJS.ReadableStream|null|undefined>;
+export namespace DockerServiceParams {
+    /** @deprecated */
+    export type CreateContainer = DockerService.CreateContainerParams;
+
+    /** @deprecated */
+    export type ImageList = DockerService.ImageLSOptions;
+
+    export type BuildImage = DockerService.BuildImageParams;
+
+    /** @deprecated */
+    export type Exec = DockerService.ExecParams;
 }
