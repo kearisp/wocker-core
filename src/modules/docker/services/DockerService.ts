@@ -10,7 +10,7 @@ export abstract class DockerService {
     public abstract get docker(): Docker;
     public abstract createContainer(params: DockerService.CreateContainerParams): Promise<Container>;
     public abstract getContainer(name: string | string[]): Promise<Container | null>;
-    public abstract listContainer(params: ContainerService.ListParams): Promise<ContainerInfo[]>;
+    public abstract listContainer(params: DockerService.ListContainerParams): Promise<ContainerInfo[]>;
     public abstract removeContainer(name: string): Promise<void>;
     public abstract createVolume(name: string): Promise<VolumeCreateResponse>;
     public abstract hasVolume(name: string): Promise<boolean>;
