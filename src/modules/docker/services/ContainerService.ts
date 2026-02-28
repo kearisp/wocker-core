@@ -9,9 +9,12 @@ export abstract class ContainerService {
     public abstract create(params: ContainerService.CreateParams): Promise<Container>;
     public abstract get(name: string | string[]): Promise<Container | null>;
     public abstract list(params: ContainerService.ListParams): Promise<ContainerInfo[]>;
+    public abstract logs(containerOrName: ContainerService.ContainerOrName, params?: ContainerService.LogsParams): Promise<NodeJS.ReadableStream | null>;
 }
 
 export namespace ContainerService {
+    export type ContainerOrName = string | Container;
+
     export type CreateParams = {
         name: string;
         labels?: {
@@ -54,5 +57,9 @@ export namespace ContainerService {
         cmd: string[];
         tty?: boolean;
         user?: string;
+    };
+
+    export type LogsParams = {
+        signal?: AbortSignal;
     };
 }

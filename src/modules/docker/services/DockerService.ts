@@ -23,7 +23,7 @@ export abstract class DockerService {
     public abstract attach(name: string | Container): Promise<NodeJS.ReadWriteStream | null | undefined>;
     public abstract attachStream(stream: NodeJS.ReadWriteStream): Promise<NodeJS.ReadWriteStream>;
     public abstract exec(name: string, command?: DockerService.ExecParams, tty?: boolean): Promise<Duplex | null>;
-    public abstract logs(containerOrName: string | Container): Promise<NodeJS.ReadableStream | null| undefined>;
+    public abstract logs(containerOrName: DockerService.ContainerOrName, params?: DockerService.LogsParams): Promise<NodeJS.ReadableStream | null| undefined>;
 }
 
 export namespace DockerService {
@@ -57,6 +57,9 @@ export namespace DockerService {
             [key: string]: string;
         };
     };
+
+    export type ContainerOrName = ContainerService.ContainerOrName;
+    export type LogsParams = ContainerService.LogsParams;
 }
 
 export namespace DockerServiceParams {
