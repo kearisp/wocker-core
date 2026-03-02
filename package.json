@@ -1,7 +1,7 @@
 {
     "name": "@wocker/core",
     "type": "commonjs",
-    "version": "1.0.29",
+    "version": "1.0.30",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of the Wocker",
     "license": "MIT",
@@ -27,7 +27,7 @@
         "make-coverage-badge": "make-coverage-badge"
     },
     "dependencies": {
-        "@kearisp/cli": "^2.0.8",
+        "@kearisp/cli": "^2.0.9",
         "date-fns": "^4.1.0",
         "readline": "^1.3.0",
         "reflect-metadata": "^0.2.2",

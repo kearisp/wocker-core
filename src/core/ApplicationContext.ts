@@ -2,6 +2,7 @@ import {Cli} from "@kearisp/cli";
 import {Type, InjectionToken} from "../types";
 import {Container} from "./Container";
 import {AsyncStorage} from "./AsyncStorage";
+import {WOCKER_VERSION} from "../env";
 
 
 export class ApplicationContext {
@@ -31,37 +32,46 @@ export class ApplicationContext {
             AsyncStorage.run(this.container, (): void => {
                 const cli = this.get(Cli);
 
-                cli.command("").action(() => {
-                    for(const [, module] of this.container.modules) {
-                        for(const [, container] of module.controllers) {
-                            if(!container.description) {
-                                continue;
-                            }
+                cli.command("")
+                    .option("version", {
+                        type: "boolean",
+                        alias: "v"
+                    })
+                    .action((input) => {
+                        if(input.option("version")) {
+                            return WOCKER_VERSION;
+                        }
 
-                            console.info(`${container.description}:`);
-
-                            const spaceLength = container.commands.reduce((space, route) => {
-                                return route.commandNames.reduce((space, command) => {
-                                    return Math.max(space, command.length + 2);
-                                }, space);
-                            }, 0);
-
-                            for(const route of container.commands) {
-                                if(!route.description) {
+                        for(const [, module] of this.container.modules) {
+                            for(const [, container] of module.controllers) {
+                                if(!container.description) {
                                     continue;
                                 }
 
-                                for(const commandName of route.commandNames) {
-                                    const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
+                                console.info(`${container.description}:`);
 
-                                    console.info(`  ${commandName} ${space} ${route.description}`);
+                                const spaceLength = container.commands.reduce((space, route) => {
+                                    return route.commandNames.reduce((space, command) => {
+                                        return Math.max(space, command.length + 2);
+                                    }, space);
+                                }, 0);
+
+                                for(const route of container.commands) {
+                                    if(!route.description) {
+                                        continue;
+                                    }
+
+                                    for(const commandName of route.commandNames) {
+                                        const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
+
+                                        console.info(`  ${commandName} ${space} ${route.description}`);
+                                    }
                                 }
-                            }
 
-                            console.info("");
+                                console.info("");
+                            }
                         }
-                    }
-                });
+                    });
 
                 return resolve(cli.run(args));
             });

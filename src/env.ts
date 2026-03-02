@@ -2,7 +2,7 @@ import OS from "os";
 import Path from "path";
 
 
-export const WOCKER_VERSION = "1.0.29";
+export const WOCKER_VERSION = "1.0.30";
 export const WOCKER_VERSION_KEY = "__WOCKER_VERSION__";
 export const WOCKER_DATA_DIR: string = process.env.WS_DIR || Path.join(OS.homedir(), ".workspace");
 export const WOCKER_DATA_DIR_KEY = "__WOCKER_DATA_DIR__";
