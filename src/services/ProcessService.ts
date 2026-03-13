@@ -4,6 +4,18 @@ import {Injectable} from "../decorators";
 
 @Injectable("CORE_PROCESS_SERVICE")
 export class ProcessService {
+    public get stdin(): NodeJS.ReadStream {
+        return process.stdin;
+    }
+
+    public get stdout(): NodeJS.WriteStream {
+        return process.stdout;
+    }
+
+    public get stderr(): NodeJS.WriteStream {
+        return process.stdout;
+    }
+
     public pwd(path: string = ""): string {
         return Path.join(process.cwd(), path);
     }
@@ -17,6 +29,6 @@ export class ProcessService {
     }
 
     public write(chunk: string | Buffer): boolean {
-        return process.stdout.write(chunk);
+        return this.stdout.write(chunk);
     }
 }
