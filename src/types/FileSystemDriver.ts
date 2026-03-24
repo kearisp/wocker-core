@@ -1,8 +1,10 @@
 import FS, {
     type Dirent,
     type EncodingOption,
-    type BufferEncodingOption
+    type BufferEncodingOption,
+    type Mode
 } from "fs";
+
 
 type StreamOptions = {
     flags?: string;
@@ -45,4 +47,6 @@ export interface FileSystemDriver {
     cpSync(source: string, destination: string, opts?: FS.CopySyncOptions): void
     renameSync(oldPath: string, newPath: string): void;
     readlinkSync(path: string, options?: EncodingOption | BufferEncodingOption): string | Buffer<ArrayBuffer>;
+    chmodSync(path: string, mode: Mode): void;
+    chownSync(path: string, uid: number, gid: number): void;
 }

@@ -1,4 +1,4 @@
-import FS, {EncodingOption, BufferEncodingOption} from "fs";
+import FS, {EncodingOption, BufferEncodingOption, Mode} from "fs";
 import Path from "path";
 import {Readable} from "stream";
 import YAML from "yaml";
@@ -248,5 +248,17 @@ export class FileSystem {
         }
 
         return link;
+    }
+
+    public chmod(path: string, mode: Mode): void {
+        const fullPath = this.path(path);
+
+        this.driver.chmodSync(fullPath, mode);
+    }
+
+    public chown(path: string, uid: number, gid: number): void {
+        const fullPath = this.path(path);
+
+        this.driver.chownSync(fullPath, uid, gid);
     }
 }
