@@ -1,8 +1,8 @@
-import FS, {EncodingOption, BufferEncodingOption} from "fs";
+import FS, {EncodingOption, BufferEncodingOption, Mode} from "fs";
 import Path from "path";
 import {Readable} from "stream";
 import YAML from "yaml";
-import {FileSystemDriver, ReadStreamOptions, WriteStreamOptions} from "../types";
+import {FileSystemDriver} from "../types";
 import {File} from "./File";
 
 
@@ -62,6 +62,12 @@ export class FileSystem {
         const fullPath = this.path(...parts);
 
         return this.driver.statSync(fullPath);
+    }
+
+    public lstat(path: string = ""): FS.Stats {
+        const fullPath = this.path(path);
+
+        return this.driver.lstatSync(fullPath);
     }
 
     public mkdir(path: string = "", options?: FS.MakeDirectoryOptions): void {
@@ -187,11 +193,11 @@ export class FileSystem {
         }
     }
 
-    public createWriteStream(path: string, options?: WriteStreamOptions): FS.WriteStream {
+    public createWriteStream(path: string, options?: FileSystemDriver.WriteStreamOptions): FS.WriteStream {
         return this.driver.createWriteStream(this.path(path), options);
     }
 
-    public createReadStream(path: string, options?: ReadStreamOptions): FS.ReadStream {
+    public createReadStream(path: string, options?: FileSystemDriver.ReadStreamOptions): FS.ReadStream {
         return this.driver.createReadStream(this.path(path), options);
     }
 
@@ -248,5 +254,31 @@ export class FileSystem {
         }
 
         return link;
+    }
+
+    public chmod(path: string, mode: Mode): void {
+        const fullPath = this.path(path);
+
+        this.driver.chmodSync(fullPath, mode);
+    }
+
+    public chown(path: string, uid: number, gid: number): void {
+        const fullPath = this.path(path);
+
+        this.driver.chownSync(fullPath, uid, gid);
+    }
+
+    public symlink(target: string, path: string, type?: FileSystemDriver.SymlinkType): void {
+        this.driver.symlinkSync(
+            Path.relative(Path.dirname(this.path(path)), this.path(target)),
+            this.path(path),
+            type
+        );
+    }
+
+    public unlink(path: string): void {
+        this.driver.unlinkSync(
+            this.path(path)
+        );
     }
 }

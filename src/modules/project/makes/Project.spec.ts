@@ -10,7 +10,7 @@ import {
     Scanner
 } from "../../../core";
 import {Project} from "./Project";
-import {ProjectRepository, ProjectRepositorySearchParams} from "../repositories/ProjectRepository";
+import {ProjectRepository} from "../repositories/ProjectRepository";
 
 
 describe("Project", (): void => {
@@ -21,15 +21,15 @@ describe("Project", (): void => {
                 throw new Error("Method not implemented.");
             }
 
-            public searchOne(params: ProjectRepositorySearchParams): Project {
+            public searchOne(_params: ProjectRepository.SearchParams): Project {
                 throw new Error("Method not implemented.");
             }
 
-            public search(params: ProjectRepositorySearchParams): Project[] {
+            public search(_params: ProjectRepository.SearchParams): Project[] {
                 throw new Error("Method not implemented.");
             }
 
-            public save(project: Project) {
+            public save(_project: Project) {
 
             }
         }

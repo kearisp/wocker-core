@@ -1,7 +1,7 @@
 {
     "name": "@wocker/core",
     "type": "commonjs",
-    "version": "1.0.31",
+    "version": "1.0.32",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Core of the Wocker",
     "license": "MIT",

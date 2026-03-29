@@ -4,6 +4,22 @@ import {Injectable} from "../decorators";
 
 @Injectable("CORE_PROCESS_SERVICE")
 export class ProcessService {
+    public get UID(): string | undefined {
+        if(process.getuid) {
+            return `${process.getuid()}`;
+        }
+
+        return undefined;
+    }
+
+    public get GID(): string | undefined {
+        if(process.getgid) {
+            return `${process.getgid()}`;
+        }
+
+        return undefined;
+    }
+
     public get stdin(): NodeJS.ReadStream {
         return process.stdin;
     }
