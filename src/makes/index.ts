@@ -4,3 +4,6 @@ export * from "./ConfigCollection";
 export * from "./FileSystem";
 export * from "./FileSystemManager";
 export * from "./Logger";
+export * from "./Version";
+export * from "./VersionRange";
+export * from "./VersionRule";

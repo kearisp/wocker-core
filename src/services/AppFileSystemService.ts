@@ -1,5 +1,5 @@
 import {Injectable, Inject} from "../decorators";
-import {FileSystemDriver} from "../types/FileSystemDriver";
+import {FileSystemDriver} from "../types";
 import {FileSystem} from "../makes/FileSystem";
 import {
     WOCKER_DATA_DIR_KEY,

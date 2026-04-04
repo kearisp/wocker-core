@@ -56,7 +56,6 @@ describe("AppService", (): void => {
     it("should correctly compare versions using isVersionGTE", async (): Promise<void> => {
         const {appService} = await getContext("1.0.24");
 
-        expect(appService.isVersionGTE("0.0.-1")).toBeTruthy();
         expect(appService.isVersionGTE("0.0.0")).toBeTruthy();
         expect(appService.isVersionGTE("1.0.23")).toBeTruthy();
         expect(appService.isVersionGTE("1.0.24")).toBeTruthy();

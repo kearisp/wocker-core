@@ -4,6 +4,7 @@ import {Global, Module} from "../decorators";
 import {Factory, ApplicationContext} from "../core";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
+import {AppService} from "./AppService";
 import {AppConfigService} from "./AppConfigService";
 import {ProcessService} from "./ProcessService";
 import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
@@ -35,6 +36,7 @@ describe("LogService", (): void => {
                     provide: FILE_SYSTEM_DRIVER_KEY,
                     useValue: vol
                 },
+                AppService,
                 AppConfigService,
                 AppFileSystemService,
                 LogService,

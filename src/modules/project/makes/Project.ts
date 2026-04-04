@@ -1,12 +1,8 @@
-import {EnvConfig} from "../../../types";
+import {EnvConfig, ProjectType} from "../../../types";
 import {AsyncStorage} from "../../../core/AsyncStorage";
 import {volumeParse} from "../../../utils/volumeParse";
 import {ProjectRepository} from "../repositories/ProjectRepository";
-import {
-    ServiceProperties,
-    ProjectType,
-    ProjectV1
-} from "../types";
+import {ServiceProperties, ProjectV1} from "../types";
 
 
 export class Project {

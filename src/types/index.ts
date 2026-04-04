@@ -11,6 +11,7 @@ export * from "./PresetRef";
 export * from "./PresetSource";
 export * from "./ProviderType";
 export * from "./ProjectRef";
+export * from "./ProjectType";
 export * from "./Type";
 export * from "./Volume";
 

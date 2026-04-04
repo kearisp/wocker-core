@@ -9,6 +9,7 @@ import {
     PRESET_SOURCE_EXTERNAL,
     PRESET_SOURCE_INTERNAL
 } from "../types";
+import {FileSystem} from "./FileSystem";
 
 
 export type AppConfigProperties = {
@@ -23,7 +24,7 @@ export type AppConfigProperties = {
     env?: EnvConfig;
 };
 
-export class AppConfig {
+export abstract class AppConfig {
     public debug?: boolean;
     public pm?: PackageManagerType;
     public keystore?: string;
@@ -209,14 +210,14 @@ export class AppConfig {
         }
     }
 
-    public getEnv(name: string): string|undefined;
-    public getEnv(name: string, defaultValue: string): string;
-    public getEnv(name: string, defaultValue?: string): string|undefined {
-        if(!this.env || !(name in this.env)) {
-            return defaultValue;
+    public getEnv(key: string, byDefault?: string): string|undefined;
+    public getEnv(key: string, byDefault: string): string;
+    public getEnv(key: string, byDefault?: string): string|undefined {
+        if(!this.env || !(key in this.env)) {
+            return byDefault;
         }
 
-        return this.env[name];
+        return this.env[key];
     }
 
     public setEnv(name: string, value: string): void {
@@ -239,6 +240,8 @@ export class AppConfig {
         }
     }
 
+    public abstract save(): void;
+
     public toObject(): AppConfigProperties {
         return {
             debug: this.debug,
@@ -257,5 +260,64 @@ export class AppConfig {
         const json = JSON.stringify(this.toObject(), null, 4);
 
         return `// Wocker config\nexports.config = ${json};`;
+    }
+
+    public static make(fs: FileSystem) {
+        let data: AppConfigProperties = {};
+
+        if(fs.exists("wocker.config.js")) {
+            try {
+                const {config} = require(fs.path("wocker.config.js"));
+
+                data = config;
+            }
+            catch(err) {
+                // TODO: Log somehow
+
+                let json = fs.readJSON("wocker.config.json");
+
+                if(typeof json === "string") {
+                    json = JSON.parse(json);
+                }
+
+                data = json;
+            }
+        }
+        else if(fs.exists("wocker.config.json")) {
+            data = fs.readJSON("wocker.config.json");
+        }
+        else if(fs.exists("wocker.json")) {
+            let json = fs.readJSON("wocker.json");
+
+            if(typeof json === "string") {
+                json = JSON.parse(json);
+            }
+
+            data = json;
+        }
+        else if(fs.exists("data.json")) {
+            data = fs.readJSON("data.json");
+        }
+
+        return new class extends AppConfig {
+            public save(): void {
+                if(!fs.exists()) {
+                    fs.mkdir("", {
+                        recursive: true
+                    });
+                }
+
+                fs.writeFile("wocker.config.js", this.toJsString());
+                fs.writeJSON("wocker.config.json", this.toObject()); // Backup file
+
+                if(fs.exists("data.json")) {
+                    fs.rm("data.json");
+                }
+
+                if(fs.exists("wocker.json")) {
+                    fs.rm("wocker.json");
+                }
+            }
+        }(data);
     }
 }

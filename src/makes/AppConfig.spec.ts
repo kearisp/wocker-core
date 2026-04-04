@@ -4,8 +4,12 @@ import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL} from "../types";
 
 
 describe("AppConfig", (): void => {
+    class TestConfig extends AppConfig {
+        public save() {}
+    }
+
     it("should correctly manage project operations", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         expect(config.getProject("test")).toBeUndefined();
 
@@ -28,7 +32,7 @@ describe("AppConfig", (): void => {
     });
 
     it("should handle plugin operations correctly", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         const PLUGIN_1 = "test-1",
               PLUGIN_2 = "test-2";
@@ -57,7 +61,7 @@ describe("AppConfig", (): void => {
     });
 
     it("should manage preset registration and unregistration properly", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         config.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/test");
 
@@ -80,7 +84,7 @@ describe("AppConfig", (): void => {
     });
 
     it("should handle metadata operations correctly", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         config.setMeta("TEST", "1");
         config.unsetMeta("TEST-2");
@@ -98,7 +102,7 @@ describe("AppConfig", (): void => {
     });
 
     it("should manage environment variables properly", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         config.setEnv("TEST", "value");
 
@@ -114,7 +118,7 @@ describe("AppConfig", (): void => {
     });
 
     it("should serialize config to object correctly", (): void => {
-        const config = new AppConfig({});
+        const config = new TestConfig({});
 
         expect(config.toObject()).toEqual({
             logLevel: "off"

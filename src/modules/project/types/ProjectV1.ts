@@ -1,5 +1,4 @@
-import {EnvConfig} from "../../../types";
-import {ProjectType} from "./ProjectType";
+import {EnvConfig, ProjectType} from "../../../types";
 import {ServiceProperties} from "./ServiceProperties";
 
 

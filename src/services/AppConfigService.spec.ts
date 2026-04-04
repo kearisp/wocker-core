@@ -1,15 +1,13 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
+import {Test} from "@wocker/testing";
 import {PRESET_SOURCE_EXTERNAL} from "../types";
 import {AppConfig, AppConfigProperties} from "../makes";
-import {Factory} from "../core";
-import {Module} from "../decorators";
+import {CoreModule} from "../core/CoreModule";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {LogService} from "./LogService";
 import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
-import {ProcessService} from "./ProcessService";
 
 
 describe("AppConfigService", (): void => {
@@ -18,32 +16,48 @@ describe("AppConfigService", (): void => {
     });
 
     const getContext = async (version = "1.0.0") => {
-        @Module({
-            providers: [
-                {
-                    provide: WOCKER_VERSION_KEY,
-                    useValue: version
-                },
-                {
-                    provide: WOCKER_DATA_DIR_KEY,
-                    useValue: WOCKER_DATA_DIR
-                },
-                {
-                    provide: FILE_SYSTEM_DRIVER_KEY,
-                    useValue: vol
-                },
-                AppConfigService,
-                AppService,
-                AppFileSystemService,
-                LogService,
-                ProcessService
-            ]
-        })
-        class TestModule {}
+        const context = await Test
+            .createTestingModule({
+                imports: [CoreModule]
+            })
+            .overrideProvider(WOCKER_VERSION_KEY).useValue(version)
+            .overrideProvider(WOCKER_DATA_DIR_KEY).useValue(WOCKER_DATA_DIR)
+            .overrideProvider(FILE_SYSTEM_DRIVER_KEY).useValue(vol)
+            .build();
 
-        const context = await Factory.create(TestModule);
+        // @Module({
+        //     providers: [
+        //         {
+        //             provide: WOCKER_VERSION_KEY,
+        //             useValue: version
+        //         },
+        //         {
+        //             provide: WOCKER_DATA_DIR_KEY,
+        //             useValue: WOCKER_DATA_DIR
+        //         },
+        //         {
+        //             provide: FILE_SYSTEM_DRIVER_KEY,
+        //             useValue: vol
+        //         },
+        //         AppService,
+        //         AppConfigService,
+        //         AppFileSystemService,
+        //         LogService,
+        //         // ProcessService
+        //         ProcessMockService
+        //     ]
+        // })
+        // class TestModule {}
+        //
+        // const context = await Factory.create(TestModule);
+
+        // const container = context.get(Container);
+
+        // container.replace(FILE_SYSTEM_DRIVER_KEY, {provide: FILE_SYSTEM_DRIVER_KEY, useValue: vol});
+        // container.replace(ProcessService, ProcessMockService);
 
         return {
+            appService: context.get(AppService),
             appConfigService: context.get(AppConfigService),
             fs: context.get(AppFileSystemService)
         };
@@ -58,7 +72,6 @@ describe("AppConfigService", (): void => {
     it("should correctly compare versions using isVersionGTE", async (): Promise<void> => {
         const {appConfigService} = await getContext("1.0.24");
 
-        expect(appConfigService.isVersionGTE("0.0.-1")).toBeTruthy();
         expect(appConfigService.isVersionGTE("0.0.0")).toBeTruthy();
         expect(appConfigService.isVersionGTE("1.0.23")).toBeTruthy();
         expect(appConfigService.isVersionGTE("1.0.24")).toBeTruthy();
@@ -192,16 +205,19 @@ describe("AppConfigService", (): void => {
         ]);
     });
 
-    // TODO
-    // it("should set and return correct working directory", async (): Promise<void> => {
-    //     const projectDir = "/home/wocker-test/projects/test-project";
-    //
-    //     const {appService} = await getContext();
-    //
-    //     appService.setPWD(projectDir);
-    //
-    //     expect(appService.pwd()).toBe(projectDir);
-    // });
+    it("should set and return correct working directory", async (): Promise<void> => {
+        const projectDir = "/home/wocker-test/projects/test-project";
+
+        vol.mkdirSync(projectDir, {
+            recursive: true
+        });
+
+        const {appConfigService} = await getContext();
+
+        appConfigService.setPWD(projectDir);
+
+        expect(appConfigService.pwd()).toBe(projectDir);
+    });
 
     it("should create wocker.config.js and save project configuration when adding new project", async (): Promise<void> => {
         const {appConfigService, fs} = await getContext();

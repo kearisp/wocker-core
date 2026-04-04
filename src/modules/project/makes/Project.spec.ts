@@ -11,6 +11,7 @@ import {
 } from "../../../core";
 import {Project} from "./Project";
 import {ProjectRepository} from "../repositories/ProjectRepository";
+import {ProjectType} from "../../../types";
 
 
 describe("Project", (): void => {
@@ -52,8 +53,8 @@ describe("Project", (): void => {
     it("should process env vars", (): void => {
         const project = new Project({
             name: "project",
-            type: "dockerfile",
-            path: "/path/to/project",
+            type: ProjectType.DOCKERFILE,
+            path: "/path/to/project"
         });
 
         const VALUE_KEY = "value";
@@ -74,7 +75,7 @@ describe("Project", (): void => {
     it("Domains", (): void => {
         const project = new Project({
             name: "Test",
-            type: "image",
+            type: ProjectType.IMAGE,
             imageName: "test",
             path: "/test/path"
         });
@@ -104,7 +105,7 @@ describe("Project", (): void => {
     it("Ports", (): void => {
         const project = new Project({
             name: "test",
-            type: "dockerfile",
+            type: ProjectType.DOCKERFILE,
             path: "/path/to/test/project"
         });
 
@@ -123,7 +124,7 @@ describe("Project", (): void => {
     it("Volumes", (): void => {
         const project = new Project({
             name: "test",
-            type: "dockerfile",
+            type: ProjectType.DOCKERFILE,
             path: "/path/to/test/project"
         });
 
@@ -154,7 +155,7 @@ describe("Project", (): void => {
     it("Meta", (): void => {
         const project = new Project({
             name: "project",
-            type: "dockerfile",
+            type: ProjectType.DOCKERFILE,
             path: "/path/to/project"
         });
 
@@ -186,13 +187,14 @@ describe("Project", (): void => {
     it("Extra host", (): void => {
         const project = new Project({
             name: "project",
-            type: "dockerfile",
+            type: ProjectType.DOCKERFILE,
             path: "/path/to/project"
         });
+
         const EXTRA_HOST_1 = "127.0.0.1";
         const EXTRA_HOST_2 = "127.0.0.2";
-        const EXTRA_DOMAIN_1 = 'test.host';
-        const EXTRA_DOMAIN_2 = 'test-2.host';
+        const EXTRA_DOMAIN_1 = "test.host";
+        const EXTRA_DOMAIN_2 = "test-2.host";
 
         project.addExtraHost(EXTRA_HOST_1, EXTRA_DOMAIN_1);
 

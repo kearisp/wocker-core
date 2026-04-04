@@ -1,13 +1,13 @@
 import {format as dateFormat} from "date-fns/format";
 import {Injectable} from "../decorators";
-import {AppConfigService} from "./AppConfigService";
+import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
 
 
 @Injectable("LOG_SERVICE")
 export class LogService {
     public constructor(
-        protected readonly appConfigService: AppConfigService,
+        protected readonly appService: AppService,
         protected readonly fs: AppFileSystemService
     ) {}
 
@@ -16,7 +16,7 @@ export class LogService {
     }
 
     protected _log(type: string, ...data: any[]): void {
-        if(type === "debug" && !this.appConfigService.config.debug) {
+        if(type === "debug" && !this.appService.debug) {
             return;
         }
 
