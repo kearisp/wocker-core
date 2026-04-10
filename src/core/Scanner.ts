@@ -4,11 +4,8 @@ import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
 import {CoreModule} from "./CoreModule";
-import {
-    IS_GLOBAL_METADATA,
-    MODULE_METADATA
-} from "../env";
 import {InstanceWrapper} from "./InstanceWrapper";
+import {IS_GLOBAL_METADATA, MODULE_METADATA} from "../env";
 
 
 export class Scanner {

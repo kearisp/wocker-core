@@ -1,12 +1,14 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {Test} from "@wocker/testing";
-import {PRESET_SOURCE_EXTERNAL} from "../types";
+import {Module} from "../decorators";
 import {AppConfig, AppConfigProperties} from "../makes";
-import {CoreModule} from "../core/CoreModule";
+import {Factory, Container} from "../core";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
+import {LogService} from "./LogService";
+import {ProcessService} from "./ProcessService";
+import {PRESET_SOURCE_EXTERNAL} from "../types";
 import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
@@ -16,45 +18,50 @@ describe("AppConfigService", (): void => {
     });
 
     const getContext = async (version = "1.0.0") => {
-        const context = await Test
-            .createTestingModule({
-                imports: [CoreModule]
-            })
-            .overrideProvider(WOCKER_VERSION_KEY).useValue(version)
-            .overrideProvider(WOCKER_DATA_DIR_KEY).useValue(WOCKER_DATA_DIR)
-            .overrideProvider(FILE_SYSTEM_DRIVER_KEY).useValue(vol)
-            .build();
+        // const context = await Test
+        //     .createTestingModule({
+        //         imports: [CoreModule]
+        //     })
+        //     .overrideProvider(WOCKER_VERSION_KEY).useValue(version)
+        //     .overrideProvider(WOCKER_DATA_DIR_KEY).useValue(WOCKER_DATA_DIR)
+        //     .overrideProvider(FILE_SYSTEM_DRIVER_KEY).useValue(vol)
+        //     .build();
 
-        // @Module({
-        //     providers: [
-        //         {
-        //             provide: WOCKER_VERSION_KEY,
-        //             useValue: version
-        //         },
-        //         {
-        //             provide: WOCKER_DATA_DIR_KEY,
-        //             useValue: WOCKER_DATA_DIR
-        //         },
-        //         {
-        //             provide: FILE_SYSTEM_DRIVER_KEY,
-        //             useValue: vol
-        //         },
-        //         AppService,
-        //         AppConfigService,
-        //         AppFileSystemService,
-        //         LogService,
-        //         // ProcessService
-        //         ProcessMockService
-        //     ]
-        // })
-        // class TestModule {}
-        //
-        // const context = await Factory.create(TestModule);
+        @Module({
+            providers: [
+                {
+                    provide: WOCKER_VERSION_KEY,
+                    useValue: version
+                },
+                {
+                    provide: WOCKER_DATA_DIR_KEY,
+                    useValue: WOCKER_DATA_DIR
+                },
+                {
+                    provide: FILE_SYSTEM_DRIVER_KEY,
+                    useValue: vol
+                },
+                AppService,
+                AppConfigService,
+                AppFileSystemService,
+                LogService,
+                ProcessService
+            ]
+        })
+        class TestModule {}
 
-        // const container = context.get(Container);
+        const context = await Factory.create(TestModule);
 
-        // container.replace(FILE_SYSTEM_DRIVER_KEY, {provide: FILE_SYSTEM_DRIVER_KEY, useValue: vol});
-        // container.replace(ProcessService, ProcessMockService);
+        const container = context.get(Container);
+
+        container.replace(WOCKER_VERSION_KEY, {
+            provide: WOCKER_VERSION_KEY,
+            useValue: version
+        });
+        container.replace(FILE_SYSTEM_DRIVER_KEY, {
+            provide: FILE_SYSTEM_DRIVER_KEY,
+            useValue: vol
+        });
 
         return {
             appService: context.get(AppService),
@@ -213,6 +220,20 @@ describe("AppConfigService", (): void => {
         });
 
         const {appConfigService} = await getContext();
+
+        let pwd = projectDir;
+
+        jest.spyOn(process, "chdir").mockImplementation((path) => {
+            if(!vol.existsSync(path)) {
+                throw new Error(`ENOENT: no such file or directory, chdir '${pwd}' -> '${path}'`);
+            }
+
+            pwd = path
+        });
+
+        jest.spyOn(process, "cwd").mockImplementation(() => {
+            return pwd;
+        });
 
         appConfigService.setPWD(projectDir);
 

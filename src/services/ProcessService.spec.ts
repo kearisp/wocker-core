@@ -1,4 +1,5 @@
 import {describe, it, expect, jest, beforeEach} from "@jest/globals";
+import Path from "path";
 import {Factory} from "../core";
 import {Module} from "../decorators";
 import {ProcessService} from "./ProcessService";
@@ -24,7 +25,7 @@ describe("ProcessService", () => {
         it("should return path joined with current directory", () => {
             const subPath = "test-path";
 
-            expect(processService.pwd(subPath)).toBe(require("path").join(process.cwd(), subPath));
+            expect(processService.pwd(subPath)).toBe(Path.join(process.cwd(), subPath));
         });
     });
 
@@ -45,6 +46,7 @@ describe("ProcessService", () => {
         it("should call chdir with absolute path", () => {
             const spy = jest.spyOn(processService, "chdir").mockImplementation(() => undefined),
                   testPath = "/absolute/path";
+
             processService.cd(testPath);
 
             expect(spy).toHaveBeenCalledWith(testPath);
@@ -58,7 +60,7 @@ describe("ProcessService", () => {
 
             processService.cd(testPath);
 
-            expect(spy).toHaveBeenCalledWith(require("path").join(process.cwd(), testPath));
+            expect(spy).toHaveBeenCalledWith(Path.join(process.cwd(), testPath));
 
             spy.mockRestore();
         });
@@ -74,6 +76,27 @@ describe("ProcessService", () => {
             expect(spy).toHaveBeenCalledWith(chunk);
 
             spy.mockRestore();
+        });
+    });
+
+    describe("setEnv", () => {
+        it("should set variable to process.env", () => {
+            const KEY = "TEST",
+                  KEY_2 = "TEST_2",
+                  VALUE = "bar";
+
+            processService.setEnv(KEY, VALUE);
+
+            expect(process.env).toEqual(
+                expect.objectContaining({
+                    [KEY]: VALUE
+                })
+            );
+
+            expect(process.env).not.toHaveProperty(KEY_2);
+
+            expect(processService.getEnv(KEY)).toBe(VALUE);
+            expect(processService.getEnv(KEY_2, VALUE)).toBe(VALUE);
         });
     });
 });

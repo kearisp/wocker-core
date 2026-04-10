@@ -5,9 +5,9 @@ import {Factory} from "../core";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
-import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 import {ProcessService} from "./ProcessService";
 import {AppConfigService} from "./AppConfigService";
+import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
 describe("AppService", (): void => {
@@ -51,6 +51,17 @@ describe("AppService", (): void => {
         const {appService} = await getContext();
 
         expect(appService.version).toBe("1.0.0");
+    });
+
+    it("should correctly compare versions using isVersionGT", async (): Promise<void> => {
+        const {appService} = await getContext("1.1.0");
+
+        expect(appService.isVersionGT("0.0.0")).toBeTruthy();
+        expect(appService.isVersionGT("1.0.0")).toBeTruthy();
+        expect(appService.isVersionGT("1.0.10")).toBeTruthy();
+        expect(appService.isVersionGT("1.1.0")).toBeFalsy();
+        expect(appService.isVersionGT("1.1.1")).toBeFalsy();
+        expect(appService.isVersionGT("1.2.0")).toBeFalsy();
     });
 
     it("should correctly compare versions using isVersionGTE", async (): Promise<void> => {

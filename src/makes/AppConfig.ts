@@ -262,7 +262,7 @@ export abstract class AppConfig {
         return `// Wocker config\nexports.config = ${json};`;
     }
 
-    public static make(fs: FileSystem) {
+    public static make(fs: FileSystem): AppConfig {
         let data: AppConfigProperties = {};
 
         if(fs.exists("wocker.config.js")) {
