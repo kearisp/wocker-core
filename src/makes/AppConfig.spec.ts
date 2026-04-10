@@ -120,8 +120,6 @@ describe("AppConfig", (): void => {
     it("should serialize config to object correctly", (): void => {
         const config = new TestConfig({});
 
-        expect(config.toObject()).toEqual({
-            logLevel: "off"
-        });
+        expect(config.toObject()).toEqual({});
     });
 });

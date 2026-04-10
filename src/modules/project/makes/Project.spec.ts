@@ -1,8 +1,9 @@
-import {describe, it, expect} from "@jest/globals";
+import {describe, it, expect, beforeEach} from "@jest/globals";
+import {vol} from "memfs";
 import {volumeFormat} from "../../../utils/volumeFormat";
 import {
-    Injectable,
-    Module
+    Module,
+    Global
 } from "../../../decorators";
 import {
     AsyncStorage,
@@ -12,31 +13,15 @@ import {
 import {Project} from "./Project";
 import {ProjectRepository} from "../repositories/ProjectRepository";
 import {ProjectType} from "../../../types";
+import {WOCKER_DATA_DIR, FILE_SYSTEM_DRIVER_KEY} from "../../../env";
 
 
 describe("Project", (): void => {
     const getContext = async () => {
-        @Injectable("PROJECT_REPOSITORY")
-        class TestProjectRepository extends ProjectRepository {
-            public getByName(name: string): Project {
-                throw new Error("Method not implemented.");
-            }
-
-            public searchOne(_params: ProjectRepository.SearchParams): Project {
-                throw new Error("Method not implemented.");
-            }
-
-            public search(_params: ProjectRepository.SearchParams): Project[] {
-                throw new Error("Method not implemented.");
-            }
-
-            public save(_project: Project) {
-
-            }
-        }
-
+        @Global()
         @Module({
-            providers: [TestProjectRepository]
+            providers: [ProjectRepository],
+            exports: [ProjectRepository]
         })
         class TestModule {}
 
@@ -45,17 +30,39 @@ describe("Project", (): void => {
 
         await scanner.scan(TestModule);
 
-        AsyncStorage.enterWith(container);
+        container.replace(FILE_SYSTEM_DRIVER_KEY, {
+            provide: FILE_SYSTEM_DRIVER_KEY,
+            useValue: vol
+        });
 
         return container;
     }
 
-    it("should process env vars", (): void => {
-        const project = new Project({
-            name: "project",
-            type: ProjectType.DOCKERFILE,
-            path: "/path/to/project"
-        });
+    beforeEach(() => {
+        vol.fromJSON({
+            "wocker.config.json": JSON.stringify({
+                projects: [
+                    {
+                        name: "test-project",
+                        path: "/home/wocker/projects/test-project"
+                    }
+                ]
+            }),
+            "projects/test-project/config.json": JSON.stringify({
+                type: ProjectType.DOCKERFILE
+            })
+        }, WOCKER_DATA_DIR);
+    });
+
+    it("should process env vars", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const VALUE_KEY = "value";
         const MISSING_KEY = "missing";
@@ -72,13 +79,15 @@ describe("Project", (): void => {
         project.unsetEnv(VALUE_KEY);
     });
 
-    it("Domains", (): void => {
-        const project = new Project({
-            name: "Test",
-            type: ProjectType.IMAGE,
-            imageName: "test",
-            path: "/test/path"
-        });
+    it("Domains", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const domain1 = "test.com";
         const domain2 = "test.net";
@@ -102,12 +111,15 @@ describe("Project", (): void => {
         expect(project.domains).toEqual([]);
     });
 
-    it("Ports", (): void => {
-        const project = new Project({
-            name: "test",
-            type: ProjectType.DOCKERFILE,
-            path: "/path/to/test/project"
-        });
+    it("Ports", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const hostPort = 8080;
         const containerPort = 80;
@@ -121,12 +133,15 @@ describe("Project", (): void => {
         expect(project.ports).toEqual([]);
     });
 
-    it("Volumes", (): void => {
-        const project = new Project({
-            name: "test",
-            type: ProjectType.DOCKERFILE,
-            path: "/path/to/test/project"
-        });
+    it("Volumes", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const volume = volumeFormat({
             source: "./",
@@ -152,12 +167,15 @@ describe("Project", (): void => {
         expect(project.volumes).toEqual([]);
     });
 
-    it("Meta", (): void => {
-        const project = new Project({
-            name: "project",
-            type: ProjectType.DOCKERFILE,
-            path: "/path/to/project"
-        });
+    it("Meta", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const VALUE_KEY = "value";
         const MISSING_KEY = "missing";
@@ -184,12 +202,15 @@ describe("Project", (): void => {
         expect(project.getMeta(VALUE_KEY)).toBe("false");
     });
 
-    it("Extra host", (): void => {
-        const project = new Project({
-            name: "project",
-            type: ProjectType.DOCKERFILE,
-            path: "/path/to/project"
-        });
+    it("Extra host", async (): Promise<void> => {
+        const container = await getContext();
+
+        AsyncStorage.enterWith(container);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
 
         const EXTRA_HOST_1 = "127.0.0.1";
         const EXTRA_HOST_2 = "127.0.0.2";

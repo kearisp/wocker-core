@@ -3,6 +3,7 @@ import {Version} from "../makes/Version";
 import {AppConfig} from "../makes/AppConfig";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {ProcessService} from "./ProcessService";
+import {LogService} from "./LogService";
 import {ProjectRef, PluginRef, PresetRef, PresetSource, ProjectType} from "../types";
 import {WOCKER_VERSION_KEY} from "../env";
 
@@ -23,8 +24,9 @@ export class AppService {
     public constructor(
         @Inject(WOCKER_VERSION_KEY)
         public readonly version: string,
+        public readonly fs: AppFileSystemService,
         protected readonly processService: ProcessService,
-        public readonly fs: AppFileSystemService
+        protected readonly logService: LogService
     ) {}
 
     public get config(): AppConfig {
@@ -72,6 +74,10 @@ export class AppService {
         }
 
         return this.mapTypes;
+    }
+
+    public getProject(name: string): ProjectRef | undefined {
+        return this.config.getProject(name);
     }
 
     public addProject(name: string, path: string): void {

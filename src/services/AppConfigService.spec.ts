@@ -1,7 +1,7 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
 import {Module} from "../decorators";
-import {AppConfig, AppConfigProperties} from "../makes";
+import {AppConfig} from "../makes";
 import {Factory, Container} from "../core";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
@@ -86,8 +86,7 @@ describe("AppConfigService", (): void => {
     });
 
     it("should successfully parse projects configuration from wocker.config.js file", async (): Promise<void> => {
-        const config: AppConfigProperties = {
-            logLevel: "info",
+        const config: AppConfig.Data = {
             projects: [
                 {
                     name: "project1",
@@ -103,7 +102,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "project1",
@@ -141,7 +139,6 @@ describe("AppConfigService", (): void => {
     it("should successfully parse config from wocker.config.json file", async (): Promise<void> => {
         vol.fromJSON({
             "wocker.config.json": JSON.stringify({
-                logLevel: "info",
                 projects: [
                     {
                         name: "test",
@@ -153,7 +150,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
@@ -166,7 +162,6 @@ describe("AppConfigService", (): void => {
         vol.fromJSON({
             "wocker.json": JSON.stringify(
                 JSON.stringify({
-                    logLevel: "info",
                     projects: [
                         {
                             name: "test",
@@ -179,7 +174,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
@@ -191,7 +185,6 @@ describe("AppConfigService", (): void => {
     it("should successfully parse config from data.json file", async (): Promise<void> => {
         vol.fromJSON({
             "data.json": JSON.stringify({
-                logLevel: "info",
                 projects: [
                     {
                         id: "test",
@@ -203,7 +196,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",

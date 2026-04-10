@@ -2,6 +2,7 @@ export * from "./DynamicModule";
 export * from "./EnvConfig";
 export * from "./FileSystemDriver";
 export * from "./InjectionToken";
+export * from "./LogLevel";
 export * from "./ModuleMetadata";
 export * from "./PackageManagerType";
 export * from "./PickProperties";

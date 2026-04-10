@@ -1,62 +1,93 @@
-import {EnvConfig, ProjectType} from "../../../types";
 import {AsyncStorage} from "../../../core/AsyncStorage";
+import {EnvConfig, ProjectType} from "../../../types";
+import {AppService} from "../../../services/AppService";
 import {volumeParse} from "../../../utils/volumeParse";
 import {ProjectRepository} from "../repositories/ProjectRepository";
-import {ServiceProperties, ProjectV1} from "../types";
+import {ProjectConfigScope} from "../types";
+import {ProjectConfig} from "./ProjectConfig";
 
 
 export class Project {
-    /** @deprecated */
-    public id?: string;
-    public name!: string;
-    public type!: ProjectType;
-    public path!: string;
-    public cmd?: string[];
-    public imageName?: string;
-    public dockerfile?: string;
-    public composefile?: string;
-    public preset?: string;
-    public presetMode?: "global" | "project";
-    public scripts?: {
-        [script: string]: string;
-    };
-    public services: {
-        [name: string]: ServiceProperties;
-    };
-    public buildArgs: EnvConfig;
-    public env: EnvConfig;
-    public metadata: EnvConfig;
-    public ports: string[];
-    public extraHosts: EnvConfig;
-    public volumes: string[];
+    protected configs: Record<ProjectConfigScope, ProjectConfig>;
 
-    public constructor(data: ProjectV1) {
-        const {
-            name,
-            services = {},
-            buildArgs = {},
-            env = {},
-            metadata = {},
-            ports = [],
-            extraHosts = {},
-            volumes = [],
-            ...rest
-        } = data;
+    public constructor(
+        public name: string,
+        public path: string
+    ) {
+        this.configs = {
+            [ProjectConfigScope.APP]: this.getConfig(ProjectConfigScope.APP),
+            [ProjectConfigScope.LOCAL]: this.getConfig(ProjectConfigScope.LOCAL)
+        };
+    }
 
-        this.id = this.name = name;
-        this.services = services;
-        this.buildArgs = buildArgs;
-        this.env = env;
-        this.metadata = metadata;
-        this.ports = ports;
-        this.extraHosts = extraHosts;
-        this.volumes = volumes;
+    protected getConfig(scope: ProjectConfigScope) {
+        const container = AsyncStorage.getContainer(),
+              projectRepository = container.get(ProjectRepository);
 
-        Object.assign(this, rest);
+        return projectRepository.getConfig(this.name, scope);
+    }
+
+    public get type(): ProjectType {
+        return this.configs.app.type || this.configs.project.type!;
+    }
+
+    public set type(type: ProjectType) {
+        this.configs.app.type = type;
     }
 
     public get containerName(): string {
         return `${this.name}.workspace`;
+    }
+
+    public get scripts() {
+        return {
+            ...this.configs.project.scripts,
+            ...this.configs.app.scripts
+        };
+    }
+
+    public get preset() {
+        return this.configs.app.preset;
+    }
+
+    public set preset(preset: string | undefined) {
+        this.configs.app.preset = preset;
+    }
+
+    public get presetMode() {
+        return this.configs.app.presetMode!;
+    }
+
+    public set presetMode(mode: "project" | "global") {
+        this.configs.app.presetMode = mode;
+    }
+
+    public get imageName(): string | undefined {
+        return this.configs.app.image;
+    }
+
+    public set imageName(image: string | undefined) {
+        this.configs.app.image = image;
+    }
+
+    public get dockerfile() {
+        return this.configs.project.dockerfile || this.configs.app.dockerfile;
+    }
+
+    public set dockerfile(dockerfile: string | undefined) {
+        this.configs.app.dockerfile = dockerfile;
+    }
+
+    public get composefile() {
+        return this.configs.project.composefile || this.configs.app.composefile;
+    }
+
+    public set composefile(composefile: string | undefined) {
+        this.configs.app.composefile = composefile;
+    }
+
+    public get cmd() {
+        return this.configs.app.cmd;
     }
 
     public get domains(): string[] {
@@ -100,9 +131,29 @@ export class Project {
         this.unsetEnv("VIRTUAL_HOST");
     }
 
+    public get volumes(): string[] {
+        return [
+            ...this.configs.project.volumes.filter((volume) => {
+                return !this.configs.app.getVolumeByDestination(volumeParse(volume).destination);
+            }),
+            ...this.configs.app.volumes
+        ];
+    }
+
+    public get ports(): string[] {
+        return [
+            ...this.configs.project.ports,
+            ...this.configs.app.ports
+        ];
+    }
+
+    public set ports(ports: string[]) {
+        this.configs.app.ports = ports;
+    }
+
     public linkPort(hostPort: number, containerPort: number): void {
-        this.ports = [
-            ...this.ports.filter((link: string) => {
+        this.configs.app.ports = [
+            ...this.configs.app.ports.filter((link: string) => {
                 return link !== `${hostPort}:${containerPort}`;
             }),
             `${hostPort}:${containerPort}`
@@ -110,216 +161,128 @@ export class Project {
     }
 
     public unlinkPort(hostPort: number, containerPort: number): void {
-        if(!this.ports) {
-            return;
-        }
-
-        this.ports = this.ports.filter((link: string) => {
+        this.configs.app.ports = this.configs.app.ports.filter((link: string) => {
             return link !== `${hostPort}:${containerPort}`;
         });
     }
 
+    public get buildArgs() {
+        return {
+            ...this.configs.project.buildArgs,
+            ...this.configs.app.buildArgs
+        };
+    }
+
+    public set buildArgs(buildArgs: EnvConfig) {
+        this.configs.app.buildArgs = buildArgs;
+    }
+
     public setBuildArg(name: string, value: string, service?: string): void {
         if(service) {
-            if(!this.services[service]) {
+            if(!this.configs.app.services[service]) {
                 throw new Error(`Service "${service}" not found`);
             }
 
-            if(!this.services[service].buildArgs) {
-                this.services[service].buildArgs = {};
+            if(!this.configs.app.services[service].buildArgs) {
+                this.configs.app.services[service].buildArgs = {};
             }
 
-            this.services[service].buildArgs[name] = value;
+            this.configs.app.services[service].buildArgs[name] = value;
 
             return;
         }
 
-        this.buildArgs[name] = value;
+        this.configs.app.buildArgs[name] = value;
     }
 
     public unsetBuildArg(name: string, service?: string): void {
-        if(service) {
-            if(!this.services[service]) {
-                throw new Error(`Service "${service}" not found`);
-            }
+        this.configs.app.unsetBuildArg(name, service);
+    }
 
-            if(this.services[service].buildArgs && name in this.services[service].buildArgs) {
-                delete this.services[service].buildArgs[name];
+    public get env() {
+        return {
+            ...this.configs.project.env,
+            ...this.configs.app.env
+        };
+    }
 
-                if(Object.keys(this.services[service].buildArgs).length === 0) {
-                    delete this.services[service].buildArgs;
-                }
-            }
-
-            return;
-        }
-
-        if(name in this.buildArgs) {
-            delete this.buildArgs[name];
-        }
+    public set env(env: EnvConfig) {
+        this.configs.app.env = env;
     }
 
     public hasEnv(name: string): boolean {
-        if(!this.env) {
-            return false;
-        }
-
-        return this.env.hasOwnProperty(name);
+        return this.configs.app.hasEnv(name) || this.configs.project.hasEnv(name);
     }
 
     public getEnv(key: string): string | undefined;
     public getEnv(key: string, byDefault: string): string;
-    public getEnv(name: string, defaultValue?: string): string|undefined {
-        const {
-            [name]: value = defaultValue
-        } = this.env || {};
-
-        return value;
+    public getEnv(key: string, byDefault?: string): string | undefined {
+        return this.configs.app.env[key] || this.configs.project.env[key] || byDefault;
     }
 
-    public setEnv(name: string, value: string|boolean, service?: string): void {
-        if(!this.env) {
-            this.env = {};
-        }
-
-        if(service) {
-            if(!this.services[service]) {
-                throw new Error(`Service "${service}" not found`);
-            }
-
-            if(!this.services[service].env) {
-                this.services[service].env = {};
-            }
-
-            this.services[service].env[name] = typeof value === "boolean"
-                ? (value ? "true" : "false")
-                : value;
-
-            return;
-        }
-
-        this.env[name] = typeof value === "boolean"
-            ? (value ? "true" : "false")
-            : value;
+    public setEnv(key: string, value: string | boolean, service?: string): void {
+        this.configs.app.setEnv(key, value, service);
     }
 
-    public unsetEnv(name: string, service?: string): void {
-        if(service) {
-            if(!this.services[service]) {
-                throw new Error(`Service "${service}" not found`);
-            }
-
-            if(this.services[service].env && name in this.services[service].env) {
-                delete this.services[service].env[name];
-
-                if(Object.keys(this.services[service].env).length === 0) {
-                    delete this.services[service].env;
-                }
-            }
-
-            return;
-        }
-
-        if(name in this.env) {
-            delete this.env[name];
-        }
+    public unsetEnv(key: string, service?: string): void {
+        this.configs.app.unsetEnv(key, service);
     }
 
-    public hasMeta(name: string): boolean {
-        return !!this.metadata && this.metadata.hasOwnProperty(name);
+    public hasMeta(key: string): boolean {
+        return this.configs.app.metadata.hasOwnProperty(key) || this.configs.project.metadata.hasOwnProperty(key);
     }
 
-    public getMeta<D = string|undefined>(name: string, defaultValue?: D): D {
-        const {
-            [name]: value = defaultValue
-        } = this.metadata || {};
-
-        return value as D;
+    public getMeta(key: string): string | undefined;
+    public getMeta(key: string, byDefault: string): string;
+    public getMeta(key: string, byDefault?: string): string | undefined {
+        return this.configs.app.metadata[key] || this.configs.project.metadata[key] || byDefault;
     }
 
-    public setMeta(name: string, value: string|boolean): void {
-        if(!this.metadata) {
-            this.metadata = {};
-        }
-
-        this.metadata[name] = typeof value === "boolean"
+    public setMeta(name: string, value: string | boolean): void {
+        this.configs.app.metadata[name] = typeof value === "boolean"
             ? (value ? "true" : "false")
             : value;
     }
 
     public unsetMeta(name: string): void {
-        if(name in this.metadata) {
-            delete this.metadata[name];
+        if(name in this.configs.app.metadata) {
+            delete this.configs.app.metadata[name];
         }
     }
 
-    public getVolumeBySource(source: string): string|undefined {
-        return (this.volumes || []).find((volume: string) => {
-            return volumeParse(volume).source === source;
-        });
+    public getVolumeBySource(source: string): string | undefined {
+        return this.configs.project.getVolumeBySource(source) || this.configs.app.getVolumeBySource(source);
     }
 
-    public getVolumeByDestination(destination: string): string|undefined {
-        return (this.volumes || []).find((volume: string) => {
-            return volumeParse(volume).destination === destination;
-        });
+    public getVolumeByDestination(destination: string): string | undefined {
+        return this.configs.project.getVolumeByDestination(destination) || this.configs.app.getVolumeByDestination(destination);
     }
 
     public volumeMount(...volumes: string[]): void {
-        if(volumes.length === 0) {
-            return;
-        }
-
-        const [volume, ...restVolumes] = volumes;
-
-        const {destination} = volumeParse(volume);
-
-        this.volumes = [
-            ...(this.volumes || []).filter((v) => {
-                return v !== this.getVolumeByDestination(destination);
-            }),
-            volume
-        ];
-
-        this.volumeMount(...restVolumes);
+        this.configs.app.volumeMount(...volumes);
     }
 
     public volumeUnmount(...volumes: string[]): void {
-        if(!this.volumes || volumes.length === 0) {
-            return;
-        }
-
-        const [volume, ...restVolumes] = volumes;
-
-        const v = volumeParse(volume);
-
-        this.volumes = this.volumes.filter((mounted): boolean => {
-            const m = volumeParse(mounted);
-
-            return v.source !== m.source && v.destination !== m.destination;
-        });
-
-        if(this.volumes.length === 0) {
-            return;
-        }
-
-        this.volumeUnmount(...restVolumes);
+        this.configs.app.volumeUnmount(...volumes);
     }
 
-    public addExtraHost(host: string, domain: string): void {
-        if(!this.extraHosts) {
-            this.extraHosts = {};
-        }
+    public get extraHosts() {
+        return {
+            ...this.configs.project.extraHosts,
+            ...this.configs.app.extraHosts
+        };
+    };
 
-        this.extraHosts[host] = domain;
+    public addExtraHost(host: string, domain: string): void {
+        this.configs.app.addExtraHost(host, domain);
     }
 
     public removeExtraHost(host: string): void {
-        if(!this.extraHosts || !this.extraHosts[host]) {
-            return;
-        }
+        this.configs.app.removeExtraHost(host);
+    }
 
-        delete this.extraHosts[host];
+    public get services() {
+        return this.configs.app.services;
     }
 
     public getSecret(key: string): Promise<string | undefined>;
@@ -347,30 +310,16 @@ export class Project {
 
     public save(): void {
         const container = AsyncStorage.getContainer(),
+              appService = container.get(AppService),
               projectRepository = container.get(ProjectRepository);
 
-        projectRepository.save(this);
-    }
+        appService.addProject(this.name, this.path);
 
-    public toObject(): ProjectV1 {
-        return {
-            name: this.name,
-            type: this.type,
-            path: this.path,
-            imageName: this.imageName,
-            dockerfile: this.dockerfile,
-            composefile: this.composefile,
-            preset: this.preset,
-            presetMode: this.presetMode,
-            cmd: this.cmd,
-            scripts: this.scripts,
-            services: Object.keys(this.services).length > 0 ? this.services : undefined,
-            buildArgs: Object.keys(this.buildArgs).length > 0 ? this.buildArgs : undefined,
-            env: Object.keys(this.env).length > 0 ? this.env : undefined,
-            metadata: Object.keys(this.metadata).length > 0 ? this.metadata : undefined,
-            ports: this.ports.length > 0 ? this.ports : undefined,
-            extraHosts: Object.keys(this.extraHosts).length ? this.extraHosts : undefined,
-            volumes: this.volumes.length > 0 ? this.volumes : undefined,
-        };
+        this.configs.app.save();
+
+        // const container = AsyncStorage.getContainer(),
+        //       projectRepository = container.get(ProjectRepository);
+        //
+        // projectRepository.save(this);
     }
 }

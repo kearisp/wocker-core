@@ -48,7 +48,7 @@ export class ProcessService {
         return this.stdout.write(chunk);
     }
 
-    public getEnv(key: string, byDefault?: string): string | undefined;
+    public getEnv(key: string): string | undefined;
     public getEnv(key: string, byDefault: string): string;
     public getEnv(key: string, byDefault?: string): string | undefined {
         if(key in process.env) {

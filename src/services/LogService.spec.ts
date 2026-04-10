@@ -7,6 +7,7 @@ import {LogService} from "./LogService";
 import {AppService} from "./AppService";
 import {AppConfigService} from "./AppConfigService";
 import {ProcessService} from "./ProcessService";
+import {LogLevel} from "../types";
 import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
@@ -49,32 +50,35 @@ describe("LogService", (): void => {
     });
 
     it.each<{
-        method: "log" | "info" | "warn" | "debug" | "error";
+        method: LogLevel;
         message: string;
     }>([
         {
-            method: "log",
+            method: LogLevel.LOG,
             message: "Default log"
         },
         {
-            method: "info",
+            method: LogLevel.INFO,
             message: "Info"
         },
         {
-            method: "warn",
+            method: LogLevel.WARNING,
             message: "Warning"
         },
         {
-            method: "debug",
+            method: LogLevel.DEBUG,
             message: "Debug"
         },
         {
-            method: "error",
+            method: LogLevel.ERROR,
             message: "Error"
         }
     ])("should write $method message to log file", async ({method, message}): Promise<void> => {
-        const logService = context.get(LogService),
+        const processService = context.get(ProcessService),
+              logService = context.get(LogService),
               fs = context.get(AppFileSystemService);
+
+        processService.setEnv("WS_LOG_LEVEL", LogLevel.DEBUG);
 
         expect(fs.exists("ws.log")).toBeFalsy();
 
@@ -87,9 +91,37 @@ describe("LogService", (): void => {
         expect(fs.readFile("ws.log").toString()).toContain(`${method}: ${message}`);
     });
 
-    it("should clear log file content", async (): Promise<void> => {
-        const logService = context.get(LogService),
+    it.each([
+        {
+            method: LogLevel.INFO,
+            level: LogLevel.ERROR
+        }
+    ])("shouldn't write $method message to log file", async ({method, level}): Promise<void> => {
+        const processService = context.get(ProcessService),
+              logService = context.get(LogService),
               fs = context.get(AppFileSystemService);
+
+        processService.setEnv("WS_LOG_LEVEL", level);
+
+        expect(fs.exists("ws.log")).toBeFalsy();
+
+        const methodMessage = `Some ${method}`,
+              levelMessage = `Level ${level} message`;
+
+        logService[level](levelMessage);
+        logService[method](methodMessage);
+
+        expect(fs.exists("ws.log")).toBeTruthy();
+        expect(fs.readFile("ws.log").toString()).not.toContain(methodMessage);
+        expect(fs.readFile("ws.log").toString()).toContain(levelMessage);
+    });
+
+    it("should clear log file content", async (): Promise<void> => {
+        const processService = context.get(ProcessService),
+              logService = context.get(LogService),
+              fs = context.get(AppFileSystemService);
+
+        processService.setEnv("WS_LOG_LEVEL", LogLevel.INFO);
 
         logService.info("Foo bar");
 

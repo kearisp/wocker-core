@@ -7,7 +7,7 @@ import {
 } from "../env";
 
 
-@Injectable()
+@Injectable("APP_FILE_SYSTEM_SERVICE")
 export class AppFileSystemService extends FileSystem {
     public constructor(
         @Inject(WOCKER_DATA_DIR_KEY)

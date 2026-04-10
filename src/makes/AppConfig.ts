@@ -1,3 +1,4 @@
+import {FileSystem} from "./FileSystem";
 import {
     EnvConfig,
     PackageManagerType,
@@ -9,33 +10,19 @@ import {
     PRESET_SOURCE_EXTERNAL,
     PRESET_SOURCE_INTERNAL
 } from "../types";
-import {FileSystem} from "./FileSystem";
 
-
-export type AppConfigProperties = {
-    debug?: boolean;
-    pm?: PackageManagerType;
-    keystore?: string;
-    logLevel?: "off" | "info" | "warn" | "error";
-    plugins?: PluginRef[];
-    presets?: PresetRef[];
-    projects?: ProjectOldRef[];
-    meta?: EnvConfig;
-    env?: EnvConfig;
-};
 
 export abstract class AppConfig {
     public debug?: boolean;
     public pm?: PackageManagerType;
     public keystore?: string;
-    public logLevel: "off" | "info" | "warn" | "error" = "off";
     public plugins: PluginRef[];
     public presets: PresetRef[];
     public projects: ProjectRef[];
     public meta?: EnvConfig;
     public env?: EnvConfig;
 
-    public constructor(data: AppConfigProperties) {
+    public constructor(data: AppConfig.Data) {
         const {
             plugins = [],
             presets = [],
@@ -180,9 +167,9 @@ export abstract class AppConfig {
         return name in this.meta;
     }
 
-    public getMeta(name: string, defaultValue?: string): string|undefined;
+    public getMeta(name: string, defaultValue?: string): string | undefined;
     public getMeta(name: string, defaultValue: string): string;
-    public getMeta(name: string, defaultValue?: string): string|undefined {
+    public getMeta(name: string, defaultValue?: string): string | undefined {
         if(!this.meta || !(name in this.meta)) {
             return defaultValue;
         }
@@ -210,9 +197,9 @@ export abstract class AppConfig {
         }
     }
 
-    public getEnv(key: string, byDefault?: string): string|undefined;
+    public getEnv(key: string, byDefault?: string): string | undefined;
     public getEnv(key: string, byDefault: string): string;
-    public getEnv(key: string, byDefault?: string): string|undefined {
+    public getEnv(key: string, byDefault?: string): string | undefined {
         if(!this.env || !(key in this.env)) {
             return byDefault;
         }
@@ -242,11 +229,10 @@ export abstract class AppConfig {
 
     public abstract save(): void;
 
-    public toObject(): AppConfigProperties {
+    public toObject(): AppConfig.Data {
         return {
             debug: this.debug,
             pm: this.pm,
-            logLevel: this.logLevel,
             keystore: this.keystore,
             plugins: this.plugins.length > 0 ? this.plugins : undefined,
             presets: this.presets.length > 0 ? this.presets : undefined,
@@ -263,7 +249,7 @@ export abstract class AppConfig {
     }
 
     public static make(fs: FileSystem): AppConfig {
-        let data: AppConfigProperties = {};
+        let data: AppConfig.Data = {};
 
         if(fs.exists("wocker.config.js")) {
             try {
@@ -320,4 +306,17 @@ export abstract class AppConfig {
             }
         }(data);
     }
+}
+
+export namespace AppConfig {
+    export type Data = {
+        debug?: boolean;
+        pm?: PackageManagerType;
+        keystore?: string;
+        plugins?: PluginRef[];
+        presets?: PresetRef[];
+        projects?: ProjectOldRef[];
+        meta?: EnvConfig;
+        env?: EnvConfig;
+    };
 }

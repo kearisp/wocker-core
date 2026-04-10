@@ -1,22 +1,33 @@
 import {format as dateFormat} from "date-fns/format";
 import {Injectable} from "../decorators";
-import {AppService} from "./AppService";
+import {ProcessService} from "./ProcessService";
 import {AppFileSystemService} from "./AppFileSystemService";
+import {LogLevel} from "../types";
 
 
 @Injectable("LOG_SERVICE")
 export class LogService {
     public constructor(
-        protected readonly appService: AppService,
+        protected readonly processService: ProcessService,
         protected readonly fs: AppFileSystemService
     ) {}
+
+    public get logLevel(): LogLevel {
+        const level: LogLevel = this.processService.getEnv("WS_LOG_LEVEL", LogLevel.WARNING) as LogLevel;
+
+        if(LogLevel.values().includes(level)) {
+            return level;
+        }
+
+        return LogLevel.WARNING;
+    }
 
     protected get logName(): string {
         return "ws.log";
     }
 
-    protected _log(type: string, ...data: any[]): void {
-        if(type === "debug" && !this.appService.debug) {
+    protected _log(type: LogLevel, ...data: any[]): void {
+        if(!LogLevel.isGTE(this.logLevel, type)) {
             return;
         }
 
@@ -33,23 +44,23 @@ export class LogService {
     }
 
     public debug(...data: any[]): void {
-        this._log("debug", ...data);
+        this._log(LogLevel.DEBUG, ...data);
     }
 
     public log(...data: any[]): void {
-        this._log("log", ...data);
+        this._log(LogLevel.LOG, ...data);
     }
 
     public info(...data: any[]): void {
-        this._log("info", ...data);
+        this._log(LogLevel.INFO, ...data);
     }
 
     public warn(...data: any[]): void {
-        this._log("warn", ...data);
+        this._log(LogLevel.WARNING, ...data);
     }
 
     public error(...data: any[]): void {
-        this._log("error", ...data);
+        this._log(LogLevel.ERROR, ...data);
     }
 
     public clear(): void {
