@@ -1,4 +1,4 @@
-import {ProjectRef} from "../../../types";
+import {ProjectRef} from "../types";
 
 
 export enum ProjectConfigScopeEnum {

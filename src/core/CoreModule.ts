@@ -10,6 +10,7 @@ import {AppFileSystemService} from "../services/AppFileSystemService";
 import {ProcessService} from "../services/ProcessService";
 import {EventService} from "../services/EventService";
 import {LogService} from "../services/LogService";
+import {ProjectRepository} from "../services/ProjectRepository";
 import {
     WOCKER_VERSION_KEY,
     WOCKER_VERSION,
@@ -38,6 +39,7 @@ import {
         AppService,
         AppConfigService,
         AppFileSystemService,
+        ProjectRepository,
         ProcessService,
         EventService,
         LogService
@@ -50,6 +52,7 @@ import {
         AppService,
         AppConfigService,
         AppFileSystemService,
+        ProjectRepository,
         ProcessService,
         EventService,
         LogService

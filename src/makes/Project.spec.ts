@@ -1,19 +1,19 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {volumeFormat} from "../../../utils/volumeFormat";
+import {volumeFormat} from "../utils/volumeFormat";
 import {
     Module,
     Global
-} from "../../../decorators";
+} from "../decorators";
 import {
     AsyncStorage,
     Container,
     Scanner
-} from "../../../core";
+} from "../core";
 import {Project} from "./Project";
-import {ProjectRepository} from "../repositories/ProjectRepository";
-import {ProjectType} from "../../../types";
-import {WOCKER_DATA_DIR, FILE_SYSTEM_DRIVER_KEY} from "../../../env";
+import {ProjectRepository} from "../services/ProjectRepository";
+import {ProjectType} from "../types";
+import {WOCKER_DATA_DIR, FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
 describe("Project", (): void => {

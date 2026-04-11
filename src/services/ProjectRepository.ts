@@ -1,11 +1,11 @@
-import {Inject, Injectable} from "../../../decorators";
+import {Inject, Injectable} from "../decorators";
 import {Project} from "../makes/Project";
 import {ProjectConfig} from "../makes/ProjectConfig";
-import {FileSystem} from "../../../makes/FileSystem";
-import {AppFileSystemService, AppService} from "../../../services";
-import {FILE_SYSTEM_DRIVER_KEY} from "../../../env";
-import {FileSystemDriver} from "../../../types";
-import {ProjectConfigScope, ProjectConfigScopeEnum} from "../types";
+import {FileSystem} from "../makes";
+import {AppService} from "./AppService";
+import {AppFileSystemService} from "./AppFileSystemService";
+import {FileSystemDriver, ProjectConfigScope, ProjectConfigScopeEnum} from "../types";
+import {FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
 @Injectable("PROJECT_REPOSITORY")
@@ -53,7 +53,23 @@ export class ProjectRepository {
     }
 
     public save(project: Project): void {
-        project.save();
+        if(!project.ref) {
+            this.appService.addProject(project.name, project.path);
+        }
+
+        if(!this.fs.exists(`projects/${project.name}`)) {
+            this.fs.mkdir(`projects/${project.name}`);
+        }
+
+        if(project.configs.app.isDirty()) {
+            this.fs.writeFile(`projects/${project.name}/config.json`, project.configs.app.toString());
+        }
+
+        if(project.configs.project.isDirty()) {
+            const projectFS = new FileSystem(project.path, this.driver);
+
+            projectFS.writeFile("wocker.config.json", project.configs.project.toString());
+        }
     }
 
     public search(params: ProjectRepository.SearchParams): Project[] {

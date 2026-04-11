@@ -1,30 +1,29 @@
-import {AsyncStorage} from "../../../core/AsyncStorage";
-import {EnvConfig, ProjectType} from "../../../types";
-import {AppService} from "../../../services/AppService";
-import {volumeParse} from "../../../utils/volumeParse";
-import {ProjectRepository} from "../repositories/ProjectRepository";
-import {ProjectConfigScope} from "../types";
+import {AsyncStorage} from "../core/AsyncStorage";
+import {AppService} from "../services/AppService";
+import {ProjectRepository} from "../services/ProjectRepository";
 import {ProjectConfig} from "./ProjectConfig";
+import {volumeParse} from "../utils/volumeParse";
+import {EnvConfig, ProjectConfigScope, ProjectRef, ProjectType} from "../types";
 
 
 export class Project {
-    protected configs: Record<ProjectConfigScope, ProjectConfig>;
+    public readonly ref?: ProjectRef;
+    public readonly configs: Record<ProjectConfigScope, ProjectConfig>;
 
     public constructor(
         public name: string,
         public path: string
     ) {
-        this.configs = {
-            [ProjectConfigScope.APP]: this.getConfig(ProjectConfigScope.APP),
-            [ProjectConfigScope.LOCAL]: this.getConfig(ProjectConfigScope.LOCAL)
-        };
-    }
-
-    protected getConfig(scope: ProjectConfigScope) {
         const container = AsyncStorage.getContainer(),
+              appService = container.get(AppService),
               projectRepository = container.get(ProjectRepository);
 
-        return projectRepository.getConfig(this.name, scope);
+        this.ref = appService.getProject(this.name);
+
+        this.configs = {
+            [ProjectConfigScope.APP]: projectRepository.getConfig(this.name, ProjectConfigScope.APP),
+            [ProjectConfigScope.LOCAL]: projectRepository.getConfig(this.name, ProjectConfigScope.LOCAL)
+        };
     }
 
     public get type(): ProjectType {
@@ -47,7 +46,7 @@ export class Project {
     }
 
     public get preset() {
-        return this.configs.app.preset;
+        return this.configs.project.preset || this.configs.app.preset;
     }
 
     public set preset(preset: string | undefined) {
@@ -70,7 +69,7 @@ export class Project {
         this.configs.app.image = image;
     }
 
-    public get dockerfile() {
+    public get dockerfile(): string | undefined {
         return this.configs.project.dockerfile || this.configs.app.dockerfile;
     }
 
@@ -78,7 +77,7 @@ export class Project {
         this.configs.app.dockerfile = dockerfile;
     }
 
-    public get composefile() {
+    public get composefile(): string | undefined {
         return this.configs.project.composefile || this.configs.app.composefile;
     }
 
@@ -177,22 +176,8 @@ export class Project {
         this.configs.app.buildArgs = buildArgs;
     }
 
-    public setBuildArg(name: string, value: string, service?: string): void {
-        if(service) {
-            if(!this.configs.app.services[service]) {
-                throw new Error(`Service "${service}" not found`);
-            }
-
-            if(!this.configs.app.services[service].buildArgs) {
-                this.configs.app.services[service].buildArgs = {};
-            }
-
-            this.configs.app.services[service].buildArgs[name] = value;
-
-            return;
-        }
-
-        this.configs.app.buildArgs[name] = value;
+    public setBuildArg(key: string, value: string, service?: string): void {
+        this.configs.app.setBuildArg(key, value, service);
     }
 
     public unsetBuildArg(name: string, service?: string): void {
@@ -310,16 +295,8 @@ export class Project {
 
     public save(): void {
         const container = AsyncStorage.getContainer(),
-              appService = container.get(AppService),
               projectRepository = container.get(ProjectRepository);
 
-        appService.addProject(this.name, this.path);
-
-        this.configs.app.save();
-
-        // const container = AsyncStorage.getContainer(),
-        //       projectRepository = container.get(ProjectRepository);
-        //
-        // projectRepository.save(this);
+        projectRepository.save(this);
     }
 }

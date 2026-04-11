@@ -7,6 +7,7 @@ export * from "./ModuleMetadata";
 export * from "./PackageManagerType";
 export * from "./PickProperties";
 export * from "./PluginMetadata";
+export * from "./ProjectConfigScope";
 export * from "./PluginRef";
 export * from "./PresetRef";
 export * from "./PresetSource";
