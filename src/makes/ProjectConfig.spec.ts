@@ -1,10 +1,10 @@
-import {beforeEach, describe, it, jest} from "@jest/globals";
+import {beforeEach, describe, it} from "@jest/globals";
 import {vol} from "memfs";
 import {Module} from "../decorators";
 import {AsyncStorage, Container, Factory} from "../core";
 import {ProjectRepository} from "../services";
 import {WOCKER_DATA_DIR} from "../env";
-import {ProjectConfigScopeEnum, ProjectType} from "../types";
+import {ProjectType} from "../types";
 
 
 describe("ProjectConfig", (): void => {

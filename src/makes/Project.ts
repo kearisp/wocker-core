@@ -62,7 +62,7 @@ export class Project {
     }
 
     public get imageName(): string | undefined {
-        return this.configs.app.image;
+        return this.configs.app.image || this.configs.project.image;
     }
 
     public set imageName(image: string | undefined) {

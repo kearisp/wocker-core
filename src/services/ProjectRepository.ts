@@ -1,10 +1,10 @@
 import {Inject, Injectable} from "../decorators";
+import {FileSystem} from "../makes";
 import {Project} from "../makes/Project";
 import {ProjectConfig} from "../makes/ProjectConfig";
-import {FileSystem} from "../makes";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {FileSystemDriver, ProjectConfigScope, ProjectConfigScopeEnum} from "../types";
+import {FileSystemDriver, ProjectConfigScope} from "../types";
 import {FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
@@ -31,7 +31,7 @@ export class ProjectRepository {
                     "config.json"
                 );
 
-            case ProjectConfigScopeEnum.LOCAL:
+            case ProjectConfigScope.LOCAL:
                 return ProjectConfig.make(
                     new FileSystem(ref.path, this.driver),
                     "wocker.config.json"

@@ -6,60 +6,11 @@ import {ServiceConfig} from "./ServiceConfig";
 
 
 export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
-    // public editor: JsonEditor<ProjectConfig.Data>;
-    // protected state: ProjectConfig.Data;
-
-    // public type?: ProjectType;
-    // public image?: string;
-    // public dockerfile?: string;
-    // public composefile?: string;
-    // public preset?: string;
-    // public presetMode?: "global" | "project";
-    // public scripts: {
-    //     [script: string]: string;
-    // };
-    // public cmd?: string[];
-    // public metadata: EnvConfig;
-    // public ports: string[];
-    // public volumes: string[];
-    // public extraHosts: EnvConfig;
-    // public services: Record<string, ProjectConfig.Service>;
-
-    public constructor(content: string) {
+    public constructor(
+        public readonly filename: string,
+        content: string
+    ) {
         super(content);
-
-        // this.editor = new JsonEditor<ProjectConfig.Data>(content);
-
-        // const {
-        //     type,
-        //     imageName,
-        //     image = imageName,
-        //     dockerfile,
-        //     composefile,
-        //     preset,
-        //     presetMode,
-        //     scripts = {},
-        //     cmd,
-        //     metadata = {},
-        //     volumes = [],
-        //     ports = [],
-        //     extraHosts = {},
-        //     services = {}
-        // } = data;
-
-        // this.type = type;
-        // this.image = image;
-        // this.dockerfile = dockerfile;
-        // this.composefile = composefile;
-        // this.preset = preset;
-        // this.presetMode = presetMode;
-        // this.scripts = scripts;
-        // this.cmd = cmd;
-        // this.metadata = metadata;
-        // this.volumes = volumes;
-        // this.ports = ports;
-        // this.extraHosts = extraHosts;
-        // this.services = services;
     }
 
     public get type(): ProjectType | undefined {
@@ -68,6 +19,55 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
 
     public set type(type: ProjectType | undefined) {
         this.state.type = type;
+    }
+
+    public get image(): string | undefined {
+        return this.state.image || this.state.imageName;
+    }
+
+    public set image(image: string | undefined) {
+        this.state.image = image;
+        this.state.imageName = undefined;
+    }
+
+    public get imageName(): string | undefined {
+        return this.image;
+    }
+
+    public set imageName(image: string | undefined) {
+        this.image = image;
+    }
+
+    public get dockerfile(): string | undefined {
+        return this.state.dockerfile;
+    }
+
+    public set dockerfile(dockerfile: string | undefined) {
+        this.state.dockerfile = dockerfile;
+    }
+
+    public get composefile(): string | undefined {
+        return this.state.composefile;
+    }
+
+    public set composefile(composefile: string | undefined) {
+        this.state.composefile = composefile;
+    }
+
+    public get preset(): string | undefined {
+        return this.state.preset;
+    }
+
+    public set preset(preset: string | undefined) {
+        this.state.preset = preset;
+    }
+
+    public get presetMode(): ProjectConfig.Data["presetMode"] {
+        return this.state.presetMode;
+    }
+
+    public set presetMode(presetMode: ProjectConfig.Data["presetMode"]) {
+        this.state.presetMode = presetMode;
     }
 
     public get buildArgs(): EnvConfig {
@@ -100,54 +100,6 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
         this.state.metadata = {...metadata};
     }
 
-    public get preset(): string | undefined {
-        return this.state.preset;
-    }
-
-    public set preset(preset: string | undefined) {
-        this.state.preset = preset;
-    }
-
-    public get presetMode(): "project" | "global" | undefined {
-        return this.state.presetMode;
-    }
-
-    public set presetMode(presetMode) {
-        this.state.presetMode = presetMode;
-    }
-
-    public get image(): string | undefined {
-        return this.state.image;
-    }
-
-    public set image(image: string | undefined) {
-        this.state.image = image;
-    }
-
-    public get imageName(): string | undefined {
-        return this.state.imageName;
-    }
-
-    public set imageName(image: string | undefined) {
-        this.state.imageName = image;
-    }
-
-    public get composefile(): string | undefined {
-        return this.state.composefile;
-    }
-
-    public set composefile(composefile: string | undefined) {
-        this.state.composefile = composefile;
-    }
-
-    public get dockerfile(): string | undefined {
-        return this.state.dockerfile;
-    }
-
-    public set dockerfile(dockerfile: string | undefined) {
-        this.state.dockerfile = dockerfile;
-    }
-
     public get cmd(): string[] | undefined {
         return this.state.cmd;
     }
@@ -157,7 +109,13 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public get scripts(): any {
-        return {};
+        return this.createProxy(["scripts"], {
+            removeOnEmpty: true
+        });
+    }
+
+    public set scripts(scripts: any) {
+        this.state.scripts = scripts;
     }
 
     public get services(): any {
@@ -165,7 +123,9 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public get extraHosts(): any {
-        return this.createProxy(["extraHosts"]);
+        return this.createProxy(["extraHosts"], {
+            removeOnEmpty: true
+        });
     }
 
     public set extraHosts(extraHosts: any) {
@@ -251,42 +211,21 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             : value;
 
         if(service) {
-            // if(!this.services[service]) {
-            //     return;
-            // }
-            //
-            // if(!this.services[service].env) {
-            //     this.services[service].env = {};
-            // }
-            //
-            // this.services[service].env[key] = sValue;
+            this.set(["services", service, "env", key], sValue);
 
             return;
         }
 
-        this.env[key] = sValue;
+        this.set(["env", key], sValue);
     }
 
     public unsetEnv(key: string, service?: string): void {
         if(service) {
-            // if(!this.services[service]) {
-            //     throw new Error(`Service "${service}" not found`);
-            // }
-            //
-            // if(this.services[service].env && key in this.services[service].env) {
-            //     delete this.services[service].env[key];
-            //
-            //     if(Object.keys(this.services[service].env).length === 0) {
-            //         delete this.services[service].env;
-            //     }
-            // }
-
+            this.unset(["services", service, "env", key]);
             return;
         }
 
-        if(key in this.env) {
-            delete this.env[key];
-        }
+        this.unset(["env", key]);
     }
 
     public getVolumeBySource(source: string): string | undefined {
@@ -366,26 +305,6 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
         });
     }
 
-    public toObject(): ProjectConfig.Data {
-        // return {
-        //     type: this.type,
-        //     image: this.image,
-        //     dockerfile: this.dockerfile,
-        //     composefile: this.composefile,
-        //     preset: this.preset,
-        //     presetMode: this.presetMode,
-        //     scripts: Object.keys(this.scripts).length > 0 ? this.scripts : undefined,
-        //     cmd: this.cmd,
-        //     buildArgs: Object.keys(this.buildArgs).length > 0 ? this.buildArgs : undefined,
-        //     env: Object.keys(this.env).length > 0 ? this.env : undefined,
-        //     metadata: Object.keys(this.metadata).length > 0 ? this.metadata : undefined,
-        //     volumes: this.volumes.length > 0 ? this.volumes : undefined,
-        //     ports: this.ports.length > 0 ? this.ports : undefined,
-        // };
-
-        return this.state;
-    }
-
     public static make(fs: FileSystem, filename: string): ProjectConfig {
         let content = "{}";
 
@@ -393,17 +312,7 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             content = fs.readFile(filename).toString();
         }
 
-        return new class extends ProjectConfig {
-            public save(): void {
-                // if(!fs.exists()) {
-                //     fs.mkdir("", {
-                //         recursive: true
-                //     });
-                // }
-                //
-                // fs.writeJSON(filename, this.toObject());
-            }
-        }(content);
+        return new ProjectConfig(filename, content);
     }
 }
 

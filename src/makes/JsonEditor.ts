@@ -116,15 +116,24 @@ export class JsonEditor<T extends object> {
         return getNodeValue(node);
     }
 
-    public set(key: string | JSONPath, value: any, options: ModificationOptions = {}) {
+    public set(key: string | JSONPath, value: any, options?: ModificationOptions): void {
         const path = typeof key === "string" ? key.split(".") : key;
 
         this.content = applyEdits(
             this.content,
-            modify(this.content, path, value, options)
+            modify(this.content, path, value, options || {
+                formattingOptions: {
+                    insertSpaces: true,
+                    keepLines: false
+                }
+            })
         );
 
         this.root = parseTree(this.content)!;
+    }
+
+    public unset(key: string | JSONPath): void {
+        this.set(key, undefined);
     }
 
     public isDirty(): boolean {
