@@ -1,13 +1,11 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
 import {Module} from "../decorators";
-import {Factory} from "../core";
+import {Container, Factory} from "../core";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {LogService} from "./LogService";
-import {ProcessService} from "./ProcessService";
-import {AppConfigService} from "./AppConfigService";
-import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
+import {WOCKER_VERSION_KEY} from "../env";
+import {FileSystemDriver} from "../types";
 
 
 describe("AppService", (): void => {
@@ -16,30 +14,19 @@ describe("AppService", (): void => {
     });
 
     const getContext = async (version: string = "1.0.0") => {
-        @Module({
-            providers: [
-                {
-                    provide: WOCKER_VERSION_KEY,
-                    useValue: version
-                },
-                {
-                    provide: WOCKER_DATA_DIR_KEY,
-                    useValue: WOCKER_DATA_DIR
-                },
-                {
-                    provide: FILE_SYSTEM_DRIVER_KEY,
-                    useValue: vol
-                },
-                AppService,
-                AppConfigService,
-                AppFileSystemService,
-                LogService,
-                ProcessService
-            ]
-        })
+        @Module({})
         class TestModule {}
 
-        const context = await Factory.create(TestModule);
+        const context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
+        });
+
+        const container = context.get(Container);
+
+        container.replace(WOCKER_VERSION_KEY, {
+            provide: WOCKER_VERSION_KEY,
+            useValue: version
+        });
 
         return {
             appService: context.get(AppService),

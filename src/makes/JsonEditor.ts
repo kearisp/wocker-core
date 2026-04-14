@@ -1,13 +1,18 @@
 import {applyEdits, modify, findNodeAtLocation, getNodeValue, parseTree, JSONPath, Node, ModificationOptions} from "jsonc-parser";
 
 
+type OrderMap = {
+    [key: string]: string[] | ((key: string, properties: string[]) => number);
+};
+
 export class JsonEditor<T extends object> {
     protected content: string;
     protected root: Node;
     public state: T;
 
     public constructor(
-        protected readonly original: string
+        protected readonly original: string,
+        protected readonly orderMap: OrderMap = {}
     ) {
         this.content = this.original;
         this.root = parseTree(this.content)!;
@@ -33,12 +38,7 @@ export class JsonEditor<T extends object> {
                         return (...args: any[]) => {
                             const res = target[property](...args);
 
-                            this.set(keys, target, {
-                                formattingOptions: {
-                                    keepLines: false,
-                                    insertSpaces: true
-                                }
-                            });
+                            this.set(keys, target);
 
                             return res;
                         };
@@ -64,18 +64,13 @@ export class JsonEditor<T extends object> {
                     property = parseInt(property) as unknown as string;
                 }
 
-                this.set([...keys, property], value, {
-                    formattingOptions: {
-                        keepLines: false,
-                        insertSpaces: true
-                    }
-                });
+                this.set([...keys, property], value);
 
                 if(removeOnEmpty) {
                     const value = this.get(keys);
 
                     if(typeof value === "object" && Object.keys(value).length === 0) {
-                        this.set(keys, undefined);
+                        this.unset(keys);
                     }
                 }
 
@@ -89,20 +84,54 @@ export class JsonEditor<T extends object> {
                     property = parseInt(property) as unknown as string;
                 }
 
-                this.set([...keys, property], undefined);
+                this.unset([...keys, property]);
 
                 if(removeOnEmpty) {
                     const value = this.get(keys);
 
                     if(typeof value === "object" && Object.keys(value).length === 0) {
-                        this.set(keys, undefined);
+                        this.unset(keys);
                     }
                 }
 
                 return true;
             }
         });
-    };
+    }
+
+    protected getInsertionIndex(path: JSONPath): ((properties: string[]) => number) | undefined {
+        const key = path[path.length - 1] as string,
+              orderKey = path.slice(0, -1).join("."),
+              ordered = this.orderMap[orderKey];
+
+        if(!ordered) {
+            return undefined;
+        }
+
+        return (properties) => {
+            if(typeof ordered === "function") {
+                return ordered(key as string, properties);
+            }
+
+            const keyIndex = ordered.indexOf(key as string);
+
+            if(keyIndex === -1) {
+                return properties.length;
+            }
+
+            let insertIndex = 0;
+
+            for(const property of properties) {
+                const propertyIndex = ordered.indexOf(property);
+
+                if(propertyIndex !== -1 && propertyIndex < keyIndex) {
+                    insertIndex++;
+                }
+            }
+
+            return insertIndex;
+        };
+    }
 
     public get(key: string | JSONPath) {
         const path = typeof key === "string" ? key.split(".") : key;
@@ -113,7 +142,7 @@ export class JsonEditor<T extends object> {
             return undefined;
         }
 
-        return getNodeValue(node);
+        return JsonEditor.getNodeValue(node);
     }
 
     public set(key: string | JSONPath, value: any, options?: ModificationOptions): void {
@@ -124,8 +153,10 @@ export class JsonEditor<T extends object> {
             modify(this.content, path, value, options || {
                 formattingOptions: {
                     insertSpaces: true,
-                    keepLines: false
-                }
+                    keepLines: false,
+                    insertFinalNewline: true
+                },
+                getInsertionIndex: this.getInsertionIndex(path)
             })
         );
 
@@ -142,6 +173,38 @@ export class JsonEditor<T extends object> {
 
     public toString(): string {
         return this.content;
+    }
+
+    public static getNodeValue(node: Node) {
+        switch(node.type) {
+            case "array":
+                return node.children?.map(getNodeValue);
+
+            case "object": {
+                const obj = Object.create({});
+
+                if(node.children) {
+                    for(let prop of node.children) {
+                        const [keyNode, valueNode] = prop.children || [];
+
+                        if(keyNode && valueNode) {
+                            obj[keyNode.value] = this.getNodeValue(valueNode);
+                        }
+                    }
+                }
+
+                return obj;
+            }
+
+            case "null":
+            case "string":
+            case "number":
+            case "boolean":
+                return node.value;
+
+            default:
+                return undefined;
+        }
     }
 }
 

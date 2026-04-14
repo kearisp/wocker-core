@@ -82,13 +82,19 @@ export abstract class AppConfig {
         this.plugins = this.plugins.filter((plugin) => plugin.name !== name);
     }
 
-    public getProject(name: string): ProjectRef|undefined {
+    public getProject(name: string): ProjectRef | undefined {
         if(!this.projects) {
             return;
         }
 
         return this.projects.find((projectData) => {
             return projectData.name === name;
+        });
+    }
+
+    public getProjectByPath(path: string): ProjectRef | undefined {
+        return this.projects.find((ref) => {
+            return ref.path === path;
         });
     }
 

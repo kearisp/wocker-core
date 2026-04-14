@@ -1,14 +1,12 @@
 import {describe, it, jest, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {Global, Module} from "../decorators";
+import {Module} from "../decorators";
 import {Factory, ApplicationContext} from "../core";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {LogService} from "./LogService";
-import {AppService} from "./AppService";
-import {AppConfigService} from "./AppConfigService";
 import {ProcessService} from "./ProcessService";
-import {LogLevel} from "../types";
-import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
+import {FileSystemDriver, LogLevel} from "../types";
+import {WOCKER_DATA_DIR} from "../env";
 
 
 describe("LogService", (): void => {
@@ -22,31 +20,12 @@ describe("LogService", (): void => {
             })
         }, WOCKER_DATA_DIR);
 
-        @Global()
-        @Module({
-            providers: [
-                {
-                    provide: WOCKER_VERSION_KEY,
-                    useValue: "1.0.0"
-                },
-                {
-                    provide: WOCKER_DATA_DIR_KEY,
-                    useValue: WOCKER_DATA_DIR
-                },
-                {
-                    provide: FILE_SYSTEM_DRIVER_KEY,
-                    useValue: vol
-                },
-                AppService,
-                AppConfigService,
-                AppFileSystemService,
-                LogService,
-                ProcessService
-            ]
-        })
+        @Module({})
         class TestModule {}
 
-        context = await Factory.create(TestModule);
+        context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
+        });
     });
 
     it.each<{

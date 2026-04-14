@@ -1,14 +1,13 @@
 import {ApplicationContext} from "./ApplicationContext";
 import {Container} from "./Container";
 import {Scanner} from "./Scanner";
-import {Type} from "../types";
-import {ApplicationOptions} from "../types/ApplicationOptions";
+import {ApplicationOptions, Type} from "../types";
 
 
 export class Factory {
     public static async create(module: Type, options: ApplicationOptions = {}): Promise<ApplicationContext> {
         const container = new Container(),
-              scanner = new Scanner(container);
+              scanner = new Scanner(container, options);
 
         await scanner.scan(module);
 

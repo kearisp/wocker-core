@@ -8,34 +8,26 @@ import {
 import {
     AsyncStorage,
     Container,
-    Scanner
+    Factory
 } from "../core";
 import {Project} from "./Project";
-import {ProjectRepository} from "../services/ProjectRepository";
-import {ProjectType} from "../types";
-import {WOCKER_DATA_DIR, FILE_SYSTEM_DRIVER_KEY} from "../env";
+import {FileSystemDriver, ProjectType} from "../types";
+import {WOCKER_DATA_DIR} from "../env";
 
 
 describe("Project", (): void => {
     const getContext = async () => {
         @Global()
-        @Module({
-            providers: [ProjectRepository],
-            exports: [ProjectRepository]
-        })
+        @Module({})
         class TestModule {}
 
-        const container = new Container(),
-              scanner = new Scanner(container);
-
-        await scanner.scan(TestModule);
-
-        container.replace(FILE_SYSTEM_DRIVER_KEY, {
-            provide: FILE_SYSTEM_DRIVER_KEY,
-            useValue: vol
+        const context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
         });
 
-        return container;
+        return {
+            container: context.get(Container)
+        };
     }
 
     beforeEach(() => {
@@ -54,8 +46,8 @@ describe("Project", (): void => {
         }, WOCKER_DATA_DIR);
     });
 
-    it("should process env vars", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage environment variables and container name", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 
@@ -79,8 +71,8 @@ describe("Project", (): void => {
         project.unsetEnv(VALUE_KEY);
     });
 
-    it("Domains", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage project domains", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 
@@ -111,8 +103,8 @@ describe("Project", (): void => {
         expect(project.domains).toEqual([]);
     });
 
-    it("Ports", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage port mappings", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 
@@ -133,8 +125,8 @@ describe("Project", (): void => {
         expect(project.ports).toEqual([]);
     });
 
-    it("Volumes", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage volume mounts", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 
@@ -167,8 +159,8 @@ describe("Project", (): void => {
         expect(project.volumes).toEqual([]);
     });
 
-    it("Meta", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage project metadata", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 
@@ -202,8 +194,8 @@ describe("Project", (): void => {
         expect(project.getMeta(VALUE_KEY)).toBe("false");
     });
 
-    it("Extra host", async (): Promise<void> => {
-        const container = await getContext();
+    it("should manage extra hosts", async (): Promise<void> => {
+        const {container} = await getContext();
 
         AsyncStorage.enterWith(container);
 

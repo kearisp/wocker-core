@@ -1,123 +1,209 @@
-import {beforeEach, describe, it} from "@jest/globals";
-import {vol} from "memfs";
-import {Module} from "../decorators";
-import {AsyncStorage, Container, Factory} from "../core";
-import {ProjectRepository} from "../services";
-import {WOCKER_DATA_DIR} from "../env";
-import {ProjectType} from "../types";
+import {describe, it, expect} from "@jest/globals";
+import {ProjectConfig} from "./ProjectConfig";
+import {ProjectType, ProjectConfigScope} from "../types";
 
 
-describe("ProjectConfig", (): void => {
-    const PROJECT_1_NAME = "foo",
-          PROJECT_1_PATH = "/home/wocker/projects/foo";
+describe("ProjectConfig", () => {
+    describe("Basic properties", () => {
+        it("should handle type", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.type = ProjectType.IMAGE;
+            expect(config.type).toEqual(ProjectType.IMAGE);
+            expect(JSON.parse(config.toString()).type).toEqual(ProjectType.IMAGE);
 
-    beforeEach(() => {
-        vol.reset();
+            config.type = undefined;
+            expect(config.type).toBeUndefined();
+            expect(JSON.parse(config.toString())).not.toHaveProperty("type");
+        });
 
-        vol.fromJSON({
-            "wocker.config.json": JSON.stringify({
-                projects: [
-                    {
-                        name: PROJECT_1_NAME,
-                        path: PROJECT_1_PATH
-                    }
-                ]
-            }, null, 4),
-            [`projects/${PROJECT_1_NAME}/config.json`]: JSON.stringify({
-                type: ProjectType.IMAGE,
-                env: {
-                    TEST: "FOO"
-                }
-            }, null, 4)
-        }, WOCKER_DATA_DIR);
+        it("should handle image and imageName", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
 
-        vol.fromJSON({
-            "wocker.config.json": JSON.stringify({})
-        }, PROJECT_1_PATH);
+            config.image = "node:23";
+            expect(config.image).toEqual("node:23");
+            expect(config.imageName).toEqual("node:23");
+
+            config.imageName = "node:22";
+            expect(config.image).toEqual("node:22");
+            expect(config.imageName).toEqual("node:22");
+
+            config.image = undefined;
+            expect(config.image).toBeUndefined();
+            expect(JSON.parse(config.toString())).not.toHaveProperty("image");
+            expect(JSON.parse(config.toString())).not.toHaveProperty("imageName");
+        });
+
+        it("should handle dockerfile", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.dockerfile = "Dockerfile.dev";
+            expect(config.dockerfile).toEqual("Dockerfile.dev");
+            expect(JSON.parse(config.toString()).dockerfile).toEqual("Dockerfile.dev");
+        });
+
+        it("should handle composefile", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.type = ProjectType.COMPOSE;
+            config.composefile = "docker-compose.yml";
+            expect(config.composefile).toEqual("docker-compose.yml");
+            expect(JSON.parse(config.toString()).composefile).toEqual("docker-compose.yml");
+        });
+
+        it("should handle preset and presetMode", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.preset = "laravel";
+            config.presetMode = "global";
+
+            expect(config.preset).toEqual("laravel");
+            expect(config.presetMode).toEqual("global");
+            expect(JSON.parse(config.toString()).preset).toEqual("laravel");
+            expect(JSON.parse(config.toString()).presetMode).toEqual("global");
+        });
+
+        it("should handle cmd", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.cmd = ["npm", "start"];
+            expect([...config.cmd]).toEqual(["npm", "start"]);
+            expect(JSON.parse(config.toString()).cmd).toEqual(["npm", "start"]);
+        });
+
+        it("should handle metadata", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+
+            expect(config.metadata).toEqual({});
+            config.metadata.version = "1.0.0";
+
+            expect(config.metadata).toEqual({
+                version: "1.0.0"
+            });
+            expect(config.metadata.version).toEqual("1.0.0");
+            expect(JSON.parse(config.toString()).metadata.version).toEqual("1.0.0");
+        });
+
+        it("should handle scripts", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.scripts = {test: "jest"};
+            expect(config.scripts.test).toEqual("jest");
+            expect(JSON.parse(config.toString()).scripts.test).toEqual("jest");
+        });
     });
 
-    const getContext = async () => {
-        @Module({})
-        class TestModule {}
+    describe("Environment variables", () => {
+        it("should handle env proxy", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.env.TEST = "foo";
+            expect(config.env.TEST).toEqual("foo");
+            expect(JSON.parse(config.toString()).env.TEST).toEqual("foo");
+        });
 
-        const context = await Factory.create(TestModule);
+        it("should handle setEnv and getEnv", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.setEnv("VAR", "value");
+            expect(config.getEnv("VAR")).toEqual("value");
+            expect(config.getEnv("MISSING", "default")).toEqual("default");
+            expect(config.hasEnv("VAR")).toBeTruthy();
+            expect(config.hasEnv("MISSING")).toBeFalsy();
+        });
 
-        return {
-            container: context.get(Container),
-            projectRepository: context.get(ProjectRepository)
-        };
-    };
+        it("should handle boolean values in setEnv", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.setEnv("BOOL_TRUE", true);
+            config.setEnv("BOOL_FALSE", false);
+            expect(config.getEnv("BOOL_TRUE")).toEqual("true");
+            expect(config.getEnv("BOOL_FALSE")).toEqual("false");
+        });
 
-    it("should", async () => {
-        const {
-            container,
-            projectRepository
-        } = await getContext();
+        it("should handle unsetEnv", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{\"env\": {\"VAR\": \"val\"}}");
+            expect(config.hasEnv("VAR")).toBeTruthy();
+            config.unsetEnv("VAR");
+            expect(config.hasEnv("VAR")).toBeFalsy();
+        });
 
-        AsyncStorage.enterWith(container);
+        it("should handle service env", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.setEnv("VAR", "val", "service1");
+            expect(JSON.parse(config.toString()).services.service1.env.VAR).toEqual("val");
 
-        const project = projectRepository.getByName(PROJECT_1_NAME);
-        const config = project.configs.app;
+            config.unsetEnv("VAR", "service1");
+            expect(JSON.parse(config.toString()).services.service1.env).toEqual({});
+        });
+    });
 
-        config.env.TEST = "foo";
+    describe("Build arguments", () => {
+        it("should handle buildArgs proxy", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.buildArgs.ARG = "val";
+            expect(config.buildArgs.ARG).toEqual("val");
+        });
 
-        expect(config.env).toEqual(
-            expect.objectContaining({
-                TEST: "foo"
-            })
-        );
+        it("should handle setBuildArg and unsetBuildArg", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.setBuildArg("ARG", "val");
+            expect(config.buildArgs.ARG).toEqual("val");
 
-        expect(config.toString()).toContain(`"TEST": "foo"`);
+            config.unsetBuildArg("ARG");
+            expect(config.buildArgs.ARG).toBeUndefined();
+        });
 
-        console.log(config.env);
-        // console.log(config.toString());
+        it("should handle service buildArgs", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.setBuildArg("ARG", "val", "service1");
+            expect(JSON.parse(config.toString()).services.service1.buildArgs.ARG).toEqual("val");
 
-        // config.state.buildArgs = {
-        //     TEST: "123"
-        // };
+            config.unsetBuildArg("ARG", "service1");
+            expect(JSON.parse(config.toString()).services.service1.buildArgs).toEqual({});
+        });
+    });
 
-        // delete config.state.buildArgs;
+    describe("Volumes", () => {
+        it("should handle volumes proxy", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.volumes.push("./src:/app/src");
+            expect(config.volumes).toContain("./src:/app/src");
+        });
 
-        // console.log(config.state.buildArgs);
+        it("should mount volumes", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.volumeMount("./src:/app/src", "./data:/app/data");
+            expect(config.volumes).toHaveLength(2);
+            expect(config.volumes).toContain("./src:/app/src");
+            expect(config.volumes).toContain("./data:/app/data");
 
-        // config.env = undefined as any;
-        // config.type = ProjectType.PRESET;
+            // Overwrite by destination
+            config.volumeMount("./new-src:/app/src");
+            expect(config.volumes).toHaveLength(2);
+            expect(config.volumes).toContain("./new-src:/app/src");
+            expect(config.volumes).not.toContain("./src:/app/src");
+        });
 
-        // console.log(config.toString());
-        // console.log(config.env);
+        it("should unmount volumes", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{\"volumes\": [\"./src:/app/src\", \"./data:/app/data\"]}");
+            config.volumeUnmount("./src:/app/src");
+            expect(config.volumes).toHaveLength(1);
+            expect(config.volumes).toContain("./data:/app/data");
+        });
 
-        config.ports.push("10:20");
-        // console.log(config.get(["ports", "0"]), config.get(["ports", 0]));
-        // console.log(Array.isArray(config.ports));
-        // console.log(config.ports);
-        // console.log("TEST" in config.env);
-        // config.env.TEST = "foo";
-        // delete config.env.TEST;
-        // config.env.TEST_2 = "123";
-        // config.env.TEST_3 = "123";
+        it("should get volume by source or destination", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{\"volumes\": [\"./src:/app/src\"]}");
+            expect(config.getVolumeBySource("./src")).toEqual("./src:/app/src");
+            expect(config.getVolumeByDestination("/app/src")).toEqual("./src:/app/src");
+        });
+    });
 
-        // console.log("env:", config.env);
-        // console.log(config.isDirty(), config.toString());
+    describe("Ports and Extra Hosts", () => {
+        it("should handle ports", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.ports = ["8080:80"];
+            expect([...config.ports]).toEqual(["8080:80"]);
+        });
 
-        // config.env = {
-        //     TEST_1: "Test 1",
-        //     TEST_2: "Test"
-        // };
-        //
-        // config.env.TEST = "wqd";
-        // // delete config.env.TEST_2;
-        //
-        // console.log(config.env.TEST);
-        //
-        // projectRepository.save(project);
+        it("should handle extra hosts", () => {
+            const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
+            config.addExtraHost("host.docker.internal", "127.0.0.1");
+            expect(config.extraHosts["host.docker.internal"]).toEqual("127.0.0.1");
 
-        // const config = projectRepository.getConfig(PROJECT_1_NAME, ProjectConfigScopeEnum.APP);
-        //
-        // config.setEnv("TEST", "1");
-        //
-        // console.log(config.toObject());
-        // console.log(vol.readFileSync(WOCKER_DATA_DIR + "/wocker.config.json").toString());
-        // console.log(vol.readFileSync(WOCKER_DATA_DIR + `/projects/${PROJECT_1_NAME}/config.json`).toString());
-        // console.log(vol.readFileSync(PROJECT_1_PATH + "/config.json"));
+            config.removeExtraHost("host.docker.internal");
+            expect(config.extraHosts).not.toHaveProperty("host.docker.internal");
+        });
     });
 });

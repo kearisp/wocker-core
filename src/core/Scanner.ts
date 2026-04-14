@@ -1,23 +1,35 @@
 import {Cli, CommandInput} from "@kearisp/cli";
-import {Type, DynamicModule, ProviderType} from "../types";
+import fs from "fs";
+import {Type, DynamicModule, ProviderType, ApplicationOptions} from "../types";
 import {Container} from "./Container";
 import {ControllerWrapper} from "./ControllerWrapper";
 import {ModuleWrapper} from "./ModuleWrapper";
 import {CoreModule} from "./CoreModule";
 import {InstanceWrapper} from "./InstanceWrapper";
-import {IS_GLOBAL_METADATA, MODULE_METADATA} from "../env";
+import {IS_GLOBAL_METADATA, FILE_SYSTEM_DRIVER_KEY, MODULE_METADATA} from "../env";
 
 
 export class Scanner {
     public readonly container: Container;
 
-    public constructor(container?: Container) {
+    public constructor(container?: Container, options: ApplicationOptions = {}) {
+        const {
+            fsDriver = fs
+        } = options;
+
         this.container = container || new Container();
         this.container.globalProviders.set(
             "CORE_CONTAINER",
             new InstanceWrapper(new ModuleWrapper(this.container, null), {
                 provide: "CORE_CONTAINER",
                 useValue: this.container
+            })
+        );
+        this.container.globalProviders.set(
+            FILE_SYSTEM_DRIVER_KEY,
+            new InstanceWrapper(new ModuleWrapper(this.container, null), {
+                provide: FILE_SYSTEM_DRIVER_KEY,
+                useValue: fsDriver
             })
         );
     }

@@ -1,5 +1,6 @@
 import {Inject, Injectable} from "../decorators";
 import {FileSystem} from "../makes";
+// noinspection ES6PreferShortImport
 import {Project} from "../makes/Project";
 import {ProjectConfig} from "../makes/ProjectConfig";
 import {AppService} from "./AppService";
@@ -17,24 +18,43 @@ export class ProjectRepository {
         protected readonly driver: FileSystemDriver
     ) {}
 
-    public getConfig(name: string, scope: ProjectConfigScope): ProjectConfig {
+    public getConfig(scope: ProjectConfigScope, name: string, path?: string): ProjectConfig {
         const ref = this.appService.getProject(name);
 
-        if(!ref) {
-            throw new Error("");
-        }
-
         switch(scope) {
-            case ProjectConfigScope.APP:
-                return ProjectConfig.make(
-                    this.fs.cd(`projects/${ref.name}`),
-                    "config.json"
+            case ProjectConfigScope.APP: {
+                if(!ref) {
+                    return new ProjectConfig(scope, "{}");
+                }
+
+                const fs = this.fs.cd(`projects/${ref.name}`);
+
+                if(!fs.exists("config.json")) {
+                    return new ProjectConfig(scope, "{}");
+                }
+
+                return new ProjectConfig(
+                    scope,
+                    fs.readFile("config.json").toString(),
                 );
+            }
 
             case ProjectConfigScope.LOCAL:
-                return ProjectConfig.make(
-                    new FileSystem(ref.path, this.driver),
-                    "wocker.config.json"
+                path = path || ref?.path;
+
+                if(!path) {
+                    return new ProjectConfig(scope, "{}");
+                }
+
+                const fs = new FileSystem(path);
+
+                if(!fs.exists("wocker.config.json")) {
+                    return new ProjectConfig(scope, "{}");
+                }
+
+                return new ProjectConfig(
+                    scope,
+                    fs.readFile("wocker.config.json").toString()
                 );
         }
     }

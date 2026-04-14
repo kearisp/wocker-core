@@ -1,5 +1,4 @@
-import {FileSystem} from "./FileSystem";
-import {EnvConfig, ProjectType} from "../types";
+import {EnvConfig, ProjectType, ProjectConfigScope} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 import {JsonEditor} from "./JsonEditor";
 import {ServiceConfig} from "./ServiceConfig";
@@ -7,10 +6,33 @@ import {ServiceConfig} from "./ServiceConfig";
 
 export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     public constructor(
-        public readonly filename: string,
+        public readonly scope: ProjectConfigScope,
         content: string
     ) {
-        super(content);
+        super(content, {
+            "": [
+                // "version",
+                "type",
+                "image",
+                "dockerfile",
+                "composefile",
+                "preset",
+                "presetMode",
+                "scripts",
+                "cmd",
+                "buildArgs",
+                "env",
+                "metadata",
+                "volumes",
+                "ports",
+                "extraHosts",
+                "services"
+            ],
+            "env": [
+                "VIRTUAL_HOST",
+                "VIRTUAL_PORT"
+            ]
+        });
     }
 
     public get type(): ProjectType | undefined {
@@ -156,38 +178,20 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
 
     public setBuildArg(key: string, value: string, service?: string): void {
         if(service) {
-            // if(!this.services[service]) {
-            //     this.services[service] = {};
-            // }
-            //
-            // if(!this.services[service].buildArgs) {
-            //     this.services[service].buildArgs = {};
-            // }
-            //
-            // this.services[service].buildArgs[key] = value;
-
+            this.set(["services", service, "buildArgs", key], value);
             return;
         }
 
         this.buildArgs[key] = value;
     }
 
-    public unsetBuildArg(name: string, service?: string): void {
+    public unsetBuildArg(key: string, service?: string): void {
         if(service) {
-            // if(!this.services[service]) {
-            //     return;
-            // }
-            //
-            // if(this.services[service].buildArgs && name in this.services[service].buildArgs) {
-            //     delete this.services[service].buildArgs[name];
-            // }
-
+            this.unset(["services", service, "buildArgs", key]);
             return;
         }
 
-        if(name in this.buildArgs) {
-            delete this.buildArgs[name];
-        }
+        delete this.buildArgs[key];
     }
 
     public getEnv(key: string): string | undefined;
@@ -225,7 +229,7 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             return;
         }
 
-        this.unset(["env", key]);
+        delete this.env[key];
     }
 
     public getVolumeBySource(source: string): string | undefined {
@@ -303,16 +307,6 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
         return this.createProxy(["services", name], {
             removeOnEmpty: true
         });
-    }
-
-    public static make(fs: FileSystem, filename: string): ProjectConfig {
-        let content = "{}";
-
-        if(fs.exists(filename)) {
-            content = fs.readFile(filename).toString();
-        }
-
-        return new ProjectConfig(filename, content);
     }
 }
 

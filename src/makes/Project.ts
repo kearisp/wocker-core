@@ -7,7 +7,7 @@ import {EnvConfig, ProjectConfigScope, ProjectRef, ProjectType} from "../types";
 
 
 export class Project {
-    public readonly ref?: ProjectRef;
+    protected _ref?: ProjectRef;
     public readonly configs: Record<ProjectConfigScope, ProjectConfig>;
 
     public constructor(
@@ -18,12 +18,16 @@ export class Project {
               appService = container.get(AppService),
               projectRepository = container.get(ProjectRepository);
 
-        this.ref = appService.getProject(this.name);
+        this._ref = appService.getProject(this.name);
 
         this.configs = {
-            [ProjectConfigScope.APP]: projectRepository.getConfig(this.name, ProjectConfigScope.APP),
-            [ProjectConfigScope.LOCAL]: projectRepository.getConfig(this.name, ProjectConfigScope.LOCAL)
+            [ProjectConfigScope.APP]: projectRepository.getConfig(ProjectConfigScope.APP, this.name, this.path),
+            [ProjectConfigScope.LOCAL]: projectRepository.getConfig(ProjectConfigScope.LOCAL, this.name, this.path)
         };
+    }
+
+    public get ref(): ProjectRef | undefined {
+        return this._ref;
     }
 
     public get type(): ProjectType {
@@ -46,7 +50,7 @@ export class Project {
     }
 
     public get preset() {
-        return this.configs.project.preset || this.configs.app.preset;
+        return this.configs.app.preset || this.configs.project.preset;
     }
 
     public set preset(preset: string | undefined) {
@@ -54,23 +58,29 @@ export class Project {
     }
 
     public get presetMode() {
-        return this.configs.app.presetMode!;
+        return this.configs.app.presetMode! || this.configs.project.presetMode!;
     }
 
     public set presetMode(mode: "project" | "global") {
         this.configs.app.presetMode = mode;
     }
 
+    public get image(): string | undefined {
+        return this.configs.app.image || this.configs.project.image;
+    }
+
+    /** @deprecated */
     public get imageName(): string | undefined {
         return this.configs.app.image || this.configs.project.image;
     }
 
+    /** @deprecated */
     public set imageName(image: string | undefined) {
         this.configs.app.image = image;
     }
 
     public get dockerfile(): string | undefined {
-        return this.configs.project.dockerfile || this.configs.app.dockerfile;
+        return this.configs.app.dockerfile || this.configs.project.dockerfile;
     }
 
     public set dockerfile(dockerfile: string | undefined) {
@@ -78,7 +88,7 @@ export class Project {
     }
 
     public get composefile(): string | undefined {
-        return this.configs.project.composefile || this.configs.app.composefile;
+        return this.configs.app.composefile || this.configs.project.composefile;
     }
 
     public set composefile(composefile: string | undefined) {
@@ -86,7 +96,7 @@ export class Project {
     }
 
     public get cmd() {
-        return this.configs.app.cmd;
+        return this.configs.app.cmd || this.configs.project.cmd;
     }
 
     public get domains(): string[] {
@@ -264,6 +274,13 @@ export class Project {
 
     public removeExtraHost(host: string): void {
         this.configs.app.removeExtraHost(host);
+    }
+
+    public get metadata() {
+        return {
+            ...this.configs.project.metadata,
+            ...this.configs.app.metadata
+        };
     }
 
     public get services() {

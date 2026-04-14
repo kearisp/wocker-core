@@ -6,10 +6,8 @@ import {Factory, Container} from "../core";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {LogService} from "./LogService";
-import {ProcessService} from "./ProcessService";
-import {PRESET_SOURCE_EXTERNAL} from "../types";
-import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
+import {FileSystemDriver, PRESET_SOURCE_EXTERNAL} from "../types";
+import {WOCKER_DATA_DIR, WOCKER_VERSION_KEY} from "../env";
 
 
 describe("AppConfigService", (): void => {
@@ -18,49 +16,18 @@ describe("AppConfigService", (): void => {
     });
 
     const getContext = async (version = "1.0.0") => {
-        // const context = await Test
-        //     .createTestingModule({
-        //         imports: [CoreModule]
-        //     })
-        //     .overrideProvider(WOCKER_VERSION_KEY).useValue(version)
-        //     .overrideProvider(WOCKER_DATA_DIR_KEY).useValue(WOCKER_DATA_DIR)
-        //     .overrideProvider(FILE_SYSTEM_DRIVER_KEY).useValue(vol)
-        //     .build();
-
-        @Module({
-            providers: [
-                {
-                    provide: WOCKER_VERSION_KEY,
-                    useValue: version
-                },
-                {
-                    provide: WOCKER_DATA_DIR_KEY,
-                    useValue: WOCKER_DATA_DIR
-                },
-                {
-                    provide: FILE_SYSTEM_DRIVER_KEY,
-                    useValue: vol
-                },
-                AppService,
-                AppConfigService,
-                AppFileSystemService,
-                LogService,
-                ProcessService
-            ]
-        })
+        @Module({})
         class TestModule {}
 
-        const context = await Factory.create(TestModule);
+        const context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
+        });
 
         const container = context.get(Container);
 
         container.replace(WOCKER_VERSION_KEY, {
             provide: WOCKER_VERSION_KEY,
             useValue: version
-        });
-        container.replace(FILE_SYSTEM_DRIVER_KEY, {
-            provide: FILE_SYSTEM_DRIVER_KEY,
-            useValue: vol
         });
 
         return {
