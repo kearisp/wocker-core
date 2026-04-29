@@ -56,19 +56,22 @@ describe("Project", (): void => {
             "/home/wocker/projects/test-project"
         );
 
-        const VALUE_KEY = "value";
-        const MISSING_KEY = "missing";
+        const ENV_KEY = "SOME_TEST_KEY",
+              ENV_VALUE = "some-test-value",
+              MISSING_KEY = "SECOND_TEST";
 
         expect(project.containerName).toBe(`${project.name}.workspace`);
+        expect(project.hasEnv(ENV_KEY)).toBe(false);
+
+        project.setEnv(ENV_KEY, ENV_VALUE);
+
+        expect(project.getEnv(ENV_KEY)).toBe(ENV_VALUE);
+        expect(project.hasEnv(ENV_KEY)).toBe(true);
         expect(project.hasEnv(MISSING_KEY)).toBe(false);
 
-        project.setEnv(VALUE_KEY, "test-value");
+        project.unsetEnv(ENV_KEY);
 
-        expect(project.getEnv(VALUE_KEY)).toBe("test-value");
-        expect(project.hasEnv(MISSING_KEY)).toBe(false);
-
-        project.unsetEnv(VALUE_KEY);
-        project.unsetEnv(VALUE_KEY);
+        expect(project.hasEnv(ENV_KEY)).toBe(false);
     });
 
     it("should manage project domains", async (): Promise<void> => {

@@ -6,7 +6,7 @@ import {ServiceConfig} from "./ServiceConfig";
 
 export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     public constructor(
-        public readonly scope: ProjectConfigScope,
+        public readonly _scope: ProjectConfigScope,
         content: string
     ) {
         super(content, {
@@ -229,7 +229,9 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             return;
         }
 
-        delete this.env[key];
+        if(key in this.env) {
+            delete this.env[key];
+        }
     }
 
     public getVolumeBySource(source: string): string | undefined {
