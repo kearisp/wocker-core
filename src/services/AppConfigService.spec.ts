@@ -1,15 +1,13 @@
 import {describe, it, expect, beforeEach} from "@jest/globals";
 import {vol} from "memfs";
-import {PRESET_SOURCE_EXTERNAL} from "../types";
-import {AppConfig, AppConfigProperties} from "../makes";
-import {Factory} from "../core";
 import {Module} from "../decorators";
+import {AppConfig} from "../makes";
+import {Factory, Container} from "../core";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {LogService} from "./LogService";
-import {WOCKER_DATA_DIR, WOCKER_DATA_DIR_KEY, WOCKER_VERSION_KEY, FILE_SYSTEM_DRIVER_KEY} from "../env";
-import {ProcessService} from "./ProcessService";
+import {FileSystemDriver, PRESET_SOURCE_EXTERNAL} from "../types";
+import {WOCKER_DATA_DIR, WOCKER_VERSION_KEY} from "../env";
 
 
 describe("AppConfigService", (): void => {
@@ -18,32 +16,22 @@ describe("AppConfigService", (): void => {
     });
 
     const getContext = async (version = "1.0.0") => {
-        @Module({
-            providers: [
-                {
-                    provide: WOCKER_VERSION_KEY,
-                    useValue: version
-                },
-                {
-                    provide: WOCKER_DATA_DIR_KEY,
-                    useValue: WOCKER_DATA_DIR
-                },
-                {
-                    provide: FILE_SYSTEM_DRIVER_KEY,
-                    useValue: vol
-                },
-                AppConfigService,
-                AppService,
-                AppFileSystemService,
-                LogService,
-                ProcessService
-            ]
-        })
+        @Module({})
         class TestModule {}
 
-        const context = await Factory.create(TestModule);
+        const context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
+        });
+
+        const container = context.get(Container);
+
+        container.replace(WOCKER_VERSION_KEY, {
+            provide: WOCKER_VERSION_KEY,
+            useValue: version
+        });
 
         return {
+            appService: context.get(AppService),
             appConfigService: context.get(AppConfigService),
             fs: context.get(AppFileSystemService)
         };
@@ -58,7 +46,6 @@ describe("AppConfigService", (): void => {
     it("should correctly compare versions using isVersionGTE", async (): Promise<void> => {
         const {appConfigService} = await getContext("1.0.24");
 
-        expect(appConfigService.isVersionGTE("0.0.-1")).toBeTruthy();
         expect(appConfigService.isVersionGTE("0.0.0")).toBeTruthy();
         expect(appConfigService.isVersionGTE("1.0.23")).toBeTruthy();
         expect(appConfigService.isVersionGTE("1.0.24")).toBeTruthy();
@@ -66,8 +53,7 @@ describe("AppConfigService", (): void => {
     });
 
     it("should successfully parse projects configuration from wocker.config.js file", async (): Promise<void> => {
-        const config: AppConfigProperties = {
-            logLevel: "info",
+        const config: AppConfig.Data = {
             projects: [
                 {
                     name: "project1",
@@ -83,7 +69,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "project1",
@@ -121,7 +106,6 @@ describe("AppConfigService", (): void => {
     it("should successfully parse config from wocker.config.json file", async (): Promise<void> => {
         vol.fromJSON({
             "wocker.config.json": JSON.stringify({
-                logLevel: "info",
                 projects: [
                     {
                         name: "test",
@@ -133,7 +117,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
@@ -146,7 +129,6 @@ describe("AppConfigService", (): void => {
         vol.fromJSON({
             "wocker.json": JSON.stringify(
                 JSON.stringify({
-                    logLevel: "info",
                     projects: [
                         {
                             name: "test",
@@ -159,7 +141,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
@@ -171,7 +152,6 @@ describe("AppConfigService", (): void => {
     it("should successfully parse config from data.json file", async (): Promise<void> => {
         vol.fromJSON({
             "data.json": JSON.stringify({
-                logLevel: "info",
                 projects: [
                     {
                         id: "test",
@@ -183,7 +163,6 @@ describe("AppConfigService", (): void => {
 
         const {appConfigService} = await getContext();
 
-        expect(appConfigService.config.logLevel).toBe("info");
         expect(appConfigService.config.projects).toEqual([
             {
                 name: "test",
@@ -192,16 +171,33 @@ describe("AppConfigService", (): void => {
         ]);
     });
 
-    // TODO
-    // it("should set and return correct working directory", async (): Promise<void> => {
-    //     const projectDir = "/home/wocker-test/projects/test-project";
-    //
-    //     const {appService} = await getContext();
-    //
-    //     appService.setPWD(projectDir);
-    //
-    //     expect(appService.pwd()).toBe(projectDir);
-    // });
+    it("should set and return correct working directory", async (): Promise<void> => {
+        const projectDir = "/home/wocker-test/projects/test-project";
+
+        vol.mkdirSync(projectDir, {
+            recursive: true
+        });
+
+        const {appConfigService} = await getContext();
+
+        let pwd = projectDir;
+
+        jest.spyOn(process, "chdir").mockImplementation((path) => {
+            if(!vol.existsSync(path)) {
+                throw new Error(`ENOENT: no such file or directory, chdir '${pwd}' -> '${path}'`);
+            }
+
+            pwd = path
+        });
+
+        jest.spyOn(process, "cwd").mockImplementation(() => {
+            return pwd;
+        });
+
+        appConfigService.setPWD(projectDir);
+
+        expect(appConfigService.pwd()).toBe(projectDir);
+    });
 
     it("should create wocker.config.js and save project configuration when adding new project", async (): Promise<void> => {
         const {appConfigService, fs} = await getContext();

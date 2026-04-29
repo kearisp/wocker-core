@@ -1,5 +1,5 @@
 import {Injectable, Inject} from "../decorators";
-import {FileSystemDriver} from "../types/FileSystemDriver";
+import {FileSystemDriver} from "../types";
 import {FileSystem} from "../makes/FileSystem";
 import {
     WOCKER_DATA_DIR_KEY,
@@ -7,7 +7,7 @@ import {
 } from "../env";
 
 
-@Injectable()
+@Injectable("APP_FILE_SYSTEM_SERVICE")
 export class AppFileSystemService extends FileSystem {
     public constructor(
         @Inject(WOCKER_DATA_DIR_KEY)

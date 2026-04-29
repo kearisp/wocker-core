@@ -1,15 +1,14 @@
 import {Cli} from "@kearisp/cli";
-import fs from "fs";
+import {Global, Module} from "../decorators";
 import {
-    Global,
-    Module
-} from "../decorators";
-import {AppService} from "../services/AppService";
-import {AppConfigService} from "../services/AppConfigService";
-import {AppFileSystemService} from "../services/AppFileSystemService";
-import {ProcessService} from "../services/ProcessService";
-import {EventService} from "../services/EventService";
-import {LogService} from "../services/LogService";
+    AppService,
+    AppConfigService,
+    AppFileSystemService,
+    ProcessService,
+    EventService,
+    LogService,
+    ProjectRepository
+} from "../services";
 import {
     WOCKER_VERSION_KEY,
     WOCKER_VERSION,
@@ -31,13 +30,10 @@ import {
             provide: WOCKER_DATA_DIR_KEY,
             useValue: WOCKER_DATA_DIR
         },
-        {
-            provide: FILE_SYSTEM_DRIVER_KEY,
-            useValue: fs
-        },
         AppService,
         AppConfigService,
         AppFileSystemService,
+        ProjectRepository,
         ProcessService,
         EventService,
         LogService
@@ -50,6 +46,7 @@ import {
         AppService,
         AppConfigService,
         AppFileSystemService,
+        ProjectRepository,
         ProcessService,
         EventService,
         LogService

@@ -17,7 +17,7 @@ export interface FileSystemDriver {
     fstatSync(fd: number): FS.Stats;
     mkdirSync(path: string, options?: FS.MakeDirectoryOptions): void;
     readdir(path: string, options: any, callback: (err: NodeJS.ErrnoException | null, files: string[]) => void): void;
-    readdirSync(path: string, options?: any): (string | Buffer)[] | Dirent[] | Dirent<Buffer>[];
+    readdirSync(path: string, options?: any): (string | Buffer<ArrayBufferLike>)[] | Dirent[] | Dirent<Buffer>[];
     readFileSync(path: string): string | Buffer;
     writeFileSync(path: string, data: string | Buffer | NodeJS.ArrayBufferView, options?: FS.WriteFileOptions): void;
     appendFileSync(path: FS.PathOrFileDescriptor, data: string | Uint8Array, options?: FS.WriteFileOptions): void;

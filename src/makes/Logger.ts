@@ -1,5 +1,6 @@
 import {AsyncStorage} from "../core";
-import {LogService} from "../services";
+// noinspection ES6PreferShortImport
+import {LogService} from "../services/LogService";
 
 
 export class Logger {

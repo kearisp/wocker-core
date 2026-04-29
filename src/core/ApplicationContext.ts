@@ -1,14 +1,16 @@
 import {Cli} from "@kearisp/cli";
-import {Type, InjectionToken} from "../types";
 import {Container} from "./Container";
 import {AsyncStorage} from "./AsyncStorage";
+import {Type, InjectionToken} from "../types";
+import {ApplicationOptions} from "../types/ApplicationOptions";
 import {WOCKER_VERSION} from "../env";
 
 
 export class ApplicationContext {
     public constructor(
         protected readonly module: Type,
-        protected readonly container: Container
+        protected readonly container: Container,
+        protected readonly options: ApplicationOptions = {}
     ) {}
 
     public get<TInput = any, TResult = TInput>(typeOrToken: InjectionToken<TInput>): TResult {

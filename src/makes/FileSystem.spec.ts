@@ -271,7 +271,7 @@ describe("FileSystem", (): void => {
         expect(fs.readdir("new-dir")).toEqual(["file1.txt", "file2.txt"]);
     });
 
-    it("should read symlink target (readlink)", (): void => {
+    it("should read link target (readlink)", (): void => {
         vol.fromJSON({
             "file.txt": "hello"
         }, WOCKER_DATA_DIR);
@@ -285,5 +285,107 @@ describe("FileSystem", (): void => {
         });
         expect(Buffer.isBuffer(buf)).toBe(true);
         expect(buf.toString()).toBe(fs.path("file.txt"));
+    });
+
+    it("should change directory (cd)", (): void => {
+        const subFs = fs.cd("sub-dir");
+        expect(subFs.path("file.txt")).toBe(`${WOCKER_DATA_DIR}/sub-dir/file.txt`);
+
+        const absoluteFs = fs.cd("/absolute/path");
+        expect(absoluteFs.path("file.txt")).toBe("/absolute/path/file.txt");
+    });
+
+    it("should get symbolic link stats (lstat)", (): void => {
+        vol.fromJSON({
+            "file.txt": "content"
+        }, WOCKER_DATA_DIR);
+        vol.symlinkSync(fs.path("file.txt"), fs.path("link.txt"));
+
+        const stats = fs.lstat("link.txt");
+        expect(stats.isSymbolicLink()).toBe(true);
+
+        const fileStats = fs.lstat("file.txt");
+        expect(fileStats.isFile()).toBe(true);
+    });
+
+    it("should read and write YAML", (): void => {
+        const data = {key: "value", nested: {foo: "bar"}};
+
+        fs.writeYAML("data.yaml", data);
+
+        const content = vol.readFileSync(`${WOCKER_DATA_DIR}/data.yaml`).toString();
+        expect(content).toContain("key: value");
+        expect(content).toContain("foo: bar");
+
+        expect(fs.readYAML("data.yaml")).toEqual(data);
+    });
+
+    it("should create write stream", async (): Promise<void> => {
+        const stream = fs.createWriteStream("stream.txt");
+        expect(stream).toBeDefined();
+
+        await new Promise<void>((resolve, reject) => {
+            stream.on("finish", resolve);
+            stream.on("error", reject);
+            stream.end("stream content");
+        });
+
+        expect(fs.exists("stream.txt")).toBe(true);
+        expect(fs.readFile("stream.txt").toString()).toBe("stream content");
+    });
+
+    it("should create read stream", async (): Promise<void> => {
+        vol.fromJSON({
+            "read.txt": "read content"
+        }, WOCKER_DATA_DIR);
+
+        const stream = fs.createReadStream("read.txt");
+        let content = "";
+        for await (const chunk of stream) {
+            content += chunk.toString();
+        }
+        expect(content).toBe("read content");
+    });
+
+    it("should change mode (chmod)", (): void => {
+        vol.fromJSON({
+            "file.txt": "content"
+        }, WOCKER_DATA_DIR);
+
+        fs.chmod("file.txt", 0o777);
+        const stats = fs.stat("file.txt");
+        expect(stats.mode & 0o777).toBe(0o777);
+    });
+
+    it("should change owner (chown)", (): void => {
+        vol.fromJSON({
+            "file.txt": "content"
+        }, WOCKER_DATA_DIR);
+
+        fs.chown("file.txt", 1000, 1000);
+        const stats = fs.stat("file.txt");
+        expect(stats.uid).toBe(1000);
+        expect(stats.gid).toBe(1000);
+    });
+
+    it("should create symbolic link (symlink)", (): void => {
+        vol.fromJSON({
+            "target.txt": "target content"
+        }, WOCKER_DATA_DIR);
+
+        fs.symlink("target.txt", "link.txt");
+
+        expect(fs.lstat("link.txt").isSymbolicLink()).toBe(true);
+        expect(fs.readlink("link.txt")).toBe("target.txt");
+    });
+
+    it("should remove file (unlink)", (): void => {
+        vol.fromJSON({
+            "file.txt": "content"
+        }, WOCKER_DATA_DIR);
+
+        expect(fs.exists("file.txt")).toBe(true);
+        fs.unlink("file.txt");
+        expect(fs.exists("file.txt")).toBe(false);
     });
 });
