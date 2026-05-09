@@ -7,7 +7,7 @@ import {
 } from "fs";
 import {FileSystemDriver} from "../../../types";
 import {AppConfigService} from "../../../services/AppConfigService";
-import {FileSystem} from "../../../makes";
+import {FileSystem, PluginConfig} from "../../../makes";
 import {Injectable, Inject} from "../../../decorators";
 import {PLUGIN_DIR_KEY, FILE_SYSTEM_DRIVER_KEY} from "../../../env";
 
@@ -40,6 +40,10 @@ export class PluginConfigService {
         }
 
         return this._fs;
+    }
+
+    public getConfig<T extends typeof PluginConfig>(Config: T): InstanceType<T> {
+        return Config.make(this.fs);
     }
 
     public isVersionGTE(version: string): boolean {

@@ -1,6 +1,7 @@
 import {Cli} from "@kearisp/cli";
 import {Container} from "./Container";
 import {AsyncStorage} from "./AsyncStorage";
+import {EventService} from "../services/EventService";
 import {Type, InjectionToken} from "../types";
 import {ApplicationOptions} from "../types/ApplicationOptions";
 import {WOCKER_VERSION} from "../env";
@@ -32,51 +33,61 @@ export class ApplicationContext {
     public async run(args: string[]): Promise<string> {
         return new Promise((resolve) => {
             AsyncStorage.run(this.container, (): void => {
-                const cli = this.get(Cli);
-
-                cli.command("")
-                    .option("version", {
-                        type: "boolean",
-                        alias: "v"
-                    })
-                    .action((input) => {
-                        if(input.option("version")) {
-                            return WOCKER_VERSION;
-                        }
-
-                        for(const [, module] of this.container.modules) {
-                            for(const [, container] of module.controllers) {
-                                if(!container.description) {
-                                    continue;
-                                }
-
-                                console.info(`${container.description}:`);
-
-                                const spaceLength = container.commands.reduce((space, route) => {
-                                    return route.commandNames.reduce((space, command) => {
-                                        return Math.max(space, command.length + 2);
-                                    }, space);
-                                }, 0);
-
-                                for(const route of container.commands) {
-                                    if(!route.description) {
-                                        continue;
-                                    }
-
-                                    for(const commandName of route.commandNames) {
-                                        const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
-
-                                        console.info(`  ${commandName} ${space} ${route.description}`);
-                                    }
-                                }
-
-                                console.info("");
-                            }
-                        }
-                    });
-
-                return resolve(cli.run(args));
+                return resolve(this.process(args));
             });
         });
+    }
+
+    protected async process(args: string[]) {
+        const cli = this.get(Cli),
+              eventService = this.get(EventService);
+
+        cli.command("")
+            .option("version", {
+                type: "boolean",
+                alias: "v"
+            })
+            .action((input) => {
+                if(input.option("version")) {
+                    return WOCKER_VERSION;
+                }
+
+                for(const [, module] of this.container.modules) {
+                    for(const [, container] of module.controllers) {
+                        if(!container.description) {
+                            continue;
+                        }
+
+                        console.info(`${container.description}:`);
+
+                        const spaceLength = container.commands.reduce((space, route) => {
+                            return route.commandNames.reduce((space, command) => {
+                                return Math.max(space, command.length + 2);
+                            }, space);
+                        }, 0);
+
+                        for(const route of container.commands) {
+                            if(!route.description) {
+                                continue;
+                            }
+
+                            for(const commandName of route.commandNames) {
+                                const space = " ".repeat(Math.max(0, spaceLength - commandName.length));
+
+                                console.info(`  ${commandName} ${space} ${route.description}`);
+                            }
+                        }
+
+                        console.info("");
+                    }
+                }
+            });
+
+        try {
+            return await cli.run(args);
+        }
+        finally {
+            await eventService.emit("finish");
+        }
     }
 }

@@ -3,7 +3,7 @@ import {AppService} from "../services/AppService";
 import {ProjectRepository} from "../services/ProjectRepository";
 import {ProjectConfig} from "./ProjectConfig";
 import {volumeParse} from "../utils/volumeParse";
-import {EnvConfig, ProjectConfigScope, ProjectRef, ProjectType} from "../types";
+import {EnvConfig, ProjectConfigScope, ProjectRef, ProjectType, PresetMode} from "../types";
 
 
 export class Project {
@@ -57,11 +57,11 @@ export class Project {
         this.configs.app.preset = preset;
     }
 
-    public get presetMode() {
+    public get presetMode(): PresetMode {
         return this.configs.app.presetMode! || this.configs.project.presetMode!;
     }
 
-    public set presetMode(mode: "project" | "global") {
+    public set presetMode(mode: PresetMode) {
         this.configs.app.presetMode = mode;
     }
 

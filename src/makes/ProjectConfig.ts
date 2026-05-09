@@ -1,7 +1,7 @@
-import {EnvConfig, ProjectType, ProjectConfigScope} from "../types";
 import {volumeParse} from "../utils/volumeParse";
 import {JsonEditor} from "./JsonEditor";
 import {ServiceConfig} from "./ServiceConfig";
+import {EnvConfig, ProjectType, ProjectConfigScope, PresetMode} from "../types";
 
 
 export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
@@ -321,7 +321,7 @@ export namespace ProjectConfig {
         dockerfile?: string;
         composefile?: string;
         preset?: string;
-        presetMode?: "global" | "project";
+        presetMode?: PresetMode;
         scripts?: {
             [script: string]: string;
         };

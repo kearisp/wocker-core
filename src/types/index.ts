@@ -11,6 +11,7 @@ export * from "./PluginMetadata";
 export * from "./ProjectConfigScope";
 export * from "./PluginRef";
 export * from "./PresetRef";
+export * from "./PresetMode";
 export * from "./PresetSource";
 export * from "./ProviderType";
 export * from "./ProjectRef";
@@ -24,9 +25,3 @@ export type {
      */
     ModuleMetadata as ModuleConfig
 } from "./ModuleMetadata";
-export type {
-    /**
-     * @deprecated
-     */
-    PluginMetadata as PluginConfig
-} from "./PluginMetadata";
