@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {ProjectConfig} from "./ProjectConfig";
-import {ProjectType, ProjectConfigScope} from "../types";
+import {ProjectType, PresetMode, ProjectConfigScope} from "../types";
 
 
 describe("ProjectConfig", () => {
@@ -51,7 +51,7 @@ describe("ProjectConfig", () => {
         it("should handle preset and presetMode", () => {
             const config = new ProjectConfig(ProjectConfigScope.APP, "{}");
             config.preset = "laravel";
-            config.presetMode = "global";
+            config.presetMode = PresetMode.GLOBAL;
 
             expect(config.preset).toEqual("laravel");
             expect(config.presetMode).toEqual("global");
