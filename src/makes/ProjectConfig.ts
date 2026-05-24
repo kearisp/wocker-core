@@ -127,7 +127,7 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public set cmd(cmd: string[] | undefined) {
-        this.state.cmd = cmd;
+        this.set(["cmd"], cmd);
     }
 
     public get scripts(): any {
@@ -182,7 +182,11 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             return;
         }
 
-        this.buildArgs[key] = value;
+        if(!this.state.buildArgs) {
+            this.set(["buildArgs"], {});
+        }
+
+        this.set(["buildArgs", key], value);
     }
 
     public unsetBuildArg(key: string, service?: string): void {
@@ -205,7 +209,6 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public hasEnv(key: string): boolean {
-        // return this.env.hasOwnProperty(key);
         return key in this.env;
     }
 
@@ -218,6 +221,10 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             this.set(["services", service, "env", key], sValue);
 
             return;
+        }
+
+        if(!this.state.env) {
+            this.set(["env"], {});
         }
 
         this.set(["env", key], sValue);

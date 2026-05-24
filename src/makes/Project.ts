@@ -69,14 +69,23 @@ export class Project {
         return this.configs.app.image || this.configs.project.image;
     }
 
+    public set image(image: string | undefined) {
+        if(!image) {
+            delete this.configs.app.image;
+            return;
+        }
+
+        this.configs.app.image = image;
+    }
+
     /** @deprecated */
     public get imageName(): string | undefined {
-        return this.configs.app.image || this.configs.project.image;
+        return this.image;
     }
 
     /** @deprecated */
     public set imageName(image: string | undefined) {
-        this.configs.app.image = image;
+        this.image = image;
     }
 
     public get dockerfile(): string | undefined {
@@ -224,7 +233,7 @@ export class Project {
     }
 
     public hasMeta(key: string): boolean {
-        return this.configs.app.metadata.hasOwnProperty(key) || this.configs.project.metadata.hasOwnProperty(key);
+        return key in this.configs.app.metadata || key in this.configs.project.metadata;
     }
 
     public getMeta(key: string): string | undefined;
