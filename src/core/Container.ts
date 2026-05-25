@@ -66,8 +66,8 @@ export class Container {
             wrapper.replace(provider);
         }
 
-        this.modules.forEach((moduleRef): void => {
-            moduleRef.replace(token, provider);
+        this.modules.forEach((moduleWrapper): void => {
+            moduleWrapper.replace(token, provider);
         });
     }
 }

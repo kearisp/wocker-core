@@ -1,6 +1,6 @@
 import {Injectable} from "../../../decorators";
-import {Project} from "../makes/Project";
-import {ProjectRepository} from "../repositories/ProjectRepository";
+import {Project} from "../../../makes/Project";
+import {ProjectRepository} from "../../../services/ProjectRepository";
 
 
 @Injectable("PROJECT_SERVICE")

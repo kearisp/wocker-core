@@ -31,7 +31,7 @@ export class Route {
     ) {
         const descriptor = Object.getOwnPropertyDescriptor(this.type.prototype, this.method);
 
-        if(!descriptor) {
+        if(!descriptor || !descriptor.value) {
             return;
         }
 

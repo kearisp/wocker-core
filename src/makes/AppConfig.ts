@@ -1,3 +1,4 @@
+import {FileSystem} from "./FileSystem";
 import {
     EnvConfig,
     PackageManagerType,
@@ -11,30 +12,17 @@ import {
 } from "../types";
 
 
-export type AppConfigProperties = {
-    debug?: boolean;
-    pm?: PackageManagerType;
-    keystore?: string;
-    logLevel?: "off" | "info" | "warn" | "error";
-    plugins?: PluginRef[];
-    presets?: PresetRef[];
-    projects?: ProjectOldRef[];
-    meta?: EnvConfig;
-    env?: EnvConfig;
-};
-
-export class AppConfig {
+export abstract class AppConfig {
     public debug?: boolean;
     public pm?: PackageManagerType;
     public keystore?: string;
-    public logLevel: "off" | "info" | "warn" | "error" = "off";
     public plugins: PluginRef[];
     public presets: PresetRef[];
     public projects: ProjectRef[];
     public meta?: EnvConfig;
     public env?: EnvConfig;
 
-    public constructor(data: AppConfigProperties) {
+    public constructor(data: AppConfig.Data) {
         const {
             plugins = [],
             presets = [],
@@ -94,13 +82,19 @@ export class AppConfig {
         this.plugins = this.plugins.filter((plugin) => plugin.name !== name);
     }
 
-    public getProject(name: string): ProjectRef|undefined {
+    public getProject(name: string): ProjectRef | undefined {
         if(!this.projects) {
             return;
         }
 
         return this.projects.find((projectData) => {
             return projectData.name === name;
+        });
+    }
+
+    public getProjectByPath(path: string): ProjectRef | undefined {
+        return this.projects.find((ref) => {
+            return ref.path === path;
         });
     }
 
@@ -179,9 +173,9 @@ export class AppConfig {
         return name in this.meta;
     }
 
-    public getMeta(name: string, defaultValue?: string): string|undefined;
+    public getMeta(name: string, defaultValue?: string): string | undefined;
     public getMeta(name: string, defaultValue: string): string;
-    public getMeta(name: string, defaultValue?: string): string|undefined {
+    public getMeta(name: string, defaultValue?: string): string | undefined {
         if(!this.meta || !(name in this.meta)) {
             return defaultValue;
         }
@@ -209,14 +203,14 @@ export class AppConfig {
         }
     }
 
-    public getEnv(name: string): string|undefined;
-    public getEnv(name: string, defaultValue: string): string;
-    public getEnv(name: string, defaultValue?: string): string|undefined {
-        if(!this.env || !(name in this.env)) {
-            return defaultValue;
+    public getEnv(key: string, byDefault?: string): string | undefined;
+    public getEnv(key: string, byDefault: string): string;
+    public getEnv(key: string, byDefault?: string): string | undefined {
+        if(!this.env || !(key in this.env)) {
+            return byDefault;
         }
 
-        return this.env[name];
+        return this.env[key];
     }
 
     public setEnv(name: string, value: string): void {
@@ -239,11 +233,12 @@ export class AppConfig {
         }
     }
 
-    public toObject(): AppConfigProperties {
+    public abstract save(): void;
+
+    public toObject(): AppConfig.Data {
         return {
             debug: this.debug,
             pm: this.pm,
-            logLevel: this.logLevel,
             keystore: this.keystore,
             plugins: this.plugins.length > 0 ? this.plugins : undefined,
             presets: this.presets.length > 0 ? this.presets : undefined,
@@ -258,4 +253,76 @@ export class AppConfig {
 
         return `// Wocker config\nexports.config = ${json};`;
     }
+
+    public static make(fs: FileSystem): AppConfig {
+        let data: AppConfig.Data = {};
+
+        if(fs.exists("wocker.config.js")) {
+            try {
+                const {config} = require(fs.path("wocker.config.js"));
+
+                data = config;
+            }
+            catch(err) {
+                // TODO: Log somehow
+
+                let json = fs.readJSON("wocker.config.json");
+
+                if(typeof json === "string") {
+                    json = JSON.parse(json);
+                }
+
+                data = json;
+            }
+        }
+        else if(fs.exists("wocker.config.json")) {
+            data = fs.readJSON("wocker.config.json");
+        }
+        else if(fs.exists("wocker.json")) {
+            let json = fs.readJSON("wocker.json");
+
+            if(typeof json === "string") {
+                json = JSON.parse(json);
+            }
+
+            data = json;
+        }
+        else if(fs.exists("data.json")) {
+            data = fs.readJSON("data.json");
+        }
+
+        return new class extends AppConfig {
+            public save(): void {
+                if(!fs.exists()) {
+                    fs.mkdir("", {
+                        recursive: true
+                    });
+                }
+
+                fs.writeFile("wocker.config.js", this.toJsString());
+                fs.writeJSON("wocker.config.json", this.toObject()); // Backup file
+
+                if(fs.exists("data.json")) {
+                    fs.rm("data.json");
+                }
+
+                if(fs.exists("wocker.json")) {
+                    fs.rm("wocker.json");
+                }
+            }
+        }(data);
+    }
+}
+
+export namespace AppConfig {
+    export type Data = {
+        debug?: boolean;
+        pm?: PackageManagerType;
+        keystore?: string;
+        plugins?: PluginRef[];
+        presets?: PresetRef[];
+        projects?: ProjectOldRef[];
+        meta?: EnvConfig;
+        env?: EnvConfig;
+    };
 }

@@ -4,3 +4,8 @@ export * from "./ConfigCollection";
 export * from "./FileSystem";
 export * from "./FileSystemManager";
 export * from "./Logger";
+export * from "./PluginConfig";
+export * from "./Project";
+export * from "./Version";
+export * from "./VersionRange";
+export * from "./VersionRule";

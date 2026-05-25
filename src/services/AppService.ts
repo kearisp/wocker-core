@@ -1,7 +1,10 @@
 import {Injectable, Inject} from "../decorators";
-import {AppConfigService} from "./AppConfigService";
+import {Version} from "../makes/Version";
+import {AppConfig} from "../makes/AppConfig";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {ProjectRef} from "../types";
+import {ProcessService} from "./ProcessService";
+import {LogService} from "./LogService";
+import {ProjectRef, PluginRef, PresetRef, PresetSource, ProjectType} from "../types";
 import {WOCKER_VERSION_KEY} from "../env";
 
 
@@ -11,49 +14,147 @@ type TypeMap = {
 
 @Injectable("APP_SERVICE")
 export class AppService {
+    protected _config?: AppConfig;
+    protected readonly mapTypes: TypeMap = {
+        [ProjectType.IMAGE]: "Image",
+        [ProjectType.PRESET]: "Preset",
+        [ProjectType.DOCKERFILE]: "Dockerfile"
+    };
+
     public constructor(
         @Inject(WOCKER_VERSION_KEY)
         public readonly version: string,
-        protected readonly appConfigService: AppConfigService,
-        protected readonly fs: AppFileSystemService
+        public readonly fs: AppFileSystemService,
+        protected readonly processService: ProcessService,
+        protected readonly logService: LogService
     ) {}
 
+    public get config(): AppConfig {
+        if(!this._config) {
+            this._config = AppConfig.make(this.fs);
+        }
+
+        return this._config;
+    }
+
+    public get debug(): boolean {
+        return this.config.debug || false;
+    }
+
+    public set debug(debug: boolean) {
+        this.config.debug = debug;
+    }
+
     public get projects(): ProjectRef[] {
-        return this.appConfigService.projects;
+        return this.config.projects;
+    }
+
+    public get plugins(): PluginRef[] {
+        return this.config.plugins;
+    }
+
+    public get presets(): PresetRef[] {
+        return this.config.presets;
+    }
+
+    public isVersionGT(version: string): boolean {
+        return Version.parse(this.version).compare(version) > 0;
     }
 
     public isVersionGTE(version: string): boolean {
-        const current = this.version.split(".").map(Number);
-        const compare = version.split(".").map(Number);
+        return Version.parse(this.version).compare(version) >= 0;
+    }
 
-        for(let i = 0; i < 3; i++) {
-            if(current[i] > compare[i]) {
-                return true;
-            }
-            else if(current[i] < compare[i]) {
-                return false;
-            }
+    public getProjectTypes() {
+        if(this.isExperimentalEnabled("projectComposeType")) {
+            return {
+                ...this.mapTypes,
+                [ProjectType.COMPOSE]: "Docker compose"
+            };
         }
 
-        return true;
+        return this.mapTypes;
     }
 
-    public get experimentalFeatures(): string[] {
-        return this.appConfigService.experimentalFeatures;
-    }
-
-    public getProjectTypes(): TypeMap {
-        return this.appConfigService.getProjectTypes();
+    public getProject(name: string): ProjectRef | undefined {
+        return this.config.getProject(name);
     }
 
     public addProject(name: string, path: string): void {
-        this.appConfigService.addProject(name, path);
-        this.appConfigService.save();
+        this.config.addProject(name, path);
+        this.config.save();
     }
 
-    public getMeta(name: string, byDefault?: string): string|undefined
-    public getMeta(name: string, byDefault: string): string;
-    public getMeta(name: string, byDefault?: string): string|undefined {
-        return this.appConfigService.getMeta(name, byDefault);
+    public removeProject(name: string): void {
+        this.config.removeProject(name);
+        this.config.save();
+    }
+
+    public addPlugin(name: string, env?: PluginRef["env"]): void {
+        this.config.addPlugin(name, env);
+        this.config.save();
+    }
+
+    public removePlugin(name: string): void {
+        this.config.removePlugin(name);
+        this.config.save();
+    }
+
+    public registerPreset(name: string, source: PresetSource, path?: string): void {
+        this.config.registerPreset(name, source, path);
+        this.config.save();
+    }
+
+    public unregisterPreset(name: string): void {
+        this.config.unregisterPreset(name);
+        this.config.save();
+    }
+
+    public getEnv(key: string, byDefault?: string): string|undefined;
+    public getEnv(key: string, byDefault: string): string;
+    public getEnv(key: string, byDefault?: string): string | undefined {
+        return this.config.getEnv(key, byDefault);
+    }
+
+    public setEnv(key: string, value: string): void {
+        this.config.setEnv(key, value);
+        this.config.save();
+    }
+
+    public unsetEnv(key: string): void {
+        this.config.unsetEnv(key);
+        this.config.save();
+    }
+
+    public getMeta(key: string, byDefault?: string): string|undefined
+    public getMeta(key: string, byDefault: string): string;
+    public getMeta(key: string, byDefault?: string): string|undefined {
+        return this.config.getMeta(key, byDefault);
+    }
+
+    public setMeta(key: string, value: string): void {
+        this.config.setMeta(key, value);
+        this.config.save();
+    }
+
+    public unsetMeta(key: string): void {
+        this.config.unsetMeta(key);
+        this.config.save();
+    }
+
+    public get experimentalFeatures(): string[] {
+        return [
+            "projectComposeType",
+            "buildKit",
+            "dns"
+        ];
+    }
+
+    public isExperimentalEnabled(key: string): boolean {
+        return this.config.getMeta(`experimental.${key}`) === "enabled";
+    }
+
+    public save(): void {
+        this.config.save();
     }
 }

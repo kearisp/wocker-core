@@ -1,19 +1,19 @@
 import {describe, it, expect, jest} from "@jest/globals";
+import {vol} from "memfs";
 import {Module, Controller, Event} from "../decorators";
-import {EventService, EventHandle} from "./EventService";
 import {Factory} from "../core";
+import {EventService, EventHandle} from "./EventService";
+import {FileSystemDriver} from "../types";
 
 
 describe("EventService", (): void => {
     const getContext = async () => {
-        @Module({
-            providers: [
-                EventService
-            ]
-        })
+        @Module({})
         class TestModule {}
 
-        const context = await Factory.create(TestModule);
+        const context = await Factory.create(TestModule, {
+            fsDriver: vol as unknown as FileSystemDriver
+        });
 
         return {
             eventService: context.get(EventService)

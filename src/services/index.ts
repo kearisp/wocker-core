@@ -4,3 +4,4 @@ export * from "./AppService";
 export * from "./EventService";
 export * from "./LogService";
 export * from "./ProcessService";
+export * from "./ProjectRepository";
