@@ -71,23 +71,23 @@ export class ProcessService {
         process.env[key] = value;
     }
 
-    public moveCursor(x: number, y: number) {
-        Readline.moveCursor(this.stdout, x, y);
+    public moveCursor(dx: number, dy: number): void {
+        Readline.moveCursor(this.stdout, dx, dy);
     }
 
-    public cursorTo(x: number, y?: number) {
+    public cursorTo(x: number, y?: number): void {
         Readline.cursorTo(this.stdout, x, y);
     }
 
-    public clearLine(dir: Direction) {
+    public clearLine(dir: Direction): void {
         Readline.clearLine(this.stdout, dir);
     }
 
-    public saveCursor() {
+    public saveCursor(): void {
         this.stdout.write("\x1b[s");
     }
 
-    public restoreCursor() {
+    public restoreCursor(): void {
         this.stdout.write("\x1b[u");
     }
 }
