@@ -1,4 +1,5 @@
 import Path from "path";
+import Readline, {Direction} from "readline";
 import {Injectable} from "../decorators";
 
 
@@ -18,6 +19,14 @@ export class ProcessService {
         }
 
         return `${process.getgid()}`;
+    }
+
+    public get rows(): number {
+        return this.stdout.rows;
+    }
+
+    public get columns(): number {
+        return this.stdout.columns;
     }
 
     public get stdin(): NodeJS.ReadStream {
@@ -60,5 +69,25 @@ export class ProcessService {
 
     public setEnv(key: string, value: string): void {
         process.env[key] = value;
+    }
+
+    public moveCursor(dx: number, dy: number): void {
+        Readline.moveCursor(this.stdout, dx, dy);
+    }
+
+    public cursorTo(x: number, y?: number): void {
+        Readline.cursorTo(this.stdout, x, y);
+    }
+
+    public clearLine(dir: Direction): void {
+        Readline.clearLine(this.stdout, dir);
+    }
+
+    public saveCursor(): void {
+        this.stdout.write("\x1b[s");
+    }
+
+    public restoreCursor(): void {
+        this.stdout.write("\x1b[u");
     }
 }
