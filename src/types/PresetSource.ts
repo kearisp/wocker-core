@@ -1,7 +1,11 @@
-export const PRESET_SOURCE_INTERNAL = "internal" as const;
-export const PRESET_SOURCE_EXTERNAL = "external" as const;
-export const PRESET_SOURCE_GITHUB = "github" as const;
+enum PresetSourceEnum {
+    INTERNAL = "internal",
+    EXTERNAL = "external",
+    GITHUB = "github"
+}
 
-export type PresetSource = typeof PRESET_SOURCE_INTERNAL
-                         | typeof PRESET_SOURCE_EXTERNAL
-                         | typeof PRESET_SOURCE_GITHUB;
+export type PresetSource = PresetSourceEnum;
+
+export const PresetSource = Object.assign({}, PresetSourceEnum, {
+    values: (): PresetSourceEnum[] => Object.values(PresetSourceEnum)
+});

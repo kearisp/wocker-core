@@ -6,9 +6,7 @@ import {
     PresetRef,
     ProjectRef,
     ProjectOldRef,
-    PresetSource,
-    PRESET_SOURCE_EXTERNAL,
-    PRESET_SOURCE_INTERNAL
+    PresetSource
 } from "../types";
 
 
@@ -124,12 +122,12 @@ export abstract class AppConfig {
     }
 
     public registerPreset(name: string, source: PresetSource, path?: string): void {
-        if(source === PRESET_SOURCE_INTERNAL) {
+        if(source === PresetSource.INTERNAL) {
             return;
         }
 
         let presetData = this.presets.find((preset): boolean => {
-            if(source === PRESET_SOURCE_EXTERNAL && preset.path === path) {
+            if(source === PresetSource.EXTERNAL && preset.path === path) {
                 return true;
             }
 
@@ -147,7 +145,7 @@ export abstract class AppConfig {
 
         presetData.source = source;
 
-        if(presetData.source === PRESET_SOURCE_EXTERNAL) {
+        if(presetData.source === PresetSource.EXTERNAL) {
             presetData.path = path;
         }
         else if(presetData.path) {
