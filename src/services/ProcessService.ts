@@ -38,7 +38,15 @@ export class ProcessService {
     }
 
     public get stderr(): NodeJS.WriteStream {
-        return process.stdout;
+        return process.stderr;
+    }
+
+    public get exitCode() {
+        return process.exitCode;
+    }
+
+    public set exitCode(exitCode: number | string | undefined | null) {
+        process.exitCode = exitCode;
     }
 
     public pwd(path: string = ""): string {

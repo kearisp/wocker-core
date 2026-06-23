@@ -178,8 +178,39 @@ describe("ProcessService", () => {
     });
 
     describe("stderr", () => {
-        it("should return process.stdout (current implementation)", () => {
-            expect(processService.stderr).toBe(process.stdout);
+        it("should return process.stderr", () => {
+            expect(processService.stderr).toBe(process.stderr);
+        });
+    });
+
+    describe("exitStatus", () => {
+        it("should return process.exitCode", () => {
+            const original = process.exitCode;
+            process.exitCode = 0;
+
+            expect(processService.exitCode).toBe(0);
+
+            process.exitCode = original;
+        });
+
+        it("should set process.exitCode to a number", () => {
+            const original = process.exitCode;
+
+            processService.exitCode = 1;
+
+            expect(process.exitCode).toBe(1);
+
+            process.exitCode = original;
+        });
+
+        it("should set process.exitCode to undefined", () => {
+            const original = process.exitCode;
+
+            processService.exitCode = undefined;
+
+            expect(process.exitCode).toBeUndefined();
+
+            process.exitCode = original;
         });
     });
 
