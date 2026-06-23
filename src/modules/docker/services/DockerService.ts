@@ -1,6 +1,12 @@
 import type Docker from "dockerode";
-import type {Container, ContainerInfo, ImageInfo, VolumeCreateResponse} from "dockerode";
-import {Duplex} from "node:stream";
+import type {
+    Container,
+    ContainerInfo,
+    ImageInfo,
+    VolumeCreateOptions,
+    VolumeCreateResponse
+} from "dockerode";
+import {Duplex} from "stream";
 import {Injectable} from "../../../decorators";
 import {ContainerService} from "./ContainerService";
 
@@ -12,7 +18,7 @@ export abstract class DockerService {
     public abstract getContainer(name: string | string[]): Promise<Container | null>;
     public abstract listContainer(params: DockerService.ListContainerParams): Promise<ContainerInfo[]>;
     public abstract removeContainer(name: string): Promise<void>;
-    public abstract createVolume(name: string): Promise<VolumeCreateResponse>;
+    public abstract createVolume(name: string, options?: DockerService.CreateVolumeOptions): Promise<VolumeCreateResponse>;
     public abstract hasVolume(name: string): Promise<boolean>;
     public abstract rmVolume(name: string): Promise<void>;
     public abstract buildImage(params: DockerService.BuildImageParams): Promise<any>;
@@ -59,18 +65,8 @@ export namespace DockerService {
     };
 
     export type ContainerOrName = ContainerService.ContainerOrName;
+
     export type LogsParams = ContainerService.LogsParams;
-}
 
-export namespace DockerServiceParams {
-    /** @deprecated */
-    export type CreateContainer = DockerService.CreateContainerParams;
-
-    /** @deprecated */
-    export type ImageList = DockerService.ImageLSOptions;
-
-    export type BuildImage = DockerService.BuildImageParams;
-
-    /** @deprecated */
-    export type Exec = DockerService.ExecParams;
+    export type CreateVolumeOptions = Omit<VolumeCreateOptions, "Name">;
 }
