@@ -6,7 +6,7 @@ import {Factory, Container} from "../core";
 import {AppConfigService} from "./AppConfigService";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {FileSystemDriver, PRESET_SOURCE_EXTERNAL} from "../types";
+import {FileSystemDriver, PresetSource} from "../types";
 import {WOCKER_DATA_DIR, WOCKER_VERSION_KEY} from "../env";
 
 
@@ -305,12 +305,12 @@ describe("AppConfigService", (): void => {
     it("should properly manage preset registration and unregistration", async (): Promise<void> => {
         const {appConfigService} = await getContext();
 
-        appConfigService.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/home/test");
+        appConfigService.registerPreset("test", PresetSource.EXTERNAL, "/home/test");
 
         expect(appConfigService.config.presets).toEqual([
             {
                 name: "test",
-                source: PRESET_SOURCE_EXTERNAL,
+                source: PresetSource.EXTERNAL,
                 path: "/home/test"
             }
         ]);

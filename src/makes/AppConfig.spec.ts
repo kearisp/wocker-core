@@ -1,6 +1,6 @@
 import {describe, it, expect} from "@jest/globals";
 import {AppConfig} from "./AppConfig";
-import {PRESET_SOURCE_EXTERNAL, PRESET_SOURCE_INTERNAL} from "../types";
+import {PresetSource} from "../types";
 
 
 describe("AppConfig", (): void => {
@@ -63,20 +63,20 @@ describe("AppConfig", (): void => {
     it("should manage preset registration and unregistration properly", (): void => {
         const config = new TestConfig({});
 
-        config.registerPreset("test", PRESET_SOURCE_EXTERNAL, "/test");
+        config.registerPreset("test", PresetSource.EXTERNAL, "/test");
 
         expect(config.presets).toEqual([
-            {name: "test", source: PRESET_SOURCE_EXTERNAL, path: "/test"}
+            {name: "test", source: PresetSource.EXTERNAL, path: "/test"}
         ]);
 
-        config.registerPreset("test", PRESET_SOURCE_INTERNAL);
+        config.registerPreset("test", PresetSource.INTERNAL);
 
         expect(config.presets).toEqual([
-            {name: "test", source: PRESET_SOURCE_EXTERNAL, path: "/test"}
+            {name: "test", source: PresetSource.EXTERNAL, path: "/test"}
         ]);
 
         config.unregisterPreset("test");
-        config.registerPreset("test", PRESET_SOURCE_INTERNAL);
+        config.registerPreset("test", PresetSource.INTERNAL);
         config.unregisterPreset("test");
         config.unregisterPreset("test");
 
