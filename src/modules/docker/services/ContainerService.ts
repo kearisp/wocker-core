@@ -55,6 +55,7 @@ export namespace ContainerService {
 
     export type ExecParams = string[] | {
         cmd: string[];
+        attach?: boolean;
         tty?: boolean;
         user?: string;
     };
