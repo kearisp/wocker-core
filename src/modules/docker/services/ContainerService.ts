@@ -62,5 +62,6 @@ export namespace ContainerService {
 
     export type LogsParams = {
         signal?: AbortSignal;
+        tail?: number;
     };
 }

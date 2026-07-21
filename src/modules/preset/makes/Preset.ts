@@ -29,8 +29,8 @@ export type PresetProperties = PickProperties<Preset>;
 
 export abstract class Preset {
     public name: string;
-    public source?: PresetSource;
     public version: string;
+    public source?: PresetSource;
     public type?: string;
     public image?: string;
     public dockerfile?: string;

@@ -146,6 +146,7 @@ export class AppService {
         return [
             "projectComposeType",
             "buildKit",
+            "presetV2",
             "dns"
         ];
     }

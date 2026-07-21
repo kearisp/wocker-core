@@ -36,11 +36,15 @@ export class LogService {
             return typeof item !== "string" ? JSON.stringify(item) : item;
         }).join(" ");
 
+        const escapedLogData = logData
+            .replace(/\\/g, "\\\\")
+            .replace(/\r\n|\r|\n/g, "\\n");
+
         if(!this.fs.exists(this.logName)) {
             this.fs.writeFile(this.logName, "");
         }
 
-        this.fs.appendFile(this.logName, `[${time}] ${type}: ${logData}\n`);
+        this.fs.appendFile(this.logName, `[${time}] ${type}: ${escapedLogData}\n`);
     }
 
     public debug(...data: any[]): void {
