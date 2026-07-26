@@ -5,8 +5,7 @@ import {
     PluginRef,
     PresetRef,
     ProjectRef,
-    ProjectOldRef,
-    PresetSource
+    ProjectOldRef
 } from "../types";
 
 
@@ -121,45 +120,40 @@ export abstract class AppConfig {
         });
     }
 
-    public registerPreset(name: string, source: PresetSource, path?: string): void {
-        if(source === PresetSource.INTERNAL) {
+    public registerPreset(presetRef: PresetRef): void {
+        const {
+            name,
+            path
+        } = presetRef;
+
+        if(!path) {
             return;
         }
 
         let presetData = this.presets.find((preset): boolean => {
-            if(source === PresetSource.EXTERNAL && preset.path === path) {
-                return true;
-            }
-
-            return preset.name === name;
+            return preset.path === path;
         });
 
         if(!presetData) {
             presetData = {
                 name,
-                source
+                path
             };
 
             this.presets.push(presetData);
         }
 
-        presetData.source = source;
-
-        if(presetData.source === PresetSource.EXTERNAL) {
-            presetData.path = path;
-        }
-        else if(presetData.path) {
-            delete presetData.path;
-        }
+        presetData.name = name;
+        presetData.path = path;
     }
 
-    public unregisterPreset(name: string): void {
+    public unregisterPreset(path: string): void {
         if(this.presets.length === 0) {
             return;
         }
 
         this.presets = this.presets.filter((preset) => {
-            return preset.name !== name;
+            return preset.path !== path;
         });
     }
 

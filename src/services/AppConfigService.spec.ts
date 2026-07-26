@@ -310,7 +310,6 @@ describe("AppConfigService", (): void => {
         expect(appConfigService.config.presets).toEqual([
             {
                 name: "test",
-                source: PresetSource.EXTERNAL,
                 path: "/home/test"
             }
         ]);

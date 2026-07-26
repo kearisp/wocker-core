@@ -4,7 +4,7 @@ import {AppConfig} from "../makes/AppConfig";
 import {AppFileSystemService} from "./AppFileSystemService";
 import {ProcessService} from "./ProcessService";
 import {LogService} from "./LogService";
-import {ProjectRef, PluginRef, PresetRef, PresetSource, ProjectType} from "../types";
+import {ProjectRef, PluginRef, PresetRef, ProjectType} from "../types";
 import {WOCKER_VERSION_KEY} from "../env";
 
 
@@ -100,13 +100,13 @@ export class AppService {
         this.config.save();
     }
 
-    public registerPreset(name: string, source: PresetSource, path?: string): void {
-        this.config.registerPreset(name, source, path);
+    public registerPreset(presetRef: PresetRef): void {
+        this.config.registerPreset(presetRef);
         this.config.save();
     }
 
-    public unregisterPreset(name: string): void {
-        this.config.unregisterPreset(name);
+    public unregisterPreset(path: string): void {
+        this.config.unregisterPreset(path);
         this.config.save();
     }
 

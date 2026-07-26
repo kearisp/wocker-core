@@ -5,6 +5,7 @@ import {Preset} from "../makes/Preset";
 type SearchOptions = Partial<{
     name: string;
     source: string;
+    version: string;
     path: string;
 }>;
 

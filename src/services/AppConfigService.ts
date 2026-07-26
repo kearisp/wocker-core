@@ -71,11 +71,25 @@ export class AppConfigService {
     }
 
     public registerPreset(name: string, source: PresetSource, path?: string): void {
-        this.appService.registerPreset(name, source, path);
+        if(!path) {
+            return;
+        }
+
+        this.appService.registerPreset({
+            name,
+            source,
+            path
+        });
     }
 
     public unregisterPreset(name: string): void {
-        this.appService.unregisterPreset(name);
+        const preset = this.appService.config.presets.find(p => p.name === name);
+
+        if(!preset || !preset.path) {
+            return;
+        }
+
+        this.appService.unregisterPreset(preset.path);
     }
 
     public getEnv(key: string, byDefault?: string): string|undefined;

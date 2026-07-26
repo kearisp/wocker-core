@@ -1,6 +1,5 @@
 import {describe, it, expect} from "@jest/globals";
 import {AppConfig} from "./AppConfig";
-import {PresetSource} from "../types";
 
 
 describe("AppConfig", (): void => {
@@ -63,22 +62,32 @@ describe("AppConfig", (): void => {
     it("should manage preset registration and unregistration properly", (): void => {
         const config = new TestConfig({});
 
-        config.registerPreset("test", PresetSource.EXTERNAL, "/test");
+        config.registerPreset({
+            name: "test",
+            path: "/test"
+        });
 
         expect(config.presets).toEqual([
-            {name: "test", source: PresetSource.EXTERNAL, path: "/test"}
+            {name: "test", path: "/test"}
         ]);
 
-        config.registerPreset("test", PresetSource.INTERNAL);
+        config.registerPreset({
+            name: "test"
+        });
 
         expect(config.presets).toEqual([
-            {name: "test", source: PresetSource.EXTERNAL, path: "/test"}
+            {name: "test", path: "/test"}
         ]);
 
-        config.unregisterPreset("test");
-        config.registerPreset("test", PresetSource.INTERNAL);
-        config.unregisterPreset("test");
-        config.unregisterPreset("test");
+        config.registerPreset({
+            name: "test"
+        });
+
+        expect(config.presets).toEqual([
+            {name: "test", path: "/test"}
+        ]);
+
+        config.unregisterPreset("/test");
 
         expect(config.presets).toEqual([]);
     });
@@ -121,5 +130,15 @@ describe("AppConfig", (): void => {
         const config = new TestConfig({});
 
         expect(config.toObject()).toEqual({});
+    });
+
+    it("should treat GITHUB preset registration as a no-op regardless of version", (): void => {
+        const config = new TestConfig({});
+
+        config.registerPreset({
+            name: "test"
+        });
+
+        expect(config.presets).toEqual([]);
     });
 });

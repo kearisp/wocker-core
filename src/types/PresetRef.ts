@@ -3,6 +3,7 @@ import {PresetSource} from "./PresetSource";
 
 export type PresetRef = {
     name: string;
-    source: PresetSource;
+    /** @deprecated */
+    source?: PresetSource;
     path?: string;
 };
