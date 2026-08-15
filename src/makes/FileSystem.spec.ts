@@ -214,6 +214,22 @@ describe("FileSystem", (): void => {
         expect(fs.getLinePosition(testEmptyFile, 1)).toBe(0);
     });
 
+    it("should get correct line position for a file ending with a trailing newline", (): void => {
+        const testFile = "test-trailing-newline.txt",
+              testSingleLineFile = "test-single-line-trailing.txt",
+              firstLine = "foo",
+              lastLine = "bar";
+
+        vol.fromJSON({
+            [testFile]: `${firstLine}\n${lastLine}\n`,
+            [testSingleLineFile]: `${lastLine}\n`
+        }, WOCKER_DATA_DIR);
+
+        expect(fs.readBytes(testFile, fs.getLinePosition(testFile, -1)).toString()).toBe(`${lastLine}\n`);
+        expect(fs.readBytes(testFile, fs.getLinePosition(testFile, -2)).toString()).toBe(`${firstLine}\n${lastLine}\n`);
+        expect(fs.readBytes(testSingleLineFile, fs.getLinePosition(testSingleLineFile, -1)).toString()).toBe(`${lastLine}\n`);
+    });
+
     it("should open and close file", (): void => {
         vol.fromJSON({
             "test.txt": '>>>'

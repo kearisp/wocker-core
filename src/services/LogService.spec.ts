@@ -95,6 +95,35 @@ describe("LogService", (): void => {
         expect(fs.readFile("ws.log").toString()).toContain(levelMessage);
     });
 
+    it("should escape newlines so a multiline message stays on one physical log line", async (): Promise<void> => {
+        const processService = context.get(ProcessService),
+              logService = context.get(LogService),
+              fs = context.get(AppFileSystemService);
+
+        processService.setEnv("WS_LOG_LEVEL", LogLevel.INFO);
+
+        logService.info("line1\nline2\nline3");
+
+        const rawLines = fs.readFile("ws.log").toString().split("\n").filter(Boolean);
+
+        expect(rawLines).toHaveLength(1);
+        expect(rawLines[0]).toContain("line1\\nline2\\nline3");
+    });
+
+    it("should escape backslashes so they survive alongside escaped newlines", async (): Promise<void> => {
+        const processService = context.get(ProcessService),
+              logService = context.get(LogService),
+              fs = context.get(AppFileSystemService);
+
+        processService.setEnv("WS_LOG_LEVEL", LogLevel.INFO);
+
+        logService.info("C:\\Users\\test");
+
+        const content = fs.readFile("ws.log").toString();
+
+        expect(content).toContain("C:\\\\Users\\\\test");
+    });
+
     it("should clear log file content", async (): Promise<void> => {
         const processService = context.get(ProcessService),
               logService = context.get(LogService),

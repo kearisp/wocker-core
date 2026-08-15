@@ -158,7 +158,8 @@ export class File {
         let position = isForward ? 0 : stats.size,
             currentLine = 0,
             currentOffset = isForward ? 0 : stats.size + 1,
-            stump = "";
+            stump = "",
+            isFirstChunk = true;
 
         while(isForward ? position < stats.size : position > 0) {
             const readSize = isForward
@@ -175,6 +176,13 @@ export class File {
             if(isForward) {
                 position += readSize;
             }
+
+            if(!isForward && isFirstChunk && lines[lines.length - 1] === "") {
+                lines.pop();
+                currentOffset -= 1;
+            }
+
+            isFirstChunk = false;
 
             if(isForward ? position === stats.size : position === 0) {
                 stump = "";

@@ -1,23 +1,41 @@
 import {PickProperties, PresetSource} from "../../../types";
 
 
-type TextOption = {
+export type PresetVariableCondition = {
+    variable: string;
+    equals?: string;
+    notEquals?: string;
+    in?: string[];
+    notIn?: string[];
+    contains?: string;
+    includes?: string | string[];
+};
+
+type BaseVariableConfig = {
+    when?: PresetVariableCondition;
+};
+
+type TextOption = BaseVariableConfig & {
     type: "text" | "string" | "number" | "int" | "password";
     message?: string;
     default?: string | number;
 };
 
-type ConfirmOption = {
+type ConfirmOption = BaseVariableConfig & {
     type: "boolean";
     message?: string;
     required?: boolean;
     default?: boolean;
 };
 
-type SelectOption = {
+export type PresetSelectMode = "flags" | "variable";
+
+type SelectOption = BaseVariableConfig & {
     type: "select";
     required?: boolean;
     multiple?: boolean;
+    mode?: PresetSelectMode;
+    delimiter?: string;
     options: string[]|{label?: string; value: string}[]|{[name: string]: string};
     message?: string;
     default?: string;
@@ -29,8 +47,8 @@ export type PresetProperties = PickProperties<Preset>;
 
 export abstract class Preset {
     public name: string;
-    public source?: PresetSource;
     public version: string;
+    public source?: PresetSource;
     public type?: string;
     public image?: string;
     public dockerfile?: string;
