@@ -7,6 +7,7 @@ export * from "./LogLevel";
 export * from "./ModuleMetadata";
 export * from "./PackageManagerType";
 export * from "./PickProperties";
+export * from "./Permissions";
 export * from "./PluginMetadata";
 export * from "./ProjectConfigScope";
 export * from "./PluginRef";

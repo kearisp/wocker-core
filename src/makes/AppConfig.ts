@@ -2,11 +2,13 @@ import {FileSystem} from "./FileSystem";
 import {
     EnvConfig,
     PackageManagerType,
+    Permissions,
     PluginRef,
     PresetRef,
     ProjectRef,
     ProjectOldRef
 } from "../types";
+import {isPathAllowed} from "../utils/isPathAllowed";
 
 
 export abstract class AppConfig {
@@ -18,6 +20,7 @@ export abstract class AppConfig {
     public projects: ProjectRef[];
     public meta?: EnvConfig;
     public env?: EnvConfig;
+    public permissions?: Permissions;
 
     public constructor(data: AppConfig.Data) {
         const {
@@ -225,6 +228,96 @@ export abstract class AppConfig {
         }
     }
 
+    public isMountAllowed(path: string): boolean {
+        return isPathAllowed(
+            path,
+            this.permissions?.mounts?.allow,
+            this.permissions?.mounts?.deny
+        );
+    }
+
+    public addMountAllow(path: string): void {
+        if(!this.permissions) {
+            this.permissions = {};
+        }
+
+        if(!this.permissions.mounts) {
+            this.permissions.mounts = {};
+        }
+
+        if(!this.permissions.mounts.allow) {
+            this.permissions.mounts.allow = [];
+        }
+
+        if(!this.permissions.mounts.allow.includes(path)) {
+            this.permissions.mounts.allow.push(path);
+        }
+
+        this.removeMountDeny(path);
+    }
+
+    public removeMountAllow(path: string): void {
+        if(!this.permissions?.mounts?.allow) {
+            return;
+        }
+
+        this.permissions.mounts.allow = this.permissions.mounts.allow.filter((entry) => entry !== path);
+
+        this.prunePermissions();
+    }
+
+    public addMountDeny(path: string): void {
+        if(!this.permissions) {
+            this.permissions = {};
+        }
+
+        if(!this.permissions.mounts) {
+            this.permissions.mounts = {};
+        }
+
+        if(!this.permissions.mounts.deny) {
+            this.permissions.mounts.deny = [];
+        }
+
+        if(!this.permissions.mounts.deny.includes(path)) {
+            this.permissions.mounts.deny.push(path);
+        }
+
+        this.removeMountAllow(path);
+    }
+
+    public removeMountDeny(path: string): void {
+        if(!this.permissions?.mounts?.deny) {
+            return;
+        }
+
+        this.permissions.mounts.deny = this.permissions.mounts.deny.filter((entry) => entry !== path);
+
+        this.prunePermissions();
+    }
+
+    protected prunePermissions(): void {
+        if(!this.permissions?.mounts) {
+            return;
+        }
+
+        if(this.permissions.mounts.allow?.length === 0) {
+            delete this.permissions.mounts.allow;
+        }
+
+        if(this.permissions.mounts.deny?.length === 0) {
+            delete this.permissions.mounts.deny;
+        }
+
+        if(Object.keys(this.permissions.mounts).length === 0) {
+            delete this.permissions.mounts;
+        }
+
+        if(Object.keys(this.permissions).length === 0) {
+            delete this.permissions;
+        }
+    }
+
     public abstract save(): void;
 
     public toObject(): AppConfig.Data {
@@ -236,7 +329,8 @@ export abstract class AppConfig {
             presets: this.presets.length > 0 ? this.presets : undefined,
             projects: this.projects.length > 0 ? this.projects : undefined,
             env: this.env,
-            meta: this.meta
+            meta: this.meta,
+            permissions: this.permissions
         };
     }
 
@@ -316,5 +410,6 @@ export namespace AppConfig {
         projects?: ProjectOldRef[];
         meta?: EnvConfig;
         env?: EnvConfig;
+        permissions?: Permissions;
     };
 }
