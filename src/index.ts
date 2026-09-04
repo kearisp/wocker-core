@@ -15,6 +15,7 @@ export {
     EventService as AppEventsService
 } from "./services";
 export * from "./types";
+export {isSensitivePath} from "./utils/isSensitivePath";
 export {
     IS_MODULE_METADATA,
     MODULE_METADATA,
