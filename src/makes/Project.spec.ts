@@ -11,14 +11,23 @@ import {
     Factory
 } from "../core";
 import {Project} from "./Project";
-import {FileSystemDriver, ProjectType} from "../types";
+import {FileSystemDriver, ProjectType, ProviderType} from "../types";
 import {WOCKER_DATA_DIR} from "../env";
 
 
 describe("Project", (): void => {
-    const getContext = async () => {
+    const getContext = async (providers: ProviderType[] = []) => {
+        // Exported (not just provided) so a @Global() module actually promotes
+        // them to the container's global providers — see Scanner.scanExports().
+        const exports = providers.map((provider) => {
+            return typeof provider === "function" ? provider : provider.provide;
+        });
+
         @Global()
-        @Module({})
+        @Module({
+            providers,
+            exports
+        })
         class TestModule {}
 
         const context = await Factory.create(TestModule, {
@@ -229,5 +238,96 @@ describe("Project", (): void => {
             [EXTRA_HOST_1]: EXTRA_DOMAIN_1,
             [EXTRA_HOST_2]: EXTRA_DOMAIN_2
         });
+    });
+
+    it("should manage secrets", async (): Promise<void> => {
+        class FakeKeystoreService {
+            public store = new Map<string, string>();
+
+            public async get(key: string, byDefault?: string): Promise<string | undefined> {
+                return this.store.has(key) ? this.store.get(key) : byDefault;
+            }
+
+            public async set(key: string, value: string): Promise<void> {
+                this.store.set(key, value);
+            }
+
+            public async delete(key: string): Promise<void> {
+                this.store.delete(key);
+            }
+
+            public async list(): Promise<string[]> {
+                return [...this.store.keys()];
+            }
+        }
+
+        const fakeKeystoreService = new FakeKeystoreService();
+
+        // A key belonging to some other, non-project-scoped consumer of the same
+        // keystore (e.g. a plugin's own secret) — must never surface as a project secret.
+        fakeKeystoreService.store.set("SOME_PLUGIN_SECRET", "unrelated");
+
+        const {container} = await getContext([
+            {
+                // KeystoreService is @Injectable("KEYSTORE_SERVICE") — Project resolves
+                // it from the container by that string token, not by class reference.
+                provide: "KEYSTORE_SERVICE",
+                useValue: fakeKeystoreService
+            }
+        ]);
+
+        AsyncStorage.enterWith(container);
+
+        vol.fromJSON({
+            "wocker.config.json": JSON.stringify({
+                projects: [
+                    {
+                        name: "test-project",
+                        path: "/home/wocker/projects/test-project"
+                    },
+                    {
+                        name: "test-project-2",
+                        path: "/home/wocker/projects/test-project-2"
+                    }
+                ]
+            }),
+            "projects/test-project-2/config.json": JSON.stringify({
+                type: ProjectType.DOCKERFILE
+            })
+        }, WOCKER_DATA_DIR);
+
+        const project = new Project(
+            "test-project",
+            "/home/wocker/projects/test-project"
+        );
+        // Name deliberately extends "test-project" as a substring, so this also
+        // proves getSecrets() prefix matching doesn't bleed across projects.
+        const otherProject = new Project(
+            "test-project-2",
+            "/home/wocker/projects/test-project-2"
+        );
+
+        const SECRET_KEY = "db_password",
+              SECRET_VALUE = "s3cr3t",
+              MISSING_KEY = "missing";
+
+        expect(await project.getSecret(SECRET_KEY)).toBeUndefined();
+        expect(await project.getSecret(SECRET_KEY, "default")).toBe("default");
+        expect(await project.getSecrets()).toEqual([]);
+
+        await project.setSecret(SECRET_KEY, SECRET_VALUE);
+        await otherProject.setSecret(SECRET_KEY, "other-project-value");
+
+        expect(await project.getSecret(SECRET_KEY)).toBe(SECRET_VALUE);
+        expect(await project.getSecrets()).toEqual([SECRET_KEY]);
+        expect(await otherProject.getSecrets()).toEqual([SECRET_KEY]);
+        expect(await otherProject.getSecret(SECRET_KEY)).toBe("other-project-value");
+
+        await project.unsetSecret(SECRET_KEY);
+
+        expect(await project.getSecret(SECRET_KEY)).toBeUndefined();
+        expect(await project.getSecret(MISSING_KEY, "fallback")).toBe("fallback");
+        expect(await project.getSecrets()).toEqual([]);
+        expect(await otherProject.getSecrets()).toEqual([SECRET_KEY]);
     });
 });
