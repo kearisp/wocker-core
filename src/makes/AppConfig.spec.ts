@@ -126,6 +126,48 @@ describe("AppConfig", (): void => {
         expect(config.env).toBeUndefined();
     });
 
+    it("should manage mount permissions correctly", (): void => {
+        const config = new TestConfig({});
+
+        expect(config.isMountAllowed("/home/user")).toBeFalsy();
+
+        config.addMountAllow("/home/user");
+
+        expect(config.permissions).toEqual({
+            mounts: {
+                allow: ["/home/user"]
+            }
+        });
+        expect(config.isMountAllowed("/home/user")).toBeTruthy();
+        expect(config.isMountAllowed("/home/user/project")).toBeTruthy();
+        expect(config.isMountAllowed("/home/user2")).toBeFalsy();
+
+        config.addMountDeny("/home/user/.ssh");
+
+        expect(config.permissions).toEqual({
+            mounts: {
+                allow: ["/home/user"],
+                deny: ["/home/user/.ssh"]
+            }
+        });
+        expect(config.isMountAllowed("/home/user/.ssh")).toBeFalsy();
+        expect(config.isMountAllowed("/home/user/project")).toBeTruthy();
+
+        config.addMountAllow("/home/user/.ssh");
+
+        expect(config.permissions).toEqual({
+            mounts: {
+                allow: ["/home/user", "/home/user/.ssh"]
+            }
+        });
+        expect(config.isMountAllowed("/home/user/.ssh")).toBeTruthy();
+
+        config.removeMountAllow("/home/user/.ssh");
+        config.removeMountAllow("/home/user");
+
+        expect(config.permissions).toBeUndefined();
+    });
+
     it("should serialize config to object correctly", (): void => {
         const config = new TestConfig({});
 

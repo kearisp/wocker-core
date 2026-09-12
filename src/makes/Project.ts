@@ -312,6 +312,17 @@ export class Project {
         return keystoreService.set(`p:${this.name}:${key}`, value);
     }
 
+    public async getSecrets() {
+        const container = AsyncStorage.getContainer(),
+              keystoreService = container.get("KEYSTORE_SERVICE"),
+              prefix = `p:${this.name}:`,
+              keys: string[] = await keystoreService.list();
+
+        return keys
+            .filter(key => key.startsWith(prefix))
+            .map(key => key.slice(prefix.length));
+    }
+
     public async unsetSecret(key: string): Promise<void> {
         const container = AsyncStorage.getContainer(),
               keystoreService = container.get("KEYSTORE_SERVICE");

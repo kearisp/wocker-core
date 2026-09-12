@@ -59,4 +59,16 @@ describe("AppService", (): void => {
         expect(appService.isVersionGTE("1.0.24")).toBeTruthy();
         expect(appService.isVersionGTE("1.0.25")).toBeFalsy();
     });
+
+    it("should delegate isAllowedPath to the mount allow/deny list", async (): Promise<void> => {
+        const {appService} = await getContext();
+
+        expect(appService.isAllowedPath("/home/user")).toBeFalsy();
+
+        appService.config.addMountAllow("/home/user");
+
+        expect(appService.isAllowedPath("/home/user")).toBeTruthy();
+        expect(appService.isAllowedPath("/home/user/project")).toBeTruthy();
+        expect(appService.isAllowedPath("/home/user2")).toBeFalsy();
+    });
 });
