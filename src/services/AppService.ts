@@ -155,8 +155,8 @@ export class AppService {
         return this.config.getMeta(`experimental.${key}`) === "enabled";
     }
 
-    public isAllowedPath(path: string): boolean {
-        return this.config.isMountAllowed(path);
+    public isAllowedPath(path: string, internal: boolean = false): boolean {
+        return this.config.isMountAllowed(path, internal);
     }
 
     public save(): void {

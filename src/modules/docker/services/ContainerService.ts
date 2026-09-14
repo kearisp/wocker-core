@@ -24,8 +24,6 @@ export namespace ContainerService {
         user?: string;
         restart?: "always";
         entrypoint?: string | string[];
-        /** @deprecated */
-        projectId?: string;
         tty?: boolean;
         memory?: number;
         memorySwap?: number;
@@ -41,6 +39,7 @@ export namespace ContainerService {
         };
         networkMode?: string;
         extraHosts?: any;
+        internal?: boolean;
         volumes?: string[];
         ports?: string[];
         cmd?: string[];
