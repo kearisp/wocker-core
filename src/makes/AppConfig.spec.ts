@@ -168,6 +168,30 @@ describe("AppConfig", (): void => {
         expect(config.permissions).toBeUndefined();
     });
 
+    it("should remove a mount deny entry correctly", (): void => {
+        const config = new TestConfig({});
+
+        config.addMountDeny("/home/user/.ssh");
+
+        expect(config.permissions).toEqual({
+            mounts: {
+                deny: ["/home/user/.ssh"]
+            }
+        });
+
+        config.removeMountDeny("/home/user/project");
+
+        expect(config.permissions).toEqual({
+            mounts: {
+                deny: ["/home/user/.ssh"]
+            }
+        });
+
+        config.removeMountDeny("/home/user/.ssh");
+
+        expect(config.permissions).toBeUndefined();
+    });
+
     it("should only allow internal default mounts for internal containers", (): void => {
         const config = new TestConfig({});
 
