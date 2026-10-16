@@ -37,7 +37,7 @@
     },
     "devDependencies": {
         "@types/docker-modem": "^3.0.6",
-        "@types/dockerode": "^4.0.1",
+        "@types/dockerode": "^4.0.2",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.5.2",
         "jest": "^30.1.3",
