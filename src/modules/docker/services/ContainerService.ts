@@ -15,6 +15,16 @@ export abstract class ContainerService {
 export namespace ContainerService {
     export type ContainerOrName = string | Container;
 
+    export type DeviceRequest = {
+        driver?: string;
+        count?: number;
+        deviceIds?: string[];
+        capabilities: string[][];
+        options?: {
+            [key: string]: string;
+        };
+    };
+
     export type CreateParams = {
         name: string;
         labels?: {
@@ -27,6 +37,7 @@ export namespace ContainerService {
         tty?: boolean;
         memory?: number;
         memorySwap?: number;
+        deviceRequests?: DeviceRequest[];
         ulimits?: {
             [key: string]: {
                 hard?: number;
