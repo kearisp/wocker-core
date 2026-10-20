@@ -9,7 +9,6 @@ import {
     ProjectOldRef
 } from "../types";
 import {isPathAllowed} from "../utils/isPathAllowed";
-import {WOCKER_INTERNAL_ALLOWED_MOUNTS} from "../env";
 
 
 export abstract class AppConfig {
@@ -229,12 +228,12 @@ export abstract class AppConfig {
         }
     }
 
-    public isMountAllowed(path: string, internal: boolean = false): boolean {
+    public isMountAllowed(path: string, internalAllow: string[] = []): boolean {
         return isPathAllowed(
             path,
             [
                 ...this.permissions?.mounts?.allow || [],
-                ...internal ? WOCKER_INTERNAL_ALLOWED_MOUNTS : []
+                ...internalAllow
             ],
             this.permissions?.mounts?.deny
         );

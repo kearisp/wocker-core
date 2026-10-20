@@ -37,6 +37,11 @@ export namespace DockerService {
 
     export type ListContainerParams = ContainerService.ListParams;
 
+    export type BuildContext = {
+        path: string;
+        ignore?: string[];
+    };
+
     export type BuildImageParams = {
         version?: "1" | "2";
         tag: string;
@@ -46,7 +51,7 @@ export namespace DockerService {
         labels?: {
             [key: string]: string;
         };
-        context: string | string[];
+        context: string | BuildContext | (string | BuildContext)[];
     } & ({
         /** @deprecated */
         src: string;
