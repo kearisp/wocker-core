@@ -8,8 +8,7 @@ export const WOCKER_DATA_DIR: string = process.env.WS_DIR || Path.join(OS.homedi
 export const WOCKER_DATA_DIR_KEY = "__WOCKER_DATA_DIR__";
 export const WOCKER_INTERNAL_ALLOWED_MOUNTS: string[] = [
     "/var/run/docker.sock",
-    "/var/run/docker.sock.raw",
-    WOCKER_DATA_DIR
+    "/var/run/docker.sock.raw"
 ];
 export const FILE_SYSTEM_DRIVER_KEY = "__FILE_SYSTEM_DRIVER_";
 export const PLUGIN_DIR_KEY = "PLUGIN_DIR";

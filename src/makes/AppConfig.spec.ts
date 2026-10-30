@@ -194,16 +194,17 @@ describe("AppConfig", (): void => {
 
     it("should only allow internal default mounts for internal containers", (): void => {
         const config = new TestConfig({});
+        const internal = ["/var/run/docker.sock"];
 
         expect(config.isMountAllowed("/var/run/docker.sock")).toBeFalsy();
-        expect(config.isMountAllowed("/var/run/docker.sock", true)).toBeTruthy();
+        expect(config.isMountAllowed("/var/run/docker.sock", internal)).toBeTruthy();
 
         expect(config.isMountAllowed("/etc")).toBeFalsy();
-        expect(config.isMountAllowed("/etc", true)).toBeFalsy();
+        expect(config.isMountAllowed("/etc", internal)).toBeFalsy();
 
         config.addMountDeny("/var/run/docker.sock");
 
-        expect(config.isMountAllowed("/var/run/docker.sock", true)).toBeFalsy();
+        expect(config.isMountAllowed("/var/run/docker.sock", internal)).toBeFalsy();
     });
 
     it("should serialize config to object correctly", (): void => {

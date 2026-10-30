@@ -5,7 +5,11 @@ import {AppFileSystemService} from "./AppFileSystemService";
 import {ProcessService} from "./ProcessService";
 import {LogService} from "./LogService";
 import {ProjectRef, PluginRef, PresetRef, ProjectType} from "../types";
-import {WOCKER_VERSION_KEY} from "../env";
+import {
+    WOCKER_VERSION_KEY,
+    WOCKER_DATA_DIR_KEY,
+    WOCKER_INTERNAL_ALLOWED_MOUNTS
+} from "../env";
 
 
 type TypeMap = {
@@ -24,6 +28,8 @@ export class AppService {
     public constructor(
         @Inject(WOCKER_VERSION_KEY)
         public readonly version: string,
+        @Inject(WOCKER_DATA_DIR_KEY)
+        protected readonly dataDir: string,
         public readonly fs: AppFileSystemService,
         protected readonly processService: ProcessService,
         protected readonly logService: LogService
@@ -156,7 +162,7 @@ export class AppService {
     }
 
     public isAllowedPath(path: string, internal: boolean = false): boolean {
-        return this.config.isMountAllowed(path, internal);
+        return this.config.isMountAllowed(path, internal ? [...WOCKER_INTERNAL_ALLOWED_MOUNTS, this.dataDir] : []);
     }
 
     public save(): void {
