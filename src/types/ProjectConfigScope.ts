@@ -3,7 +3,8 @@ import {ProjectRef} from "../types";
 
 export enum ProjectConfigScopeEnum {
     APP = "app",
-    LOCAL = "project"
+    LOCAL = "project",
+    GLOBAL = "global"
 }
 
 export type ProjectConfigScope = ProjectConfigScopeEnum;

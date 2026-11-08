@@ -1,5 +1,16 @@
-import {applyEdits, modify, findNodeAtLocation, getNodeValue, parseTree, JSONPath, Node, ModificationOptions} from "jsonc-parser";
+import {
+    applyEdits,
+    modify,
+    findNodeAtLocation,
+    getNodeValue,
+    parseTree,
+    JSONPath,
+    Node,
+    ModificationOptions
+} from "jsonc-parser";
 
+
+const MUTATORS = new Set(["push", "pop", "shift", "unshift", "splice", "sort", "reverse", "fill", "copyWithin"]);
 
 type OrderMap = {
     [key: string]: string[] | ((key: string, properties: string[]) => number);
@@ -38,7 +49,9 @@ export class JsonEditor<T extends object> {
                         return (...args: any[]) => {
                             const res = target[property](...args);
 
-                            this.set(keys, target);
+                            if(MUTATORS.has(property)) {
+                                this.set(keys, target);
+                            }
 
                             return res;
                         };
@@ -134,9 +147,8 @@ export class JsonEditor<T extends object> {
     }
 
     public get(key: string | JSONPath) {
-        const path = typeof key === "string" ? key.split(".") : key;
-
-        const node = findNodeAtLocation(this.root, path);
+        const path = typeof key === "string" ? key.split(".") : key,
+              node = findNodeAtLocation(this.root, path);
 
         if(!node) {
             return undefined;
@@ -153,7 +165,7 @@ export class JsonEditor<T extends object> {
             modify(this.content, path, value, options || {
                 formattingOptions: {
                     insertSpaces: true,
-                    keepLines: false,
+                    keepLines: true,
                     insertFinalNewline: true
                 },
                 getInsertionIndex: this.getInsertionIndex(path)

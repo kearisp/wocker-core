@@ -1,17 +1,16 @@
 import {volumeParse} from "../utils/volumeParse";
 import {JsonEditor} from "./JsonEditor";
 import {ServiceConfig} from "./ServiceConfig";
-import {EnvConfig, ProjectType, ProjectConfigScope, PresetMode} from "../types";
+import {Rules, concat, first, merge, record} from "./LayerResolver";
+import {EnvConfig, ProjectType, PresetMode} from "../types";
 
 
 export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
-    public constructor(
-        public readonly _scope: ProjectConfigScope,
-        content: string
-    ) {
+    public constructor(content: string) {
         super(content, {
             "": [
-                // "version",
+                "name",
+                "version",
                 "type",
                 "image",
                 "dockerfile",
@@ -44,20 +43,11 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public get image(): string | undefined {
-        return this.state.image || this.state.imageName;
+        return this.state.image;
     }
 
     public set image(image: string | undefined) {
         this.state.image = image;
-        this.state.imageName = undefined;
-    }
-
-    public get imageName(): string | undefined {
-        return this.image;
-    }
-
-    public set imageName(image: string | undefined) {
-        this.image = image;
     }
 
     public get dockerfile(): string | undefined {
@@ -309,7 +299,7 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
     }
 
     public addService(name: string, data: ServiceConfig.Data) {
-
+        //
     }
 
     public service(name: string) {
@@ -342,12 +332,65 @@ export namespace ProjectConfig {
         services?: Record<string, ProjectConfig.Service>;
     };
 
-    export type Service = {
-        type?: "compose" | "plugin";
+    type PluginService = {
+        type: "plugin";
+        name: string;
+        config?: Record<string, string>;
+    };
+
+    type ComposeService = {
+        type: "compose";
         containerName?: string;
         buildArgs?: EnvConfig;
         env?: EnvConfig;
         ports?: string[];
         volumes?: string[];
+    };
+
+    export type Service = PluginService | ComposeService;
+
+    export type Resolvable = Omit<Data, "imageName">;
+
+    export const serviceRules: Rules<Service> = {
+        type: first(),
+        name: first(),
+        config: merge(),
+        containerName: first(),
+        buildArgs: merge(),
+        env: merge(),
+        ports: concat({
+            by: (port: string) => {
+                const m = /^(\d+):\d+(?:\/(\w+))?$/.exec(port);
+                return m ? `${m[1]}/${m[2] ?? "tcp"}` : port;
+            }
+        }),
+        volumes: concat({
+            by: (volume: string) => volumeParse(volume).destination
+        })
+    };
+
+    export const rules: Rules<Resolvable> = {
+        type: first(),
+        image: first(),
+        dockerfile: first(),
+        composefile: first(),
+        preset: first(),
+        presetMode: first(),
+        scripts: merge(),
+        cmd: first(),
+        buildArgs: merge(),
+        env: merge(),
+        metadata: merge(),
+        volumes: concat({
+            by: (volume: string) => volumeParse(volume).destination
+        }),
+        ports: concat({
+            by: (port: string) => {
+                const m = /^(\d+):\d+(?:\/(\w+))?$/.exec(port);
+                return m ? `${m[1]}/${m[2] ?? "tcp"}` : port;
+            }
+        }),
+        extraHosts: merge(),
+        services: record<Service>(serviceRules)
     };
 }

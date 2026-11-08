@@ -24,17 +24,16 @@ export class ProjectRepository {
         switch(scope) {
             case ProjectConfigScope.APP: {
                 if(!ref) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 const fs = this.fs.cd(`projects/${ref.name}`);
 
                 if(!fs.exists("config.json")) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 return new ProjectConfig(
-                    scope,
                     fs.readFile("config.json").toString(),
                 );
             }
@@ -43,18 +42,24 @@ export class ProjectRepository {
                 path = path || ref?.path;
 
                 if(!path) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 const fs = new FileSystem(path);
 
                 if(!fs.exists("wocker.config.json")) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 return new ProjectConfig(
-                    scope,
                     fs.readFile("wocker.config.json").toString()
+                );
+
+            case ProjectConfigScope.GLOBAL:
+                return new ProjectConfig(
+                    JSON.stringify({
+                        env: this.appService.config.env
+                    })
                 );
         }
     }
@@ -81,14 +86,17 @@ export class ProjectRepository {
             this.fs.mkdir(`projects/${project.name}`);
         }
 
-        if(project.configs.app.isDirty()) {
-            this.fs.writeFile(`projects/${project.name}/config.json`, project.configs.app.toString());
+        const appLayer = project.layer(ProjectConfigScope.APP),
+              projectLayer = project.layer(ProjectConfigScope.LOCAL);
+
+        if(appLayer.isDirty()) {
+            this.fs.writeFile(`projects/${project.name}/config.json`, appLayer.toString());
         }
 
-        if(project.configs.project.isDirty()) {
+        if(projectLayer.isDirty()) {
             const projectFS = new FileSystem(project.path, this.driver);
 
-            projectFS.writeFile("wocker.config.json", project.configs.project.toString());
+            projectFS.writeFile("wocker.config.json", projectLayer.toString());
         }
     }
 
