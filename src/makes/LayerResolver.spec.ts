@@ -130,4 +130,49 @@ describe("LayerResolver", () => {
 
         expect(resolver.resolve("services")?.queue).toEqual({type: "plugin"});
     });
+
+    describe("origin", () => {
+        it("should return the highest layer that defines the value", () => {
+            const resolver = make({image: "a"}, {image: "b"});
+
+            expect(resolver.origin("image")).toBe("machine");
+        });
+
+        it("should fall back to a lower layer when the higher one has no value", () => {
+            const resolver = make({}, {image: "b"});
+
+            expect(resolver.origin("image")).toBe("project");
+        });
+
+        it("should decide by layer, not by value", () => {
+            const resolver = make({image: "a"}, {image: "a"});
+
+            expect(resolver.origin("image")).toBe("machine");
+        });
+
+        it("should treat an empty string as defined", () => {
+            const resolver = make({image: ""}, {image: "b"});
+
+            expect(resolver.origin("image")).toBe("machine");
+        });
+
+        it("should resolve the origin of a nested key", () => {
+            const resolver = make(
+                {env: {A: "1"}},
+                {env: {A: "0", B: "2"}, services: {web: {env: {X: "1"}}}}
+            );
+
+            expect(resolver.origin(["env", "A"])).toBe("machine");
+            expect(resolver.origin(["env", "B"])).toBe("project");
+            expect(resolver.origin(["services", "web", "env", "X"])).toBe("project");
+        });
+
+        it("should return undefined when no layer defines the path", () => {
+            const resolver = make({}, {});
+
+            expect(resolver.origin("image")).toBeUndefined();
+            expect(resolver.origin(["env", "MISSING"])).toBeUndefined();
+            expect(resolver.origin(["image", "x"])).toBeUndefined();
+        });
+    });
 });

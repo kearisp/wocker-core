@@ -1,6 +1,5 @@
 import {volumeParse} from "../utils/volumeParse";
 import {JsonEditor} from "./JsonEditor";
-import {ServiceConfig} from "./ServiceConfig";
 import {Rules, concat, first, merge, record} from "./LayerResolver";
 import {EnvConfig, ProjectType, PresetMode} from "../types";
 
@@ -32,6 +31,22 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
                 "VIRTUAL_PORT"
             ]
         });
+
+        this.migrateImageName();
+    }
+
+    protected migrateImageName(): void {
+        const imageName = this.get(["imageName"]);
+
+        if(imageName === undefined) {
+            return;
+        }
+
+        if(this.get(["image"]) === undefined) {
+            this.set(["image"], imageName);
+        }
+
+        this.unset(["imageName"]);
     }
 
     public get type(): ProjectType | undefined {
@@ -120,18 +135,20 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
         this.set(["cmd"], cmd);
     }
 
-    public get scripts(): any {
+    public get scripts(): Record<string, string> | undefined {
         return this.createProxy(["scripts"], {
             removeOnEmpty: true
         });
     }
 
-    public set scripts(scripts: any) {
-        this.state.scripts = scripts;
+    public set scripts(scripts: Record<string, string> | undefined) {
+        this.set(["scripts"], scripts);
     }
 
-    public get services(): any {
-        return {};
+    public get services(): Record<string, ProjectConfig.Service> {
+        return this.createProxy(["services"], {
+            removeOnEmpty: true
+        });
     }
 
     public get extraHosts(): any {
@@ -297,16 +314,6 @@ export class ProjectConfig extends JsonEditor<ProjectConfig.Data> {
             delete this.state.extraHosts[host];
         }
     }
-
-    public addService(name: string, data: ServiceConfig.Data) {
-        //
-    }
-
-    public service(name: string) {
-        return this.createProxy(["services", name], {
-            removeOnEmpty: true
-        });
-    }
 }
 
 export namespace ProjectConfig {
@@ -332,14 +339,8 @@ export namespace ProjectConfig {
         services?: Record<string, ProjectConfig.Service>;
     };
 
-    type PluginService = {
-        type: "plugin";
-        name: string;
-        config?: Record<string, string>;
-    };
-
-    type ComposeService = {
-        type: "compose";
+    export type Service = {
+        type?: "compose" | "plugin";
         containerName?: string;
         buildArgs?: EnvConfig;
         env?: EnvConfig;
@@ -347,14 +348,10 @@ export namespace ProjectConfig {
         volumes?: string[];
     };
 
-    export type Service = PluginService | ComposeService;
-
     export type Resolvable = Omit<Data, "imageName">;
 
     export const serviceRules: Rules<Service> = {
         type: first(),
-        name: first(),
-        config: merge(),
         containerName: first(),
         buildArgs: merge(),
         env: merge(),

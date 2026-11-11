@@ -9,7 +9,7 @@ export * from "./PackageManagerType";
 export * from "./PickProperties";
 export * from "./Permissions";
 export * from "./PluginMetadata";
-export * from "./ProjectConfigScope";
+export * from "./ProjectLayerType";
 export * from "./PluginRef";
 export * from "./PresetRef";
 export * from "./PresetMode";

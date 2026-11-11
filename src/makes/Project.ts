@@ -4,7 +4,7 @@ import {ProjectRepository} from "../services/ProjectRepository";
 import {ProjectConfig} from "./ProjectConfig";
 import {volumeParse} from "../utils/volumeParse";
 import {LayerResolver} from "./LayerResolver";
-import {EnvConfig, ProjectConfigScope, ProjectRef, ProjectType, PresetMode} from "../types";
+import {EnvConfig, ProjectLayerType, ProjectRef, ProjectType, PresetMode} from "../types";
 
 
 export class Project {
@@ -23,19 +23,19 @@ export class Project {
 
         this.resolver = new LayerResolver(ProjectConfig.rules, [
             {
-                name: ProjectConfigScope.APP,
+                name: ProjectLayerType.DATA,
                 priority: 10,
-                data: projectRepository.getConfig(ProjectConfigScope.APP, this.name, this.path)
+                data: projectRepository.getConfig(ProjectLayerType.DATA, this.name, this.path)
             },
             {
-                name: ProjectConfigScope.LOCAL,
+                name: ProjectLayerType.REPOSITORY,
                 priority: 50,
-                data: projectRepository.getConfig(ProjectConfigScope.LOCAL, this.name, this.path)
+                data: projectRepository.getConfig(ProjectLayerType.REPOSITORY, this.name, this.path)
             },
             {
-                name: ProjectConfigScope.GLOBAL,
+                name: ProjectLayerType.GLOBAL,
                 priority: 100,
-                data: projectRepository.getConfig(ProjectConfigScope.GLOBAL, this.name, this.path)
+                data: projectRepository.getConfig(ProjectLayerType.GLOBAL, this.name, this.path)
             }
         ]);
     }
@@ -49,7 +49,7 @@ export class Project {
     }
 
     public set type(type: ProjectType) {
-        this.layer(ProjectConfigScope.APP).type = type;
+        this.layer(ProjectLayerType.DATA).type = type;
     }
 
     public get containerName(): string {
@@ -65,7 +65,7 @@ export class Project {
     }
 
     public set preset(preset: string | undefined) {
-        this.layer(ProjectConfigScope.APP).preset = preset;
+        this.layer(ProjectLayerType.DATA).preset = preset;
     }
 
     public get presetMode(): PresetMode {
@@ -73,7 +73,7 @@ export class Project {
     }
 
     public set presetMode(mode: PresetMode) {
-        this.layer(ProjectConfigScope.APP).presetMode = mode;
+        this.layer(ProjectLayerType.DATA).presetMode = mode;
     }
 
     public get image(): string | undefined {
@@ -82,11 +82,11 @@ export class Project {
 
     public set image(image: string | undefined) {
         if(!image) {
-            delete this.layer(ProjectConfigScope.APP).image;
+            delete this.layer(ProjectLayerType.DATA).image;
             return;
         }
 
-        this.layer(ProjectConfigScope.APP).image = image;
+        this.layer(ProjectLayerType.DATA).image = image;
     }
 
     /** @deprecated */
@@ -104,7 +104,7 @@ export class Project {
     }
 
     public set dockerfile(dockerfile: string | undefined) {
-        this.layer(ProjectConfigScope.APP).dockerfile = dockerfile;
+        this.layer(ProjectLayerType.DATA).dockerfile = dockerfile;
     }
 
     public get composefile(): string | undefined {
@@ -112,7 +112,7 @@ export class Project {
     }
 
     public set composefile(composefile: string | undefined) {
-        this.layer(ProjectConfigScope.APP).composefile = composefile;
+        this.layer(ProjectLayerType.DATA).composefile = composefile;
     }
 
     public get cmd() {
@@ -169,12 +169,12 @@ export class Project {
     }
 
     public set ports(ports: string[]) {
-        this.layer(ProjectConfigScope.APP).ports = ports;
+        this.layer(ProjectLayerType.DATA).ports = ports;
     }
 
     public linkPort(hostPort: number, containerPort: number): void {
-        this.layer(ProjectConfigScope.APP).ports = [
-            ...(this.layer(ProjectConfigScope.APP).ports || []).filter((link: string) => {
+        this.layer(ProjectLayerType.DATA).ports = [
+            ...(this.layer(ProjectLayerType.DATA).ports || []).filter((link: string) => {
                 return link !== `${hostPort}:${containerPort}`;
             }),
             `${hostPort}:${containerPort}`
@@ -182,7 +182,7 @@ export class Project {
     }
 
     public unlinkPort(hostPort: number, containerPort: number): void {
-        this.layer(ProjectConfigScope.APP).ports = (this.layer(ProjectConfigScope.APP).ports || []).filter((link: string) => {
+        this.layer(ProjectLayerType.DATA).ports = (this.layer(ProjectLayerType.DATA).ports || []).filter((link: string) => {
             return link !== `${hostPort}:${containerPort}`;
         });
     }
@@ -192,15 +192,15 @@ export class Project {
     }
 
     public set buildArgs(buildArgs: EnvConfig) {
-        this.layer(ProjectConfigScope.APP).buildArgs = buildArgs;
+        this.layer(ProjectLayerType.DATA).buildArgs = buildArgs;
     }
 
     public setBuildArg(key: string, value: string, service?: string): void {
-        this.layer(ProjectConfigScope.APP).setBuildArg(key, value, service);
+        this.layer(ProjectLayerType.DATA).setBuildArg(key, value, service);
     }
 
     public unsetBuildArg(name: string, service?: string): void {
-        this.layer(ProjectConfigScope.APP).unsetBuildArg(name, service);
+        this.layer(ProjectLayerType.DATA).unsetBuildArg(name, service);
     }
 
     public get env() {
@@ -208,7 +208,7 @@ export class Project {
     }
 
     public set env(env: EnvConfig) {
-        this.layer(ProjectConfigScope.APP).env = env;
+        this.layer(ProjectLayerType.DATA).env = env;
     }
 
     public hasEnv(name: string): boolean {
@@ -222,11 +222,11 @@ export class Project {
     }
 
     public setEnv(key: string, value: string | boolean, service?: string): void {
-        this.layer(ProjectConfigScope.APP).setEnv(key, value, service);
+        this.layer(ProjectLayerType.DATA).setEnv(key, value, service);
     }
 
     public unsetEnv(key: string, service?: string): void {
-        this.layer(ProjectConfigScope.APP).unsetEnv(key, service);
+        this.layer(ProjectLayerType.DATA).unsetEnv(key, service);
     }
 
     public hasMeta(key: string): boolean {
@@ -240,14 +240,14 @@ export class Project {
     }
 
     public setMeta(name: string, value: string | boolean): void {
-        this.layer(ProjectConfigScope.APP).metadata[name] = typeof value === "boolean"
+        this.layer(ProjectLayerType.DATA).metadata[name] = typeof value === "boolean"
             ? (value ? "true" : "false")
             : value;
     }
 
     public unsetMeta(name: string): void {
-        if(name in this.layer(ProjectConfigScope.APP).metadata) {
-            delete this.layer(ProjectConfigScope.APP).metadata[name];
+        if(name in this.layer(ProjectLayerType.DATA).metadata) {
+            delete this.layer(ProjectLayerType.DATA).metadata[name];
         }
     }
 
@@ -264,11 +264,11 @@ export class Project {
     }
 
     public volumeMount(...volumes: string[]): void {
-        this.layer(ProjectConfigScope.APP).volumeMount(...volumes);
+        this.layer(ProjectLayerType.DATA).volumeMount(...volumes);
     }
 
     public volumeUnmount(...volumes: string[]): void {
-        this.layer(ProjectConfigScope.APP).volumeUnmount(...volumes);
+        this.layer(ProjectLayerType.DATA).volumeUnmount(...volumes);
     }
 
     public get extraHosts() {
@@ -276,11 +276,11 @@ export class Project {
     };
 
     public addExtraHost(host: string, domain: string): void {
-        this.layer(ProjectConfigScope.APP).addExtraHost(host, domain);
+        this.layer(ProjectLayerType.DATA).addExtraHost(host, domain);
     }
 
     public removeExtraHost(host: string): void {
-        this.layer(ProjectConfigScope.APP).removeExtraHost(host);
+        this.layer(ProjectLayerType.DATA).removeExtraHost(host);
     }
 
     public get metadata() {
@@ -325,7 +325,7 @@ export class Project {
         return keystoreService.delete(`p:${this.name}:${key}`);
     }
 
-    public layer(key: ProjectConfigScope): ProjectConfig {
+    public layer(key: ProjectLayerType): ProjectConfig {
         const layer = this.resolver.layer(key);
 
         if(!layer) {
@@ -333,6 +333,18 @@ export class Project {
         }
 
         return layer.data;
+    }
+
+    public layers(): Map<ProjectLayerType, ProjectConfig> {
+        return this.resolver.layers.reduce((res, layer) => {
+            res.set(layer.name, layer.data);
+
+            return res;
+        }, new Map());
+    }
+
+    public origin(path: keyof ProjectConfig.Resolvable | string[]): ProjectLayerType | undefined {
+        return this.resolver.origin(path) as ProjectLayerType | undefined;
     }
 
     public save(): void {

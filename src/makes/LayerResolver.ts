@@ -93,17 +93,44 @@ export const resolveObject = <D>(rules: Rules<D>, sources: D[]): D => {
 };
 
 export class LayerResolver<D, L extends D = D> {
-    protected readonly layers: Layer<L>[];
+    protected readonly _layers: Layer<L>[];
 
     public constructor(
         protected readonly rules: Rules<D>,
         layers: Layer<L>[]
     ) {
-        this.layers = [...layers].sort((a, b) => a.priority - b.priority);
+        this._layers = [...layers].sort((a, b) => a.priority - b.priority);
+    }
+
+    public get layers(): Layer<L>[] {
+        return this._layers;
     }
 
     public layer(name: string): Layer<L> | undefined {
-        return this.layers.find((l) => l.name === name);
+        return this._layers.find((l) => l.name === name);
+    }
+
+    public origin(path: keyof D | string[]): string | undefined {
+        const segments = Array.isArray(path) ? path : [path as string];
+
+        for(const layer of this._layers) {
+            let value: any = layer.data;
+
+            for(const segment of segments) {
+                if(value === null || typeof value !== "object") {
+                    value = undefined;
+                    break;
+                }
+
+                value = value[segment];
+            }
+
+            if(isDefined(value)) {
+                return layer.name;
+            }
+        }
+
+        return undefined;
     }
 
     public resolve<K extends keyof D>(path: K | [K]): D[K];
@@ -117,7 +144,7 @@ export class LayerResolver<D, L extends D = D> {
     public resolve(path: string | string[]): any {
         const [field, ...rest] = Array.isArray(path) ? path : [path];
         const rule = (this.rules as Record<string, ResolveRule>)[field];
-        const values = this.layers.map((layer) => (layer.data as Record<string, any>)[field]).filter(isDefined);
+        const values = this._layers.map((layer) => (layer.data as Record<string, any>)[field]).filter(isDefined);
 
         let value = rule.apply(values) ?? rule.empty?.();
 

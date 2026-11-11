@@ -5,7 +5,7 @@ import {Project} from "../makes/Project";
 import {ProjectConfig} from "../makes/ProjectConfig";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {FileSystemDriver, ProjectConfigScope} from "../types";
+import {FileSystemDriver, ProjectLayerType} from "../types";
 import {FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
@@ -18,11 +18,11 @@ export class ProjectRepository {
         protected readonly driver: FileSystemDriver
     ) {}
 
-    public getConfig(scope: ProjectConfigScope, name: string, path?: string): ProjectConfig {
+    public getConfig(scope: ProjectLayerType, name: string, path?: string): ProjectConfig {
         const ref = this.appService.getProject(name);
 
         switch(scope) {
-            case ProjectConfigScope.APP: {
+            case ProjectLayerType.DATA: {
                 if(!ref) {
                     return new ProjectConfig("{}");
                 }
@@ -38,7 +38,7 @@ export class ProjectRepository {
                 );
             }
 
-            case ProjectConfigScope.LOCAL:
+            case ProjectLayerType.REPOSITORY:
                 path = path || ref?.path;
 
                 if(!path) {
@@ -55,7 +55,7 @@ export class ProjectRepository {
                     fs.readFile("wocker.config.json").toString()
                 );
 
-            case ProjectConfigScope.GLOBAL:
+            case ProjectLayerType.GLOBAL:
                 return new ProjectConfig(
                     JSON.stringify({
                         env: this.appService.config.env
@@ -86,8 +86,8 @@ export class ProjectRepository {
             this.fs.mkdir(`projects/${project.name}`);
         }
 
-        const appLayer = project.layer(ProjectConfigScope.APP),
-              projectLayer = project.layer(ProjectConfigScope.LOCAL);
+        const appLayer = project.layer(ProjectLayerType.DATA),
+              projectLayer = project.layer(ProjectLayerType.REPOSITORY);
 
         if(appLayer.isDirty()) {
             this.fs.writeFile(`projects/${project.name}/config.json`, appLayer.toString());

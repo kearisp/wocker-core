@@ -229,6 +229,32 @@ describe("ProjectConfig", () => {
         });
     });
 
+    describe("imageName migration", () => {
+        it("should move the legacy imageName to image on read", () => {
+            const config = new ProjectConfig('{"type":"image","imageName":"php:8.3-apache"}');
+
+            expect(config.image).toBe("php:8.3-apache");
+            expect(JSON.parse(config.toString())).not.toHaveProperty("imageName");
+            expect(JSON.parse(config.toString()).image).toBe("php:8.3-apache");
+            expect(config.isDirty()).toBe(true);
+        });
+
+        it("should prefer image over the legacy imageName", () => {
+            const config = new ProjectConfig('{"image":"node:23","imageName":"node:18"}');
+
+            expect(config.image).toBe("node:23");
+            expect(JSON.parse(config.toString())).not.toHaveProperty("imageName");
+        });
+
+        it("should leave a config without imageName untouched", () => {
+            const origin = '{"image":"node:23"}';
+            const config = new ProjectConfig(origin);
+
+            expect(config.toString()).toBe(origin);
+            expect(config.isDirty()).toBe(false);
+        });
+    });
+
     describe("mutating array methods", () => {
         it("should write the array back after push", () => {
             const config = new ProjectConfig('{"ports":["1:1"]}');
@@ -237,6 +263,65 @@ describe("ProjectConfig", () => {
 
             expect(JSON.parse(config.toString()).ports).toEqual(["1:1", "2:2"]);
             expect(config.isDirty()).toBe(true);
+        });
+    });
+
+    describe("services", () => {
+        it("should return an empty object without creating the key when no services are set", () => {
+            const config = new ProjectConfig("{}");
+
+            expect(config.state.services).toBeUndefined();
+            expect(config.services).toEqual({});
+            expect(config.toString()).toBe("{}");
+            expect(config.isDirty()).toBe(false);
+        });
+
+        it("should read services from the existing config", () => {
+            const config = new ProjectConfig('{"services":{"web":{"containerName":"web.ws","env":{"A":"1"}}}}');
+
+            expect(config.services.web.containerName).toBe("web.ws");
+            expect(config.services.web.env).toEqual({A: "1"});
+            expect(Object.keys(config.services)).toEqual(["web"]);
+        });
+
+        it("should not make the config dirty when only reading services", () => {
+            const origin = '{"services":{"web":{"env":{"A":"1"}}}}';
+            const config = new ProjectConfig(origin);
+
+            JSON.stringify(config.services);
+            Object.keys(config.services);
+
+            expect(config.toString()).toBe(origin);
+            expect(config.isDirty()).toBe(false);
+        });
+
+        it("should write a new service through the proxy", () => {
+            const config = new ProjectConfig("{}");
+
+            config.services.web = {containerName: "web.ws"};
+
+            expect(JSON.parse(config.toString()).services).toEqual({
+                web: {containerName: "web.ws"}
+            });
+            expect(config.isDirty()).toBe(true);
+        });
+
+        it("should remove the services key when the last service is deleted", () => {
+            const config = new ProjectConfig('{"services":{"web":{"containerName":"web.ws"}}}');
+
+            delete config.services.web;
+
+            expect(JSON.parse(config.toString())).not.toHaveProperty("services");
+        });
+
+        it("should keep services in sync with setEnv and setBuildArg", () => {
+            const config = new ProjectConfig("{}");
+
+            config.setEnv("A", "1", "web");
+            config.setBuildArg("B", "2", "web");
+
+            expect(config.services.web.env).toEqual({A: "1"});
+            expect(config.services.web.buildArgs).toEqual({B: "2"});
         });
     });
 });
