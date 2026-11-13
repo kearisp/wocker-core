@@ -5,7 +5,7 @@ import {Project} from "../makes/Project";
 import {ProjectConfig} from "../makes/ProjectConfig";
 import {AppService} from "./AppService";
 import {AppFileSystemService} from "./AppFileSystemService";
-import {FileSystemDriver, ProjectConfigScope} from "../types";
+import {FileSystemDriver, ProjectLayerType} from "../types";
 import {FILE_SYSTEM_DRIVER_KEY} from "../env";
 
 
@@ -18,43 +18,48 @@ export class ProjectRepository {
         protected readonly driver: FileSystemDriver
     ) {}
 
-    public getConfig(scope: ProjectConfigScope, name: string, path?: string): ProjectConfig {
+    public getConfig(scope: ProjectLayerType, name: string, path?: string): ProjectConfig {
         const ref = this.appService.getProject(name);
 
         switch(scope) {
-            case ProjectConfigScope.APP: {
+            case ProjectLayerType.DATA: {
                 if(!ref) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 const fs = this.fs.cd(`projects/${ref.name}`);
 
                 if(!fs.exists("config.json")) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 return new ProjectConfig(
-                    scope,
                     fs.readFile("config.json").toString(),
                 );
             }
 
-            case ProjectConfigScope.LOCAL:
+            case ProjectLayerType.REPOSITORY:
                 path = path || ref?.path;
 
                 if(!path) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 const fs = new FileSystem(path);
 
                 if(!fs.exists("wocker.config.json")) {
-                    return new ProjectConfig(scope, "{}");
+                    return new ProjectConfig("{}");
                 }
 
                 return new ProjectConfig(
-                    scope,
                     fs.readFile("wocker.config.json").toString()
+                );
+
+            case ProjectLayerType.GLOBAL:
+                return new ProjectConfig(
+                    JSON.stringify({
+                        env: this.appService.config.env
+                    })
                 );
         }
     }
@@ -81,14 +86,17 @@ export class ProjectRepository {
             this.fs.mkdir(`projects/${project.name}`);
         }
 
-        if(project.configs.app.isDirty()) {
-            this.fs.writeFile(`projects/${project.name}/config.json`, project.configs.app.toString());
+        const appLayer = project.layer(ProjectLayerType.DATA),
+              projectLayer = project.layer(ProjectLayerType.REPOSITORY);
+
+        if(appLayer.isDirty()) {
+            this.fs.writeFile(`projects/${project.name}/config.json`, appLayer.toString());
         }
 
-        if(project.configs.project.isDirty()) {
+        if(projectLayer.isDirty()) {
             const projectFS = new FileSystem(project.path, this.driver);
 
-            projectFS.writeFile("wocker.config.json", project.configs.project.toString());
+            projectFS.writeFile("wocker.config.json", projectLayer.toString());
         }
     }
 

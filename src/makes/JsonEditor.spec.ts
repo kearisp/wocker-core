@@ -96,6 +96,7 @@ describe("JsonEditor", () => {
         expect(editor.get(["a", "b", "c"])).toBe(3);
 
         editor.set("a.b.d", 4);
+
         expect(editor.state.a.b.d).toBe(4);
     });
 });
