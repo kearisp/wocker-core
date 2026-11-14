@@ -3,6 +3,7 @@ export * from "./Config";
 export * from "./ConfigCollection";
 export * from "./FileSystem";
 export * from "./FileSystemManager";
+export * from "./JsonEditor";
 export * from "./Logger";
 export * from "./PluginConfig";
 export * from "./Project";

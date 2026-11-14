@@ -1,6 +1,7 @@
 import {describe, it, expect} from "@jest/globals";
 import {Preset, PresetProperties} from "./Preset";
 
+
 describe("Preset", () => {
     class TestPreset extends Preset {
         public constructor(data: PresetProperties) {
