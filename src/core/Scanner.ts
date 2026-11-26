@@ -185,6 +185,11 @@ export class Scanner {
                 });
 
                 for(const arg of route.args) {
+                    if(!arg) {
+                        // TODO: Log error
+                        continue;
+                    }
+
                     if(arg.type === "option") {
                         command.option(arg.name, arg.params);
                     }
